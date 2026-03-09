@@ -11,10 +11,12 @@ return new class extends Migration
         Schema::create('workshop_jobcards', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('jobcard_id');
+            $table->string('workshop_jobcard_number')->unique();
             $table->unsignedBigInteger('material_id')->nullable(); // If selected from inventory
             $table->string('material_name')->nullable(); // For custom/manual entry
             $table->integer('quantity')->default(1);
             $table->json('additional_works')->nullable();
+
             $table->text('notes')->nullable();
             $table->timestamps();
 

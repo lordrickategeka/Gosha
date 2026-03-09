@@ -8,5 +8,7 @@
     </head>
     <body>
         {{ $slot }}
+        <!-- Include Vite compiled assets -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </body>
 </html>

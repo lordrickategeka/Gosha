@@ -1,8 +1,9 @@
 <div>
     <x-layouts.dash-layout title="Workshop Jobcard">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl px-4 sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm rounded-lg p-6">
                 <h2 class="text-lg font-bold mb-4">Workshop Jobcard #{{ $workshopJobcard->id }}</h2>
+                <h2 class="text-lg font-bold mb-4">Workshop Jobcard Number: {{ $workshopJobcard->workshop_jobcard_number }}</h2>
 
                 @if(session('success'))
                     <div class="mb-4 p-3 bg-green-50 text-green-800 rounded">{{ session('success') }}</div>
@@ -12,6 +13,8 @@
                     <label class="block text-sm font-medium text-gray-700">Notes / Instructions</label>
                     <textarea wire:model.defer="notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md"></textarea>
                 </div>
+
+                <h3 class="text-md font-semibold mb-4">Associated Jobcard: #{{ $workshopJobcard->jobcard->job_card_number}}</h3>
 
                 <h3 class="font-semibold mb-2">Mechanical Works</h3>
                 <div class="space-y-3">

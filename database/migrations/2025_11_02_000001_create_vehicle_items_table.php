@@ -10,6 +10,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('vehicle_id');
             $table->unsignedBigInteger('customer_id');
+            $table->foreignId('job_card_id')->nullable()->constrained('job_cards')->onDelete('cascade');
+            
             $table->string('item_name');
             $table->string('description')->nullable();
             $table->integer('quantity')->default(1);

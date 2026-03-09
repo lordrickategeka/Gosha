@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('job_card_number')->unique();
             $table->foreignId('staff_id')->constrained('staff');
             $table->foreignId('customer_id')->constrained('customers');
-            $table->foreignId('vehicle_id')->constrained('vehicles');
+            $table->unsignedBigInteger('vehicle_id');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->onDelete('cascade');
             $table->foreignId('vehicle_type_id')->constrained('vehicle_types');
             $table->enum('status', ['pending', 'in_progress', 'completed', 'collected'])->default('pending');
             $table->string('image_attachment')->nullable();

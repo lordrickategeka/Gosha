@@ -23,7 +23,7 @@ class WorkshopJobcardShow extends Component
 
     protected function loadData()
     {
-        $this->workshopJobcard = WorkshopJobcard::with('mechanicalWorks.serviceType')->findOrFail($this->workshopJobcardId);
+        $this->workshopJobcard = WorkshopJobcard::with(['mechanicalWorks.serviceType', 'jobcard'])->findOrFail($this->workshopJobcardId);
         $this->notes = $this->workshopJobcard->notes;
         $this->mechanicalWorks = [];
         foreach ($this->workshopJobcard->mechanicalWorks as $mw) {

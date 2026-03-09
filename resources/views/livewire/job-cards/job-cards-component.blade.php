@@ -1,6 +1,6 @@
 <div>
-    <x-layouts.dash-layout title="Dashboard">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <x-layouts.dash-layout title="Job Cards">
+        <div class="max-w-12xl px-4 sm:px-6 lg:px-6">
             <!-- Header -->
             <div class="sm:flex sm:items-center sm:justify-between mb-6">
                 <div>

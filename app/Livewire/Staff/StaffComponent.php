@@ -94,4 +94,9 @@ class StaffComponent extends Component
             'staffList' => $this->staffList,
         ]);
     }
+
+    public function redirectToCreateStaff()
+    {
+        return redirect()->route('staff.create');
+    }
 }

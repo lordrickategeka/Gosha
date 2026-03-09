@@ -1,6 +1,6 @@
 <div>
     <x-layouts.dash-layout title="Create Job Card">
-        <div class="max-w-3xl mx-auto p-3 bg-white rounded-lg shadow-sm">
+        <div class="max-w-3xl p-3 bg-white rounded-lg shadow-sm">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Create Job Card</h2>
 
             @if (session()->has('message'))
@@ -14,7 +14,32 @@
                 </div>
             @endif
 
-            <form wire:submit.prevent="submit" class="space-y-4">
+            <form wire:submit.prevent="submit" class="space-y-4">                <!-- Progress Bar with Icons -->
+                <div class="flex justify-between items-center mb-6"> <!-- Increased margin-bottom for spacing -->
+                    <div class="flex items-center space-x-4"> <!-- Added spacing between icons -->
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="ml-2 text-sm font-medium text-gray-700">Customer</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full @if($step >= 2) bg-blue-600 text-white @else bg-gray-200 text-gray-500 @endif">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <span class="ml-2 text-sm font-medium text-gray-700">Vehicle</span>
+                        </div>
+                        <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full @if($step === 3) bg-blue-600 text-white @else bg-gray-200 text-gray-500 @endif">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <span class="ml-2 text-sm font-medium text-gray-700">Service</span>
+                        </div>
+                    </div>
+                </div>
+
                 @if($step === 1)
                 <!-- Step 1: Customer Information -->
                 <div class="border border-gray-200 rounded p-3">
@@ -183,12 +208,18 @@
                     <div class="mt-4">
                         <h4 class="text-xs font-semibold text-gray-700 mb-2">Items Left on Vehicle</h4>
                         <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mb-2">
-                            <input type="text" wire:model="item_name" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Item Name*" />
-                            <input type="text" wire:model="item_description" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Description" />
-                            <input type="number" min="1" wire:model="item_quantity" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Qty*" />
-                            <input type="text" wire:model="item_part_number" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Part Number" />
+                            <input type="text" wire:model.defer="item_name" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Item Name*" />
+                            <input type="text" wire:model.defer="item_description" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Description" />
+                            <input type="number" min="1" wire:model.defer="item_quantity" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Qty*" />
+                            <input type="text" wire:model.defer="item_part_number" class="px-2 py-1 border border-gray-300 rounded text-xs" placeholder="Part Number" />
                             <button type="button" wire:click="addVehicleItem" class="px-2 py-1 bg-gray-900 text-white rounded text-xs hover:bg-gray-800">Add Item</button>
                         </div>
+
+                        @if (session()->has('error'))
+                            <div class="mb-2 p-2 bg-red-100 text-red-800 rounded">
+                                {{ session('error') }}
+                            </div>
+                        @endif
                         @if(count($vehicle_items) > 0)
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto text-xs border rounded">
@@ -224,49 +255,20 @@
                 @endif
 
                 @if($step === 3)
-                <!-- Step 3: Service Information -->
+                <!-- Step 3: Service Details -->
                 <div class="border border-gray-200 rounded p-3">
-                    <h3 class="text-base font-semibold text-gray-900 mb-2">Service Information</h3>
+                    <h3 class="text-base font-semibold text-gray-900 mb-2">Service Details</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Client Narrations</label>
-                            <div class="flex space-x-2 mb-2">
-                                <input type="text" wire:model.defer="narration_input" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Describe client issue" />
-                                <button type="button" wire:click.prevent="addClientNarration" class="px-3 py-1 bg-gray-900 text-white rounded text-sm">Add</button>
-                            </div>
-                            @if(count($client_narrations) > 0)
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full table-auto text-sm border rounded mb-2">
-                                        <thead>
-                                            <tr class="bg-gray-50">
-                                                <th class="px-2 py-1 border text-left">#</th>
-                                                <th class="px-2 py-1 border text-left">Issue</th>
-                                                <th class="px-2 py-1 border text-center">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($client_narrations as $idx => $narr)
-                                                <tr>
-                                                    <td class="px-2 py-1 border">{{ $idx + 1 }}</td>
-                                                    <td class="px-2 py-1 border">{{ $narr['issue'] }}</td>
-                                                    <td class="px-2 py-1 border text-center">
-                                                        <button type="button" wire:click.prevent="removeClientNarration({{ $idx }})" class="text-red-500 text-xs">Remove</button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Service Description *</label>
+                            <textarea wire:model.defer="service_description" class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-sm" placeholder="Enter service description" rows="3" required></textarea>
                         </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Notes</label>
-                            <textarea wire:model.defer="notes" class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-sm" placeholder="Enter any additional notes" rows="2"></textarea>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Estimated Cost *</label>
+                            <input type="number" wire:model.defer="estimated_cost" class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-sm" placeholder="Enter estimated cost" required />
                         </div>
                     </div>
                 </div>
-
                 @endif
 
                 <!-- Step Navigation Buttons -->

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
+use App\Http\Livewire\Staff\CreateStaffComponent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,5 +25,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         \Illuminate\Support\Facades\Blade::component('layouts.dash-layout', 'layouts.dash-layout');
+
+        // Livewire::component('staff.create-staff-component', CreateStaffComponent::class);
     }
 }

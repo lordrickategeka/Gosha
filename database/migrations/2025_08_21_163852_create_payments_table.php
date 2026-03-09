@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained('invoices');
+            $table->unsignedBigInteger('invoice_id');
+            $table->foreign('invoice_id')->references('id')->on('invoices')->onDelete('cascade');
             $table->decimal('amount_paid', 10, 2);
             $table->enum('payment_method', ['cash', 'mobile_money', 'card', 'bank_transfer']);
             $table->string('transaction_reference')->nullable();

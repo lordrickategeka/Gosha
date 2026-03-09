@@ -35,6 +35,11 @@ class Invoice extends Model
         return $this->belongsTo(JobCard::class);
     }
 
+    public function serviceJob()
+    {
+        return $this->belongsTo(ServiceJob::class, 'service_job_id');
+    }
+
     public function payments()
     {
         return $this->hasMany(Payment::class);

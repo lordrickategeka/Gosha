@@ -42,6 +42,11 @@ class Vehicle extends Model
         return $this->hasMany(JobCard::class);
     }
 
+    public function serviceJobs(): HasMany
+    {
+        return $this->hasMany(JobCard::class);
+    }
+
     // Find vehicle by number plate or chassis number
     public static function findByIdentifier($numberPlate = null, $chasisNumber = null)
     {

@@ -1,62 +1,75 @@
 <div>
     <x-layouts.dash-layout title="Staff">
         <h2 class="text-2xl font-bold mb-6">Staff List</h2>
+        <div
+                class="flex flex-wrap items-center justify-between mb-6 p-4 bg-white border border-gray-300 rounded-lg shadow">
+                <!-- Search -->
+                <div class="flex items-center w-full max-w-md mb-2 md:mb-0" title="Search for vehicles">
+                    <i class="fas fa-search text-gray-500 mr-2"></i>
+                    <input type="text" wire:model="search"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="Search vehicles...">
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-2">
+                    <!-- Add Vehicle Button -->
+                    <button
+                        wire:click="redirectToCreateStaff"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 focus:outline-none text-sm"
+                        title="Add a new staff member">
+                        + Add Staff
+                    </button>
+
+                    <!-- Filter Dropdown -->
+                    <div class="relative" title="Filter vehicles">
+                        <button
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 focus:outline-none text-sm">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <!-- Dropdown Menu -->
+
+                    </div>
+
+                    <!-- Import/Export Dropdown -->
+                    <div class="relative" title="Import or export data">
+                        <button
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 focus:outline-none text-sm">
+                            <i class="fas fa-file-import"></i> Import/Export
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div
+                            class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 hidden group-hover:block">
+                            <a href="#" wire:click="export"
+                                class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                title="Export data">Export</a>
+                            <label class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                title="Import data">
+                                <input type="file" wire:model="importFile" class="hidden">
+                                Import
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Show Rows Dropdown -->
+                    <div title="Select number of rows to display">
+                        <label for="show" class="sr-only">Show</label>
+                        <select wire:model="perPage" id="show"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
         @if (session()->has('message'))
             <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">
                 {{ session('message') }}
             </div>
         @endif
-
-        <div class="mb-8">
-            <form wire:submit.prevent="{{ $editMode ? 'update' : 'create' }}" class="bg-white p-6 rounded shadow-md space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-gray-700">Name <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model.defer="name" class="w-full border-gray-300 rounded p-2 focus:ring focus:ring-gray-200" />
-                        @error('name')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
-                    </div>
-                    <div>
-                        <label class="block text-gray-700">Phone <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model.defer="phone" class="w-full border-gray-300 rounded p-2 focus:ring focus:ring-gray-200" />
-                        @error('phone')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
-                    </div>
-                    <div>
-                        <label class="block text-gray-700">Email</label>
-                        <input type="email" wire:model.defer="email" class="w-full border-gray-300 rounded p-2 focus:ring focus:ring-gray-200" />
-                        @error('email')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
-                    </div>
-                    <div>
-                        <label class="block text-gray-700">Role <span class="text-red-500">*</span></label>
-                        <select wire:model.defer="role" class="w-full border-gray-300 rounded p-2 focus:ring focus:ring-gray-200">
-                            <option value="">Select Role</option>
-                            <option value="washer">Washer</option>
-                            <option value="attendant">Attendant</option>
-                            <option value="manager">Manager</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        @error('role')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
-                    </div>
-                    <div>
-                        <label class="block text-gray-700">Base Salary <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" wire:model.defer="base_salary" class="w-full border-gray-300 rounded p-2 focus:ring focus:ring-gray-200" />
-                        @error('base_salary')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="flex items-center space-x-2 mt-6">
-                        <input type="checkbox" wire:model.defer="is_active" id="is_active" class="rounded border-gray-300">
-                        <label for="is_active" class="text-gray-700">Active</label>
-                    </div>
-                </div>
-                <div class="flex space-x-2">
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        {{ $editMode ? 'Update' : 'Add' }} Staff
-                    </button>
-                    @if ($editMode)
-                        <button type="button" wire:click="resetForm" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
-                    @endif
-                </div>
-            </form>
-        </div>
 
         <div class="bg-white rounded shadow-md overflow-x-auto">
             <table class="min-w-full table-auto text-xs">

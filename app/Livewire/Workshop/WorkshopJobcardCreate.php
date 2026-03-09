@@ -21,6 +21,8 @@ class WorkshopJobcardCreate extends Component
     public $selectedServiceType = null;
     public $searchResults = []; // [ serviceId => [ index => [results] ] ]
 
+
+
     public function mount($jobCard = null)
     {
         $id = is_object($jobCard) ? ($jobCard->id ?? null) : $jobCard;
@@ -76,6 +78,7 @@ class WorkshopJobcardCreate extends Component
                 'material_name' => null,
                 'quantity' => 1,
                 'notes' => $this->notes ?? null,
+                'workshop_jobcard_number' => null, // Auto-generated in the model
             ];
 
             $wj = WorkshopJobcard::create($data);

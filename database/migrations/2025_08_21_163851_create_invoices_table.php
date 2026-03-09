@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('invoice_number')->unique();
             $table->foreignId('job_card_id')->constrained('job_cards');
+            $table->unsignedBigInteger('service_job_id');
+            $table->foreign('service_job_id')->references('id')->on('job_cards')->onDelete('cascade');
             $table->decimal('subtotal', 10, 2);
             $table->decimal('tax_amount', 10, 2)->default(0);
             $table->decimal('discount_amount', 10, 2)->default(0);

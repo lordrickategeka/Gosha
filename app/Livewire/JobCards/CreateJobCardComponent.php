@@ -8,8 +8,10 @@ use App\Models\VehicleType;
 use App\Services\JobCardService;
 use App\Models\VehicleItem;
 use Illuminate\Support\Facades\Auth;
+use App\Models\JobCard;
+use App\Models\Vehicle;
 
-class JobCardFormComponent extends Component
+class CreateJobCardComponent extends Component
 {
     // Items left on vehicle
     public $vehicle_items = [];
@@ -22,6 +24,15 @@ class JobCardFormComponent extends Component
     public function addVehicleItem()
     {
         if (trim($this->item_name) !== '' && $this->item_quantity > 0) {
+            // Check if the item already exists in the list
+            foreach ($this->vehicle_items as $item) {
+                if ($item['item_name'] === $this->item_name && $item['part_number'] === $this->item_part_number) {
+                    session()->flash('error', 'This item is already in the list.');
+                    return;
+                }
+            }
+
+            // Add the new item to the list
             $this->vehicle_items[] = [
                 'item_name' => $this->item_name,
                 'description' => $this->item_description,
@@ -30,12 +41,12 @@ class JobCardFormComponent extends Component
                 'vehicle_id' => $this->vehicle_id,
                 'customer_id' => $this->customer_id,
             ];
+
+            // Reset the form fields after clicking Add
+            $this->reset(['item_name', 'item_description', 'item_quantity', 'item_part_number']);
+        } else {
+            session()->flash('error', 'Note Item has already been added.');
         }
-        // Always reset the form fields after clicking Add
-        $this->item_name = '';
-        $this->item_description = '';
-        $this->item_quantity = 1;
-        $this->item_part_number = '';
     }
 
     public function removeVehicleItem($index)
@@ -90,12 +101,19 @@ class JobCardFormComponent extends Component
     public $showCustomerSuggestions = false;
     public $showVehicleSuggestions = false;
 
+    public $totalSteps = 3;
+
+    public function getProgressPercentageProperty()
+    {
+        return ($this->step / $this->totalSteps) * 100;
+    }
+
     public function render()
     {
         // You should pass $serviceTypes and $vehicleTypes from here
         $serviceTypes = \App\Models\ServiceType::all();
         $vehicleTypes = \App\Models\VehicleType::all();
-        return view('livewire.job-cards.job-card-form', [
+        return view('livewire.job-cards.create-job-card', [
             'serviceTypes' => $serviceTypes,
             'vehicleTypes' => $vehicleTypes,
         ]);
@@ -296,6 +314,8 @@ class JobCardFormComponent extends Component
                 'email' => $this->email,
                 'contact_person' => $this->contact_person,
                 'address' => $this->address,
+
+                // this have to be captued on the vehicles table
                 'vehicle_id' => $this->vehicle_id,
                 'vehicle_type_id' => $this->vehicle_type_id,
                 'vehicle_name' => $this->vehicle_name,
@@ -309,6 +329,7 @@ class JobCardFormComponent extends Component
                 'vin_number' => $this->vin_number,
                 'service_types' => $this->service_types,
                 'notes' => $this->notes,
+
                 'intake_datetime' => $this->intake_datetime,
                 'client_narrations' => $this->client_narrations,
                 'staff_id' => Auth::id() ?? 1, // fallback for demo
@@ -340,5 +361,56 @@ class JobCardFormComponent extends Component
         } catch (\Throwable $e) {
             $this->formError = $e->getMessage();
         }
+    }
+
+    public function saveJobCard()
+    {
+        $this->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'vehicle_name' => 'required|string|max:255',
+            'number_plate' => 'required|string|max:255',
+            'service_types' => 'required|array',
+            'intake_datetime' => 'required|date',
+        ]);
+
+        // Handle new vehicle creation
+        if ($this->addingNewVehicle) {
+            $vehicle = Vehicle::create([
+                'customer_id' => $this->customer_id,
+                'vehicle_name' => $this->vehicle_name,
+                'number_plate' => $this->number_plate,
+                'chasis_number' => $this->chasis_number,
+                'color' => $this->color,
+                'vehicle_type_id' => $this->vehicle_type_id,
+                'mileage' => $this->mileage,
+                'fuel_type' => $this->fuel_type,
+                'fuel_level' => $this->fuel_level,
+                'physical_condition' => $this->physical_condition,
+                'vin_number' => $this->vin_number,
+            ]);
+
+            $this->vehicle_id = $vehicle->id;
+        }
+
+        // Create or update the job card
+        $jobCardData = [
+            'customer_id' => $this->customer_id,
+            'vehicle_id' => $this->vehicle_id,
+            'service_types' => json_encode($this->service_types),
+            'notes' => $this->notes,
+            'intake_datetime' => $this->intake_datetime,
+        ];
+
+        if ($this->editingJobCardId) {
+            $jobCard = JobCard::findOrFail($this->editingJobCardId);
+            $jobCard->update($jobCardData);
+            session()->flash('message', 'Job card updated successfully.');
+        } else {
+            JobCard::create($jobCardData);
+            session()->flash('message', 'Job card created successfully.');
+        }
+
+        $this->resetForm();
+        return redirect()->route('job-cards.index');
     }
 }

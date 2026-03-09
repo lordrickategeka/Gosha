@@ -122,7 +122,7 @@ class JobCard extends Model
 
     public function invoice()
     {
-        return $this->hasOne(Invoice::class);
+        return $this->hasOne(Invoice::class, 'service_job_id');
     }
 
     public function commission()
@@ -144,6 +144,11 @@ class JobCard extends Model
     public function staff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'staff_id');
+    }
+
+    public function technician(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'technician_id');
     }
 
     public function workshopJobcards()

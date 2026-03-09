@@ -9,6 +9,17 @@ class WorkshopJobcard extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($workshopJobcard) {
+            if (empty($workshopJobcard->workshop_jobcard_number)) {
+                $workshopJobcard->workshop_jobcard_number = 'WJC-' . strtoupper(uniqid());
+            }
+        });
+    }
+
     protected $fillable = [
         'jobcard_id',
         'material_id',
@@ -16,6 +27,7 @@ class WorkshopJobcard extends Model
         'quantity',
         'notes',
         'additional_works',
+        'workshop_jobcard_number',
     ];
 
     protected $casts = [
