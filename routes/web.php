@@ -1,103 +1,190 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Livewire\Customer\CustomersComponent;
-use App\Livewire\JobCards\JobCardsComponent;
-use App\Livewire\Vehicles\VehiclesComponent;
-
-use App\Livewire\Staff\StaffComponent;
-use App\Livewire\ServiceTypesComponent;
-use App\Livewire\JobCards\CreateJobCardComponent;
-use App\Livewire\Workshop\WorkshopJobcardCreate;
-use App\Livewire\Workshop\WorkshopJobcardIndex;
-
-// Inventory Module Routes with Livewire
 use App\Livewire\Dashboard\DashboardComponent;
-use App\Livewire\InventoryList;
-use App\Livewire\InventoryForm;
-use App\Livewire\Vehicles\AllVehicles;
-use App\Livewire\Vehicles\VehicleDetails;
-use App\Livewire\Vehicles\VehicleTypesComponent;
+use App\Livewire\Dashboard\Index as Dashboard;
+use App\Livewire\WorkOrders\WorkOrdersComponent;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
-    return view('auth.login');
-})->name('login');
+    return redirect()->route('login');
+});
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Auth routes (Laravel Breeze or custom)
+Route::middleware('guest')->group(function () {
+    Route::get('login', \App\Livewire\Auth\Login::class)->name('login');
+    Route::get('register', \App\Livewire\Auth\VendorRegistration::class)->name('register');
+});
 
-    // Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+    // Logout
+    Route::post('logout', function () {
+        auth()->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect('/');
+    })->name('logout');
+
+    // Force Password Change (must be before other auth routes)
+    Route::get('/password/change', \App\Livewire\Auth\ForcePasswordChange::class)->name('password.change');
+
     // Dashboard
     Route::get('/dashboard', DashboardComponent::class)->name('dashboard');
 
-    // Job Cards
-    // Route::patch('job-cards/{jobCard}/status', [JobCardController::class, 'updateStatus'])->name('job-cards.update-status');
-    Route::get('/customers', CustomersComponent::class)->name('customers');
+    // Branch switching
+    Route::get('/branch/{branch}/switch', function (\App\Models\Branch $branch) {
+        if (!auth()->user()->canAccessBranch($branch)) {
+            abort(403);
+        }
+        session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
+        return back();
+    })->name('branch.switch');
 
-    Route::get('/staff', StaffComponent::class)->name('staff.index');
-    Route::get('/job-cards', JobCardsComponent::class)->name('job-cards.index');
+    // Profile
+    Route::get('/profile', \App\Livewire\Profile\EditProfileComponent::class)->name('profile');
 
-    // Job Card Form
-    Route::get('/job-cards/create', CreateJobCardComponent::class)->name('job-cards.create');
-    Route::get('/job-cards/{jobCard}/edit', CreateJobCardComponent::class)->name('job-cards.edit');
+    // // Settings
+    Route::get('/settings', \App\Livewire\Settings\SettingsComponent::class)->name('settings')
+        ->middleware('can:view settings');
 
-    // Workshop Jobcards
-    Route::get('/workshop-jobcards/create/{jobCard?}', WorkshopJobcardCreate::class)->name('workshop-jobcards.create');
-    Route::get('/workshop-jobcards/{workshopJobcard}', \App\Livewire\Workshop\WorkshopJobcardShow::class)->name('workshop-jobcards.show');
-    Route::get('/workshop-jobcards', \App\Livewire\Workshop\WorkshopJobcardIndex::class)->name('workshop-jobcards.index');
-
-    Route::get('/service-types', ServiceTypesComponent::class)->name('service-types');
-
-    //vehicle
-    Route::get('/all-vehicles', AllVehicles::class)->name('vehicles.all');
-
-
-    // Payments
-    // Route::get('invoices/{invoice}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-    // Route::post('invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('payments.store');
-
-    // Invoices
-    // Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
-    // Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
-    // Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
-
-    // Expenses
-    // Route::resource('expenses', ExpenseController::class);
-
-    // Reports
-    // Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    // Route::get('/reports/daily', [ReportController::class, 'daily'])->name('reports.daily');
-    // Route::get('/reports/monthly', [ReportController::class, 'monthly'])->name('reports.monthly');
-    // Route::get('/reports/commissions', [ReportController::class, 'commissions'])->name('reports.commissions');
-
-    // Staff Management
-    // Route::resource('staff', StaffController::class);
-
-    // Settings
-    // Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    // Route::resource('vehicle-types', VehicleTypeController::class);
-
-    // Vehicle Types (Livewire)
-    Route::get('/vehicle-types', VehicleTypesComponent::class)->name('vehicle-types');
-
-    // Route::resource('service-types', ServiceTypeController::class);
-    // Route::resource('commission-price-lists', CommissionPriceListController::class);
-    Route::get('/customers', CustomersComponent::class)->name('customers');
-
-
-    Route::prefix('inventory')->group(function () {
-        Route::get('/', InventoryList::class)->name('inventory.index');
-        Route::get('/create', InventoryForm::class)->name('inventory.create');
-        Route::get('/{inventoryItem}/edit', InventoryForm::class)->name('inventory.edit');
+    // Work Orders
+    Route::prefix('work-orders')->name('work-orders.')->group(function () {
+        Route::get('/', WorkOrdersComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\WorkOrders\CreateWorkOrdersComponent::class)->name('create')
+            ->middleware('can:create work orders');
+        Route::get('/{workOrder}', \App\Livewire\WorkOrders\ShowWorkOrdersComponent::class)->name('show');
+        Route::get('/{workOrder}/edit', \App\Livewire\WorkOrders\EditWorkOrdersComponent::class)->name('edit')
+            ->middleware('can:edit work orders');
     });
 
-    Route::get('/vehicles/{vehicleId}', VehicleDetails::class)->name('vehicles.show');
+    // Wash Orders
+    Route::prefix('wash-orders')->name('wash-orders.')->group(function () {
+        Route::get('/', \App\Livewire\WashOrders\WashOrdersComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\WashOrders\CreateWashOrdersComponent::class)->name('create')
+            ->middleware('can:create wash orders');
+        Route::get('/{washOrder}', \App\Livewire\WashOrders\ShowWashOrdersComponent::class)->name('show');
+    });
 
-    Route::get('/staff/create', \App\Livewire\Staff\CreateStaffComponent::class)->name('staff.create');
+    // Customers
+    Route::prefix('customers')->name('customers.')->middleware('can:view customers')->group(function () {
+        Route::get('/', \App\Livewire\Customers\CustomersComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Customers\CreateCustomersComponent::class)->name('create')
+            ->middleware('can:create customers');
+        Route::get('/{customer}', \App\Livewire\Customers\ShowCustomersComponent::class)->name('show');
+        Route::get('/{customer}/edit', \App\Livewire\Customers\EditCustomersComponent::class)->name('edit')
+            ->middleware('can:edit customers');
+    });
 
+    // // Vehicles
+    Route::prefix('vehicles')->name('vehicles.')->middleware('can:view vehicles')->group(function () {
+        Route::get('/', \App\Livewire\Vehicles\VehiclesComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Vehicles\CreateVehiclesComponent::class)->name('create')
+            ->middleware('can:create vehicles');
+        Route::get('/{vehicle}', \App\Livewire\Vehicles\ShowVehiclesComponent::class)->name('show');
+        Route::get('/{vehicle}/edit', \App\Livewire\Vehicles\EditVehiclesComponent::class)->name('edit')
+            ->middleware('can:edit vehicles');
+    });
+
+    // Invoices
+    Route::prefix('invoices')->name('invoices.')->middleware('can:view invoices')->group(function () {
+        Route::get('/', \App\Livewire\Invoices\InvoicesComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Invoices\CreateInvoicesComponent::class)->name('create')
+            ->middleware('can:create invoices');
+        Route::get('/{invoice}', \App\Livewire\Invoices\ShowInvoicesComponent::class)->name('show');
+        // Route::get('/{invoice}/edit', \App\Livewire\Invoices\EditInvoicesComponent::class)->name('edit')
+        //     ->middleware('can:edit invoices');
+    });
+
+    // // Payments
+    Route::prefix('payments')->name('payments.')->middleware('can:view payments')->group(function () {
+        Route::get('/', \App\Livewire\Payments\PaymentsComponent::class)->name('index');
+    });
+
+    // // Expenses
+    Route::prefix('expenses')->name('expenses.')->middleware('can:view expenses')->group(function () {
+        Route::get('/', \App\Livewire\Expenses\ExpensesComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Expenses\CreateExpensesComponent::class)->name('create')
+            ->middleware('can:create expenses');
+    });
+
+    // // Commissions
+    Route::prefix('commissions')->name('commissions.')->group(function () {
+        Route::get('/', \App\Livewire\Commissions\CommissionsComponent::class)->name('index');
+    });
+
+    // // Appointments
+    Route::prefix('appointments')->name('appointments.')->middleware('can:view appointments')->group(function () {
+        Route::get('/', \App\Livewire\Appointments\AppointmentsComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Appointments\CreateAppointmentsComponent::class)->name('create')
+            ->middleware('can:create appointments');
+    });
+
+    // // Bay Status
+    Route::get('/bays', \App\Livewire\Bays\BayStatusComponent::class)->name('bays.status');
+
+    // // Inventory
+    Route::prefix('inventory')->name('inventory.')->middleware('can:view inventory')->group(function () {
+        Route::get('/', \App\Livewire\Inventory\InventoryComponent::class)->name('index');
+        Route::get('/low-stock', \App\Livewire\Inventory\LowStock::class)->name('low-stock');
+        Route::get('/movements', \App\Livewire\Inventory\Movements::class)->name('movements')
+            ->middleware('can:adjust stock');
+        Route::get('/create', \App\Livewire\Inventory\CreateInventoryComponent::class)->name('create')
+            ->middleware('can:create inventory');
+        Route::get('/{inventoryItem}', \App\Livewire\Inventory\ShowInventoryComponent::class)->name('show');
+        Route::get('/{inventoryItem}/edit', \App\Livewire\Inventory\EditInventoryComponent::class)->name('edit')
+            ->middleware('can:edit inventory');
+    });
+
+    // // Suppliers
+    Route::prefix('suppliers')->name('suppliers.')->middleware('can:view suppliers')->group(function () {
+        Route::get('/', \App\Livewire\Suppliers\SuppliersComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Suppliers\CreateSuppliersComponent::class)->name('create')
+            ->middleware('can:create suppliers');
+        Route::get('/{supplier}', \App\Livewire\Suppliers\ShowSuppliersComponent::class)->name('show');
+    });
+
+    // // Staff / Users
+    Route::prefix('users')->name('users.')->middleware('can:view users')->group(function () {
+        Route::get('/', \App\Livewire\Users\UsersComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Users\CreateUsersComponent::class)->name('create')
+            ->middleware('can:create users');
+        Route::get('/{user}', \App\Livewire\Users\ShowUsersComponent::class)->name('show');
+        Route::get('/{user}/edit', \App\Livewire\Users\EditUsersComponent::class)->name('edit')
+            ->middleware('can:edit users');
+    });
+
+    // // Branches
+    Route::prefix('branches')->name('branches.')->middleware('can:view branches')->group(function () {
+        Route::get('/', \App\Livewire\Branches\BranchesComponent::class)->name('index');
+        Route::get('/create', \App\Livewire\Branches\CreateBranchesComponent::class)->name('create')
+            ->middleware('can:create branches');
+        Route::get('/{branch}/edit', \App\Livewire\Branches\EditBranchesComponent::class)->name('edit')
+            ->middleware('can:edit branches');
+    });
+
+    // // Templates (Service Templates & Wash Packages)
+    Route::prefix('templates')->name('templates.')->middleware('can:view service templates')->group(function () {
+        Route::get('/', \App\Livewire\Templates\TemplatesComponent::class)->name('index');
+    });
+
+    // // Reports
+    Route::prefix('reports')->name('reports.')->middleware('can:view reports')->group(function () {
+        Route::get('/sales', \App\Livewire\Reports\Sales::class)->name('sales');
+        Route::get('/operations', \App\Livewire\Reports\Operations::class)->name('operations');
+        Route::get('/inventory', \App\Livewire\Reports\Inventory::class)->name('inventory');
+        Route::get('/staff', \App\Livewire\Reports\Staff::class)->name('staff');
+    });
+
+    // // Platform Admin Routes
+    Route::prefix('platform')->name('platform.')->group(function () {
+        Route::get('/vendors', \App\Livewire\Platform\Vendors\Index::class)->name('vendors.index');
+        Route::get('/vendors/create', \App\Livewire\Platform\Vendors\Create::class)->name('vendors.create');
+        Route::get('/vendors/{vendor}', \App\Livewire\Platform\Vendors\Show::class)->name('vendors.show');
+        Route::get('/billing', \App\Livewire\Platform\Billing::class)->name('billing');
+    });
 });
-
-require __DIR__ . '/auth.php';

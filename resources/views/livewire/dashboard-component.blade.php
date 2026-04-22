@@ -1,319 +1,346 @@
 <div>
-    <x-layouts.dash-layout title="dashboard">
-        <div class="w-full px-4 sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm rounded-lg p-6 w-full">
-                <h2 class="text-lg font-bold mb-4">Dashboard</h2>
-                <p class="text-gray-600">Welcome to your dashboard! Here you can get a quick overview of your recent activity, manage your job cards, and access important metrics.</p>
-            </div>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">Dashboard</h1>
+            <p class="text-base-content/60">Welcome back! Here's what's happening today.</p>
         </div>
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Revenue Card -->
-        <div class="card bg-base-100 shadow-md rounded-lg border border-gray-200">
-            <div class="card-body p-6">
+
+        <!-- Period Selector -->
+        <div class="join">
+            <button wire:click="setPeriod('today')" class="join-item btn btn-sm {{ $period === 'today' ? 'btn-primary' : 'btn-ghost' }}">Today</button>
+            <button wire:click="setPeriod('week')" class="join-item btn btn-sm {{ $period === 'week' ? 'btn-primary' : 'btn-ghost' }}">This Week</button>
+            <button wire:click="setPeriod('month')" class="join-item btn btn-sm {{ $period === 'month' ? 'btn-primary' : 'btn-ghost' }}">This Month</button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Work Orders -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-500 text-sm">Monthly Revenue</p>
-                        <h3 class="text-3xl font-bold text-black mt-1">${{ number_format($monthlyRevenue, 2) }}</h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                            <span class="text-green-600">+12.5%</span> from last month
-                        </p>
+                        <p class="text-base-content/60 text-sm">Work Orders</p>
+                        <p class="text-2xl font-bold">{{ $this->stats['work_orders'] }}</p>
+                        <p class="text-xs text-success">{{ $this->stats['completed_work_orders'] }} completed</p>
                     </div>
-                    <i class="fas fa-dollar-sign w-8 h-8 text-black"></i>
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Active Jobs Card -->
-        <div class="card bg-base-100 shadow-md rounded-lg border border-gray-200">
-            <div class="card-body p-6">
+
+        <!-- Wash Orders -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-500 text-sm">Active Jobs</p>
-                        <h3 class="text-3xl font-bold text-black mt-1">{{ $activeJobs }}</h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                            <span class="text-black">8</span> pending approval
-                        </p>
+                        <p class="text-base-content/60 text-sm">Wash Orders</p>
+                        <p class="text-2xl font-bold">{{ $this->stats['wash_orders'] }}</p>
+                        <p class="text-xs text-success">{{ $this->stats['completed_wash_orders'] }} completed</p>
                     </div>
-                    <i class="fas fa-clipboard-list w-8 h-8 text-black"></i>
+                    <div class="w-12 h-12 bg-info/10 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Completed Jobs Card -->
-        <div class="card bg-base-100 shadow-md rounded-lg border border-gray-200">
-            <div class="card-body p-6">
+
+        <!-- Revenue -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-500 text-sm">Completed Jobs</p>
-                        <h3 class="text-3xl font-bold text-black mt-1">{{ $completedJobs }}</h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                            <span class="text-green-600">+8.2%</span> this month
-                        </p>
+                        <p class="text-base-content/60 text-sm">Revenue</p>
+                        <p class="text-2xl font-bold">UGX {{ number_format($this->stats['revenue']) }}</p>
+                        <p class="text-xs text-base-content/50">Payments received</p>
                     </div>
-                    <i class="fas fa-check-circle w-8 h-8 text-black"></i>
+                    <div class="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Customer Satisfaction Card -->
-        <div class="card bg-base-100 shadow-md rounded-lg border border-gray-200">
-            <div class="card-body p-6">
+
+        <!-- Profit -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-500 text-sm">Customer Rating</p>
-                        <h3 class="text-3xl font-bold text-black mt-1">{{ $customerRating }}/5</h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                            Based on 89 reviews
+                        <p class="text-base-content/60 text-sm">Net Profit</p>
+                        <p class="text-2xl font-bold {{ $this->stats['profit'] >= 0 ? 'text-success' : 'text-error' }}">
+                            UGX {{ number_format($this->stats['profit']) }}
                         </p>
+                        <p class="text-xs text-base-content/50">After UGX {{ number_format($this->stats['expenses']) }} expenses</p>
                     </div>
-                    <i class="fas fa-star w-8 h-8 text-black"></i>
+                    <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Revenue Chart -->
-        {{-- <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <!-- Bay Status -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Service Bays -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Service Bays
+                </h2>
+
+                <div class="flex gap-2 mb-4">
+                    <div class="badge badge-success gap-1">
+                        <span class="w-2 h-2 rounded-full bg-success-content"></span>
+                        {{ $this->serviceBays->get('available', collect())->count() }} Available
+                    </div>
+                    <div class="badge badge-warning gap-1">
+                        <span class="w-2 h-2 rounded-full bg-warning-content"></span>
+                        {{ $this->serviceBays->get('occupied', collect())->count() }} Occupied
+                    </div>
+                    <div class="badge badge-error gap-1">
+                        <span class="w-2 h-2 rounded-full bg-error-content"></span>
+                        {{ $this->serviceBays->get('maintenance', collect())->count() }} Maintenance
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    @foreach($this->serviceBays->flatten() as $bay)
+                        <div class="p-3 rounded-lg border {{ $bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5') }}">
+                            <p class="font-medium text-sm">{{ $bay->name }}</p>
+                            @if($bay->currentWorkOrder)
+                                <p class="text-xs text-base-content/60 truncate">{{ $bay->currentWorkOrder->vehicle?->registration_number }}</p>
+                            @else
+                                <p class="text-xs text-base-content/40">{{ ucfirst($bay->status) }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- Wash Bays -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    Wash Bays
+                </h2>
+
+                <div class="flex gap-2 mb-4">
+                    <div class="badge badge-success gap-1">
+                        <span class="w-2 h-2 rounded-full bg-success-content"></span>
+                        {{ $this->washBays->get('available', collect())->count() }} Available
+                    </div>
+                    <div class="badge badge-warning gap-1">
+                        <span class="w-2 h-2 rounded-full bg-warning-content"></span>
+                        {{ $this->washBays->get('occupied', collect())->count() }} Occupied
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    @foreach($this->washBays->flatten() as $bay)
+                        <div class="p-3 rounded-lg border {{ $bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5') }}">
+                            <p class="font-medium text-sm">{{ $bay->name }}</p>
+                            @if($bay->currentWashOrder)
+                                <p class="text-xs text-base-content/60 truncate">{{ $bay->currentWashOrder->vehicle?->registration_number }}</p>
+                            @else
+                                <p class="text-xs text-base-content/40">{{ ucfirst($bay->status) }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- Wash Queue Preview -->
+                @if($this->washQueue->count() > 0)
+                    <div class="divider text-xs">Queue ({{ $this->washQueue->count() }} waiting)</div>
+                    <div class="space-y-2">
+                        @foreach($this->washQueue->take(3) as $order)
+                            <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="badge badge-sm badge-outline">{{ $order->queue_position }}</span>
+                                    <span>{{ $order->vehicle?->registration_number ?? 'N/A' }}</span>
+                                </div>
+                                <span class="badge badge-sm">{{ ucfirst($order->wash_type) }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Work & Appointments -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Active Work Orders -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Revenue Trend</h3>
-                    <select
-                        class="text-sm border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                        <option>Last 6 months</option>
-                        <option>Last year</option>
-                    </select>
+                    <h2 class="card-title text-lg">Active Work Orders</h2>
+                    <a href="{{ route('work-orders.index') }}" class="btn btn-ghost btn-sm">View All</a>
                 </div>
-                <canvas id="revenueChart" height="200"></canvas>
-            </div> --}}
-        <!-- Job Status Chart -->
-        {{-- <div class="bg-white rounded-lg border border-gray-200 p-6">
+
+                @if($this->activeWorkOrders->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Vehicle</th>
+                                    <th>Status</th>
+                                    <th>Technician</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($this->activeWorkOrders as $order)
+                                    <tr class="hover">
+                                        <td>
+                                            <a href="{{ route('work-orders.show', $order) }}" class="link link-primary font-mono text-sm">
+                                                {{ $order->order_number }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="font-medium">{{ $order->vehicle?->registration_number ?? 'N/A' }}</div>
+                                            <div class="text-xs text-base-content/60">{{ $order->customer?->name }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ $order->status_color }} badge-sm">
+                                                {{ str_replace('_', ' ', ucfirst($order->status)) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-sm">{{ $order->assignedTechnician?->name ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-8 text-base-content/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <p>No active work orders</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Today's Appointments -->
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Job Status Distribution</h3>
-                    <div class="text-sm text-gray-500">This month</div>
+                    <h2 class="card-title text-lg">Today's Appointments</h2>
+                    <a href="{{ route('appointments.index') }}" class="btn btn-ghost btn-sm">View All</a>
                 </div>
-                <canvas id="jobStatusChart" height="200"></canvas>
-            </div> --}}
-    </div>
 
-    <!-- Recent Activity & Upcoming Appointments -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Recent Work Orders -->
-        <div class="card bg-base-100 shadow-md rounded-lg border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-medium text-black">Recent Work Orders</h3>
-                    <a href="#" class="text-sm text-primary hover:text-primary-dark">View all</a>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    <!-- Work Order Item -->
-                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <i class="fas fa-car text-black text-sm"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-black">Oil Change - Honda Civic</p>
-                            <p class="text-sm text-gray-500">Sarah Johnson • #WO-2024-0156</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="badge badge-success badge-sm">
-                                Completed
-                            </span>
-                            <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
-                        </div>
+                @if($this->todayAppointments->count() > 0)
+                    <div class="space-y-3">
+                        @foreach($this->todayAppointments as $appointment)
+                            <div class="flex items-center gap-4 p-3 rounded-lg bg-base-200/50">
+                                <div class="text-center">
+                                    <div class="text-lg font-bold">{{ $appointment->scheduled_time->format('H:i') }}</div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium">{{ $appointment->customer?->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-base-content/60">
+                                        {{ $appointment->vehicle?->registration_number ?? 'N/A' }} • {{ $appointment->type_display }}
+                                    </div>
+                                </div>
+                                <span class="badge badge-{{ $appointment->status_color }}">
+                                    {{ ucfirst($appointment->status) }}
+                                </span>
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <i class="fas fa-tools text-black text-sm"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-black">Brake Repair - Ford F-150</p>
-                            <p class="text-sm text-gray-500">Mike Davis • #WO-2024-0157</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="badge badge-warning badge-sm">
-                                In Progress
-                            </span>
-                            <p class="text-xs text-gray-500 mt-1">Started 1h ago</p>
-                        </div>
+                @else
+                    <div class="text-center py-8 text-base-content/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p>No appointments today</p>
                     </div>
-                    <div class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <i class="fas fa-cog text-black text-sm"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-black">Engine Diagnostic - BMW X5</p>
-                            <p class="text-sm text-gray-500">Emily Rodriguez • #WO-2024-0158</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="badge badge-ghost badge-sm">
-                                Pending
-                            </span>
-                            <p class="text-xs text-gray-500 mt-1">Scheduled</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Upcoming Appointments -->
-        <div class="card bg-base-100 shadow-md rounded-lg border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-medium text-black">Today's Appointments</h3>
-                    <a href="#" class="text-sm text-primary hover:text-primary-dark">View calendar</a>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    <!-- Appointment Item -->
-                    <div class="flex items-center space-x-4 p-3 border-l-4 border-primary bg-gray-50 rounded-r-lg">
-                        <div class="text-center">
-                            <p class="text-lg font-bold text-black">09:00</p>
-                            <p class="text-xs text-gray-500">AM</p>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-black">Annual Inspection</p>
-                            <p class="text-sm text-gray-500">Toyota Camry - License: ABC123</p>
-                            <p class="text-xs text-gray-500">Customer: John Williams</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500">Bay 2</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 border-l-4 border-secondary bg-gray-50 rounded-r-lg">
-                        <div class="text-center">
-                            <p class="text-lg font-bold text-black">11:30</p>
-                            <p class="text-xs text-gray-500">AM</p>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-black">Tire Rotation</p>
-                            <p class="text-sm text-gray-500">Nissan Altima - License: XYZ789</p>
-                            <p class="text-xs text-gray-500">Customer: Lisa Chen</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500">Bay 1</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 border-l-4 border-gray-300 bg-gray-50 rounded-r-lg">
-                        <div class="text-center">
-                            <p class="text-lg font-bold text-black">02:00</p>
-                            <p class="text-xs text-gray-500">PM</p>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-black">AC Repair</p>
-                            <p class="text-sm text-gray-500">Chevrolet Malibu - License: DEF456</p>
-                            <p class="text-xs text-gray-500">Customer: Robert Martinez</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500">Bay 3</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 border-l-4 border-gray-200 bg-gray-50 rounded-r-lg">
-                        <div class="text-center">
-                            <p class="text-lg font-bold text-black">04:30</p>
-                            <p class="text-xs text-gray-500">PM</p>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-black">Transmission Service</p>
-                            <p class="text-sm text-gray-500">Ford Explorer - License: GHI789</p>
-                            <p class="text-xs text-gray-500">Customer: Amanda Taylor</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500">Bay 4</span>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
 
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Revenue',
-                        data: [15000, 16500, 14200, 17800, 19200, 18742],
-                        borderColor: '#374151',
-                        backgroundColor: 'rgba(55, 65, 81, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#f3f4f6'
-                            },
-                            ticks: {
-                                color: '#6b7280',
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString();
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#6b7280'
-                            }
-                        }
-                    }
-                }
-            });
+    <!-- Unpaid Invoices -->
+    @can('view invoices')
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="card-title text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Unpaid Invoices
+                </h2>
+                <a href="{{ route('invoices.index', ['status' => 'unpaid']) }}" class="btn btn-ghost btn-sm">View All</a>
+            </div>
 
-            // Job Status Chart
-            const jobStatusCtx = document.getElementById('jobStatusChart').getContext('2d');
-            new Chart(jobStatusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'In Progress', 'Pending', 'On Hold'],
-                    datasets: [{
-                        data: [124, 47, 23, 8],
-                        backgroundColor: [
-                            '#374151',
-                            '#6b7280',
-                            '#9ca3af',
-                            '#d1d5db'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                color: '#6b7280',
-                                usePointStyle: true
-                            }
-                        }
-                    }
-                }
-            });
-        </script>
-    @endpush
-    <!-- ...existing dashboard content... -->
-    </x-layouts.dash-layout>
-
+            @if($this->unpaidInvoices->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($this->unpaidInvoices as $invoice)
+                                <tr class="hover">
+                                    <td>
+                                        <a href="{{ route('invoices.show', $invoice) }}" class="link link-primary font-mono text-sm">
+                                            {{ $invoice->invoice_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $invoice->customer?->name ?? 'N/A' }}</td>
+                                    <td class="font-medium">UGX {{ number_format($invoice->balance_due) }}</td>
+                                    <td class="{{ $invoice->isOverdue() ? 'text-error' : '' }}">
+                                        {{ $invoice->due_date->format('d M Y') }}
+                                        @if($invoice->isOverdue())
+                                            <span class="text-xs">({{ $invoice->days_overdue }}d overdue)</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ $invoice->status_color }} badge-sm">
+                                            {{ ucfirst($invoice->status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="text-center py-6 text-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>All invoices are paid!</p>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endcan
 </div>

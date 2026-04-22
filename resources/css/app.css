@@ -13,3 +13,93 @@
 [x-cloak] {
     display: none;
 }
+
+
+/* Custom styles */
+@layer components {
+    /* Stat cards */
+    .stat-card {
+        @apply card bg-base-100 shadow-sm;
+    }
+
+    /* Status badges */
+    .status-open { @apply badge-info; }
+    .status-in_progress { @apply badge-warning; }
+    .status-quality_check { @apply badge-secondary; }
+    .status-ready { @apply badge-success; }
+    .status-delivered { @apply badge-success; }
+    .status-cancelled { @apply badge-error; }
+    .status-queued { @apply badge-info; }
+    .status-completed { @apply badge-success; }
+
+    /* Priority badges */
+    .priority-low { @apply badge-ghost; }
+    .priority-normal { @apply badge-info; }
+    .priority-high { @apply badge-warning; }
+    .priority-urgent { @apply badge-error; }
+
+    /* Stock status */
+    .stock-in_stock { @apply text-success; }
+    .stock-low_stock { @apply text-warning; }
+    .stock-out_of_stock { @apply text-error; }
+}
+
+@layer utilities {
+    /* Scrollbar styling */
+    .scrollbar-thin {
+        scrollbar-width: thin;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        @apply bg-base-200 rounded;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        @apply bg-base-300 rounded;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        @apply bg-base-content/30;
+    }
+}
+
+/* Livewire loading states */
+[wire\:loading] {
+    display: none;
+}
+
+[wire\:loading].block {
+    display: block;
+}
+
+[wire\:loading].inline-block {
+    display: inline-block;
+}
+
+[wire\:loading].flex {
+    display: flex;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    body {
+        @apply bg-white;
+    }
+
+    .card {
+        @apply shadow-none border border-base-300;
+    }
+}

@@ -2,28 +2,194 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToVendor;
+use App\Traits\HasAuditLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InventoryItem extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, BelongsToVendor, HasAuditLog;
 
     protected $fillable = [
-        'name',
-        'description',
-        'price',
-        'quantity',
+        'vendor_id',
+        'category_id',
         'supplier_id',
+        'name',
+        'sku',
+        'barcode',
+        'unit',
+        'quantity',
+        'reorder_level',
+        'cost_price',
+        'selling_price',
+        'location',
+        'description',
+        'is_active',
     ];
 
-    public function supplier()
+    protected $casts = [
+        'quantity' => 'decimal:2',
+        'reorder_level' => 'decimal:2',
+        'cost_price' => 'decimal:2',
+        'selling_price' => 'decimal:2',
+        'is_active' => 'boolean',
+    ];
+
+    // Relationships
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(InventoryCategory::class, 'category_id');
+    }
+
+    public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
-    public function stockMovements()
+    public function movements(): HasMany
     {
-        return $this->hasMany(StockMovement::class);
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeLowStock($query)
+    {
+        return $query->whereColumn('quantity', '<=', 'reorder_level');
+    }
+
+    public function scopeOutOfStock($query)
+    {
+        return $query->where('quantity', '<=', 0);
+    }
+
+    public function scopeInStock($query)
+    {
+        return $query->where('quantity', '>', 0);
+    }
+
+    public function scopeParts($query)
+    {
+        return $query->whereHas('category', fn ($q) => $q->where('type', 'parts'));
+    }
+
+    public function scopeWashSupplies($query)
+    {
+        return $query->whereHas('category', fn ($q) => $q->where('type', 'wash_supplies'));
+    }
+
+    public function scopeSearch($query, string $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhere('barcode', 'like', "%{$search}%");
+        });
+    }
+
+    // Helpers
+    public function isLowStock(): bool
+    {
+        return $this->quantity <= $this->reorder_level;
+    }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->quantity <= 0;
+    }
+
+    public function getStockStatusAttribute(): string
+    {
+        if ($this->isOutOfStock()) {
+            return 'out_of_stock';
+        }
+        if ($this->isLowStock()) {
+            return 'low_stock';
+        }
+        return 'in_stock';
+    }
+
+    public function getStockStatusColorAttribute(): string
+    {
+        return match ($this->stock_status) {
+            'out_of_stock' => 'error',
+            'low_stock' => 'warning',
+            'in_stock' => 'success',
+            default => 'ghost',
+        };
+    }
+
+    public function getTotalValueAttribute(): float
+    {
+        return $this->quantity * $this->cost_price;
+    }
+
+    public function getProfitMarginAttribute(): float
+    {
+        if ($this->cost_price <= 0) {
+            return 0;
+        }
+        return (($this->selling_price - $this->cost_price) / $this->cost_price) * 100;
+    }
+
+    // Stock operations
+    public function addStock(float $quantity, ?int $supplierId = null, ?float $unitCost = null, ?string $notes = null): InventoryMovement
+    {
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $this->id,
+            'supplier_id' => $supplierId,
+            'movement_type' => 'purchase',
+            'quantity' => $quantity,
+            'unit_cost' => $unitCost ?? $this->cost_price,
+            'total_cost' => $quantity * ($unitCost ?? $this->cost_price),
+            'notes' => $notes,
+            'performed_by' => auth()->id(),
+        ]);
+
+        $this->increment('quantity', $quantity);
+
+        // Update cost price if different
+        if ($unitCost && $unitCost !== $this->cost_price) {
+            $this->update(['cost_price' => $unitCost]);
+        }
+
+        return $movement;
+    }
+
+    public function adjustStock(float $quantity, ?string $notes = null): InventoryMovement
+    {
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $this->id,
+            'movement_type' => 'adjustment',
+            'quantity' => $quantity,
+            'notes' => $notes,
+            'performed_by' => auth()->id(),
+        ]);
+
+        $this->increment('quantity', $quantity);
+
+        return $movement;
+    }
+
+    public function transferStock(float $quantity, int $toBranchId, ?string $notes = null): InventoryMovement
+    {
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $this->id,
+            'branch_id' => $toBranchId,
+            'movement_type' => 'transfer',
+            'quantity' => -$quantity,
+            'notes' => $notes,
+            'performed_by' => auth()->id(),
+        ]);
+
+        return $movement;
     }
 }

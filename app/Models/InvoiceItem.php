@@ -1,0 +1,53 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class InvoiceItem extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'invoice_id',
+        'item_type',
+        'description',
+        'quantity',
+        'unit_price',
+        'discount',
+        'tax',
+        'total',
+    ];
+
+    protected $casts = [
+        'quantity' => 'decimal:2',
+        'unit_price' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'total' => 'decimal:2',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($item) {
+            $subtotal = $item->quantity * $item->unit_price;
+            $item->total = $subtotal - ($item->discount ?? 0) + ($item->tax ?? 0);
+        });
+    }
+
+    // Relationships
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    // Helpers
+    public function getSubtotalAttribute(): float
+    {
+        return $this->quantity * $this->unit_price;
+    }
+}

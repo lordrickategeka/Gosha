@@ -2,64 +2,119 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vehicle extends Model
 {
-    public function vehicleItems(): HasMany
-    {
-        return $this->hasMany(VehicleItem::class);
-    }
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'customer_id',
-        'vehicle_type_id',
-        'vehicle_name',
-        'number_plate',
-        'chasis_number',
+        'registration_number',
+        'make',
+        'model',
+        'year',
         'color',
-        'job_card_id',
-        'mileage',
+        'vin',
+        'engine_number',
         'fuel_type',
-        'fuel_level',
-        'physical_condition',
-        'vin_number'
+        'transmission',
+        'mileage',
+        'notes',
     ];
 
+    protected $casts = [
+        'year' => 'integer',
+        'mileage' => 'integer',
+    ];
+
+    // Relationships
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function vehicleType(): BelongsTo
+    public function workOrders(): HasMany
     {
-        return $this->belongsTo(VehicleType::class);
+        return $this->hasMany(WorkOrder::class);
     }
 
-    public function jobCards(): HasMany
+    public function washOrders(): HasMany
     {
-        return $this->hasMany(JobCard::class);
+        return $this->hasMany(WashOrder::class);
     }
 
-    public function serviceJobs(): HasMany
+    public function appointments(): HasMany
     {
-        return $this->hasMany(JobCard::class);
+        return $this->hasMany(Appointment::class);
     }
 
-    // Find vehicle by number plate or chassis number
-    public static function findByIdentifier($numberPlate = null, $chasisNumber = null)
+    // Scopes
+    public function scopeSearch($query, string $search)
     {
-        $query = static::query();
+        return $query->where(function ($q) use ($search) {
+            $q->where('registration_number', 'like', "%{$search}%")
+              ->orWhere('make', 'like', "%{$search}%")
+              ->orWhere('model', 'like', "%{$search}%");
+        });
+    }
 
-        if ($numberPlate) {
-            $query->orWhere('number_plate', $numberPlate);
+    // Accessors
+    public function getDisplayNameAttribute(): string
+    {
+        $parts = array_filter([
+            $this->registration_number,
+            $this->make,
+            $this->model,
+            $this->year,
+        ]);
+        return implode(' - ', $parts);
+    }
+
+    public function getFullDescriptionAttribute(): string
+    {
+        $parts = array_filter([
+            $this->year,
+            $this->make,
+            $this->model,
+            $this->color ? "({$this->color})" : null,
+        ]);
+        return implode(' ', $parts);
+    }
+
+    // Helpers
+    public function lastService()
+    {
+        return $this->workOrders()
+            ->where('status', 'delivered')
+            ->latest('completed_at')
+            ->first();
+    }
+
+    public function lastWash()
+    {
+        return $this->washOrders()
+            ->where('status', 'completed')
+            ->latest('completed_at')
+            ->first();
+    }
+
+    public function serviceHistory()
+    {
+        return $this->workOrders()
+            ->where('status', 'delivered')
+            ->orderByDesc('completed_at')
+            ->get();
+    }
+
+    public function updateMileage(int $mileage): void
+    {
+        if ($mileage > ($this->mileage ?? 0)) {
+            $this->update(['mileage' => $mileage]);
         }
-
-        if ($chasisNumber) {
-            $query->orWhere('chasis_number', $chasisNumber);
-        }
-
-        return $query->first();
     }
 }
