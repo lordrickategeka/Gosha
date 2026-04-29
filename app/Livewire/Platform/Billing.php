@@ -3,42 +3,56 @@
 namespace App\Livewire\Platform;
 
 use App\Models\Vendor;
+use App\Models\VendorSubscription;
+use App\Models\VendorPlatformInvoice;
 use Livewire\Component;
 
 class Billing extends Component
 {
     public function getStatsProperty()
     {
+        $activeSubs = VendorSubscription::where('status', VendorSubscription::STATUS_ACTIVE)
+            ->with('plan')
+            ->get();
+
+        $mrr = $activeSubs->sum(fn ($s) => $s->getEffectivePrice());
+
         return [
-            'mrr' => Vendor::where('is_active', true)
-                ->where('plan', '!=', 'trial')
-                ->count() * 150000, // Simplified MRR calc
-            'trial_conversions' => Vendor::where('plan', '!=', 'trial')
-                ->whereNotNull('trial_ends_at')
-                ->count(),
-            'active_trials' => Vendor::where('plan', 'trial')
-                ->where('is_active', true)
-                ->count(),
-            'churn_risk' => Vendor::where('plan', 'trial')
-                ->where('trial_ends_at', '<', now()->addDays(3))
-                ->count(),
+            'mrr'               => $mrr,
+            'active_subscriptions' => VendorSubscription::where('status', VendorSubscription::STATUS_ACTIVE)->count(),
+            'active_trials'     => VendorSubscription::where('status', VendorSubscription::STATUS_TRIAL)
+                ->where('trial_ends_at', '>', now())->count(),
+            'past_due'          => VendorSubscription::where('status', VendorSubscription::STATUS_PAST_DUE)->count(),
+            'total_vendors'     => Vendor::where('status', '!=', 'suspended')->count(),
+            'outstanding_balance' => VendorPlatformInvoice::where('status', 'pending')
+                ->sum('balance_due'),
         ];
     }
 
     public function getVendorsByPlanProperty()
     {
-        return Vendor::selectRaw('plan, COUNT(*) as count')
-            ->where('is_active', true)
-            ->groupBy('plan')
-            ->pluck('count', 'plan');
+        return VendorSubscription::active()
+            ->join('pricing_plans', 'vendor_subscriptions.pricing_plan_id', '=', 'pricing_plans.id')
+            ->selectRaw('pricing_plans.name as plan_name, COUNT(*) as count')
+            ->groupBy('pricing_plans.name')
+            ->pluck('count', 'plan_name');
     }
 
     public function getExpiringTrialsProperty()
     {
-        return Vendor::where('plan', 'trial')
+        return VendorSubscription::where('status', VendorSubscription::STATUS_TRIAL)
             ->where('trial_ends_at', '<=', now()->addDays(7))
-            ->where('is_active', true)
+            ->where('trial_ends_at', '>', now()->subDay())
+            ->with(['vendor', 'plan'])
             ->orderBy('trial_ends_at')
+            ->get();
+    }
+
+    public function getRecentInvoicesProperty()
+    {
+        return VendorPlatformInvoice::with('vendor')
+            ->orderByDesc('created_at')
+            ->limit(10)
             ->get();
     }
 

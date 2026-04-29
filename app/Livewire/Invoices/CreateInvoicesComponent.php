@@ -76,7 +76,8 @@ class CreateInvoicesComponent extends Component
 
     public function getCustomersProperty()
     {
-        return Customer::orderBy('name')->get();
+        return Customer::where('vendor_id', auth()->user()->vendor_id)
+            ->orderBy('name')->get();
     }
 
     public function getSubtotalProperty()

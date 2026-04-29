@@ -11,6 +11,9 @@
                 <li><button wire:click="$set('tab', 'general')" class="{{ $tab === 'general' ? 'active' : '' }}">General</button></li>
                 <li><button wire:click="$set('tab', 'invoice')" class="{{ $tab === 'invoice' ? 'active' : '' }}">Invoicing</button></li>
                 <li><button wire:click="$set('tab', 'notifications')" class="{{ $tab === 'notifications' ? 'active' : '' }}">Notifications</button></li>
+                @if(auth()->user()->isPlatformUser())
+                <li><button wire:click="$set('tab', 'pricing')" class="{{ $tab === 'pricing' ? 'active' : '' }}">Pricing Plans</button></li>
+                @endif
             </ul>
         </div>
 
@@ -58,7 +61,20 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="card-actions justify-end mt-6">
+                            {{-- Closure Time --}}
+                            <div class="divider col-span-full">Business Closure</div>
+                            <div class="form-control">
+                                <label class="label cursor-pointer justify-start gap-3">
+                                    <input type="checkbox" wire:model="closureEnabled" class="toggle toggle-primary" />
+                                    <span class="label-text font-medium">Enable daily order closure time</span>
+                                </label>
+                                <p class="text-xs text-base-content/60 ml-14">Prevent new orders from being created after the specified time.</p>
+                            </div>
+                            <div class="form-control" x-data x-show="$wire.closureEnabled">
+                                <label class="label"><span class="label-text font-medium">Closure Time (24-hour)</span></label>
+                                <input type="time" wire:model="closureTime" class="input input-bordered w-40" />
+                            </div>
+                            <div class="card-actions justify-end mt-6 col-span-full">
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
                             </div>
                         </form>
@@ -93,6 +109,18 @@
                                 <button type="submit" class="btn btn-primary">Save Changes</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            @endif
+
+            @if($tab === 'pricing' && auth()->user()->isPlatformUser())
+                <div class="card bg-base-100 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-lg mb-4">Pricing Plans</h2>
+                        <p class="text-base-content/60 mb-6">Manage the platform's subscription and pricing plans for vendors.</p>
+                        <a href="{{ route('platform.pricing') }}" class="btn btn-primary">
+                            Manage Pricing Plans
+                        </a>
                     </div>
                 </div>
             @endif

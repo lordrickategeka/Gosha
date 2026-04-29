@@ -27,6 +27,34 @@
         </div>
     </div>
 
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
+                <p class="text-xs text-base-content/50 uppercase tracking-wide">Queued Today</p>
+                <p class="text-2xl font-bold text-info">{{ $this->statsTodayQueued }}</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
+                <p class="text-xs text-base-content/50 uppercase tracking-wide">In Progress</p>
+                <p class="text-2xl font-bold text-warning">{{ $this->statsInProgress }}</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
+                <p class="text-xs text-base-content/50 uppercase tracking-wide">Completed Today</p>
+                <p class="text-2xl font-bold text-success">{{ $this->statsCompletedToday }}</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body p-4">
+                <p class="text-xs text-base-content/50 uppercase tracking-wide">Bays Available</p>
+                <p class="text-2xl font-bold text-primary">{{ $this->statsAvailableBays }}</p>
+            </div>
+        </div>
+    </div>
+
     @if($view === 'queue')
         <!-- Queue View -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -90,6 +118,12 @@
                                                 <p class="text-sm text-base-content/60">
                                                     {{ ucfirst($order->wash_type) }} • {{ $order->washBay?->name ?? 'No bay' }}
                                                 </p>
+                                                @if($order->assignedAttendant)
+                                                    <p class="text-xs text-base-content/50 mt-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                        {{ $order->assignedAttendant->name }}
+                                                    </p>
+                                                @endif
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-2">
@@ -136,16 +170,12 @@
                                         </div>
 
                                         <div class="flex gap-1">
-                                            @php
-                                                $availableBay = $this->washBays->firstWhere('status', 'available');
-                                            @endphp
-
-                                            @if($availableBay)
+                                            @if($this->availableBays->isNotEmpty())
                                                 <button
-                                                    wire:click="startWash({{ $order->id }}, {{ $availableBay->id }})"
+                                                    wire:click="openAssignBayModal({{ $order->id }})"
                                                     class="btn btn-primary btn-xs flex-1"
                                                 >
-                                                    Start ({{ $availableBay->name }})
+                                                    Assign & Start
                                                 </button>
                                             @else
                                                 <button class="btn btn-disabled btn-xs flex-1" disabled>
@@ -291,5 +321,41 @@
                 </div>
             @endif
         </div>
+    @endif
+
+    <!-- Assign Bay Modal -->
+    @if($showAssignBayModal)
+    <div class="modal modal-open">
+        <div class="modal-box max-w-md">
+            <h3 class="font-bold text-lg mb-4">Assign Bay &amp; Start Wash</h3>
+
+            <div class="form-control mb-4">
+                <label class="label"><span class="label-text font-medium">Select Wash Bay *</span></label>
+                <select wire:model="selectedBayId" class="select select-bordered">
+                    <option value="">— Choose a bay —</option>
+                    @foreach($this->availableBays as $bay)
+                        <option value="{{ $bay->id }}">{{ $bay->name }} ({{ ucfirst($bay->bay_type instanceof \App\Enums\WashBayType ? $bay->bay_type->label() : $bay->bay_type) }})</option>
+                    @endforeach
+                </select>
+                @error('selectedBayId') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="form-control mb-4">
+                <label class="label"><span class="label-text font-medium">Assign Attendant <span class="text-base-content/50 font-normal">(optional)</span></span></label>
+                <select wire:model="selectedAttendantId" class="select select-bordered">
+                    <option value="">— Unassigned —</option>
+                    @foreach($this->attendants as $attendant)
+                        <option value="{{ $attendant->id }}">{{ $attendant->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="modal-action">
+                <button wire:click="closeAssignBayModal" class="btn btn-ghost">Cancel</button>
+                <button wire:click="confirmAssignAndStart" class="btn btn-primary">Start Wash</button>
+            </div>
+        </div>
+        <div class="modal-backdrop" wire:click="closeAssignBayModal"></div>
+    </div>
     @endif
 </div>

@@ -43,8 +43,8 @@ class CommissionsComponent extends Component
             ->paginate(20);
 
         $totals = [
-            'pending' => Commission::where('status', 'pending')->sum('amount'),
-            'paid_month' => Commission::where('status', 'paid')->whereMonth('paid_at', now()->month)->sum('amount'),
+            'pending' => Commission::where('status', 'pending')->sum('commission_amount'),
+            'paid_month' => Commission::where('status', 'paid')->whereMonth('paid_at', now()->month)->sum('commission_amount'),
         ];
 
         return view('livewire.commissions.commissions-component', compact('commissions', 'totals'))

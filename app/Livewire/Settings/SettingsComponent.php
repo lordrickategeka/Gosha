@@ -27,6 +27,10 @@ class SettingsComponent extends Component
     public $emailNotifications = true;
     public $smsNotifications = false;
 
+    // Closure settings
+    public $closureEnabled = false;
+    public $closureTime = '18:00';
+
     public function mount()
     {
         $vendor = auth()->user()->vendor;
@@ -44,6 +48,8 @@ class SettingsComponent extends Component
             $this->taxRate = $settings['tax_rate'] ?? 18;
             $this->emailNotifications = $settings['email_notifications'] ?? true;
             $this->smsNotifications = $settings['sms_notifications'] ?? false;
+            $this->closureEnabled = $settings['closure_enabled'] ?? false;
+            $this->closureTime = $settings['closure_time'] ?? '18:00';
         }
     }
 
@@ -66,6 +72,8 @@ class SettingsComponent extends Component
         $settings = $vendor->settings ?? [];
         $settings['currency'] = $this->currency;
         $settings['timezone'] = $this->timezone;
+        $settings['closure_enabled'] = $this->closureEnabled;
+        $settings['closure_time'] = $this->closureTime;
         $vendor->update(['settings' => $settings]);
 
         session()->flash('success', 'General settings saved.');

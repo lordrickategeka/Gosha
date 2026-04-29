@@ -177,46 +177,101 @@
                 </div>
             </div>
 
-            <!-- Billing Config Card -->
+            <!-- Subscription Plan Card -->
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body">
-                    <h2 class="card-title text-lg">Billing</h2>
-                    @if($vendor->billingConfig)
-                        <dl class="mt-2 space-y-2 text-sm">
-                            <div>
-                                <dt class="text-base-content/60">Model</dt>
-                                <dd class="font-medium">{{ ucfirst(str_replace('_', ' ', $vendor->billingConfig->billing_model)) }}</dd>
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="card-title text-lg">Subscription Plan</h2>
+                        <button wire:click="openAssignPlan" class="btn btn-primary btn-xs">
+                            {{ $vendor->activeSubscription ? 'Change Plan' : 'Assign Plan' }}
+                        </button>
+                    </div>
+
+                    @if($vendor->activeSubscription)
+                        @php $sub = $vendor->activeSubscription; @endphp
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between items-start">
+                                <span class="text-base-content/60">Plan</span>
+                                <span class="font-semibold text-right">{{ $sub->plan->name }}</span>
                             </div>
-                            @if($vendor->billingConfig->subscription_amount)
-                                <div>
-                                    <dt class="text-base-content/60">Subscription</dt>
-                                    <dd>UGX {{ number_format($vendor->billingConfig->subscription_amount) }} / {{ $vendor->billingConfig->subscription_interval }}</dd>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/60">Status</span>
+                                <span class="badge badge-sm {{ match($sub->status) {
+                                    'active' => 'badge-success',
+                                    'trial' => 'badge-warning',
+                                    'past_due' => 'badge-error',
+                                    'cancelled' => 'badge-ghost',
+                                    default => 'badge-ghost'
+                                } }}">{{ ucfirst(str_replace('_', ' ', $sub->status)) }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/60">Billing Model</span>
+                                <span>{{ ucfirst(str_replace('_', ' ', $sub->plan->billing_model)) }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-base-content/60">Effective Price</span>
+                                <span class="font-medium">{{ $sub->plan->currency }} {{ number_format($sub->getEffectivePrice()) }}</span>
+                            </div>
+                            @if($sub->discount_percent > 0)
+                                <div class="flex justify-between text-success">
+                                    <span>Discount</span>
+                                    <span>{{ $sub->discount_percent }}% — {{ $sub->discount_reason }}</span>
                                 </div>
                             @endif
-                            @if($vendor->billingConfig->transaction_fee_percent)
-                                <div>
-                                    <dt class="text-base-content/60">Transaction Fee</dt>
-                                    <dd>{{ $vendor->billingConfig->transaction_fee_percent }}%{{ $vendor->billingConfig->transaction_fee_flat ? ' + UGX ' . number_format($vendor->billingConfig->transaction_fee_flat) : '' }}</dd>
+                            @if($sub->isTrialing())
+                                <div class="flex justify-between">
+                                    <span class="text-base-content/60">Trial Ends</span>
+                                    <span class="{{ $sub->trial_ends_at->diffInDays(now()) <= 3 ? 'text-error' : '' }}">{{ $sub->trial_ends_at->format('d M Y') }}</span>
                                 </div>
                             @endif
-                            @if($vendor->billingConfig->commission_percent)
-                                <div>
-                                    <dt class="text-base-content/60">Commission</dt>
-                                    <dd>{{ $vendor->billingConfig->commission_percent }}%</dd>
+                            @if($sub->next_billing_date)
+                                <div class="flex justify-between">
+                                    <span class="text-base-content/60">Next Billing</span>
+                                    <span>{{ $sub->next_billing_date->format('d M Y') }}</span>
                                 </div>
                             @endif
-                            @if($vendor->billingConfig->next_billing_date)
-                                <div>
-                                    <dt class="text-base-content/60">Next Billing</dt>
-                                    <dd>{{ $vendor->billingConfig->next_billing_date->format('d M Y') }}</dd>
+                            @if(!$sub->isCancelled())
+                                <div class="pt-2 border-t border-base-200">
+                                    <button wire:click="cancelSubscription"
+                                        wire:confirm="Cancel this vendor's subscription immediately?"
+                                        class="btn btn-error btn-outline btn-xs w-full">
+                                        Cancel Subscription
+                                    </button>
                                 </div>
                             @endif
-                        </dl>
+                        </div>
                     @else
-                        <p class="text-sm text-base-content/50 mt-2">No billing configuration set.</p>
+                        <p class="text-sm text-base-content/50">No active subscription. Assign a plan to start billing.</p>
                     @endif
                 </div>
             </div>
+
+            <!-- Legacy Billing Config (fallback display) -->
+            @if($vendor->billingConfig && !$vendor->activeSubscription)
+            <div class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-lg">Legacy Billing Config</h2>
+                    <dl class="mt-2 space-y-2 text-sm">
+                        <div>
+                            <dt class="text-base-content/60">Model</dt>
+                            <dd class="font-medium">{{ ucfirst(str_replace('_', ' ', $vendor->billingConfig->billing_model)) }}</dd>
+                        </div>
+                        @if($vendor->billingConfig->subscription_amount)
+                            <div>
+                                <dt class="text-base-content/60">Subscription</dt>
+                                <dd>UGX {{ number_format($vendor->billingConfig->subscription_amount) }} / {{ $vendor->billingConfig->subscription_interval }}</dd>
+                            </div>
+                        @endif
+                        @if($vendor->billingConfig->commission_percent)
+                            <div>
+                                <dt class="text-base-content/60">Commission</dt>
+                                <dd>{{ $vendor->billingConfig->commission_percent }}%</dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+            @endif
 
             <!-- Quick Stats -->
             <div class="card bg-base-100 shadow-sm">
@@ -240,4 +295,66 @@
             </div>
         </div>
     </div>
+
+    <!-- Assign Plan Modal -->
+    @if($showAssignPlanModal)
+    <div class="modal modal-open">
+        <div class="modal-box max-w-lg">
+            <h3 class="font-bold text-lg mb-4">Assign Pricing Plan — {{ $vendor->name }}</h3>
+
+            <div class="space-y-4">
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-medium">Pricing Plan</span></label>
+                    <select wire:model="selectedPlanId" class="select select-bordered">
+                        <option value="">Select a plan...</option>
+                        @foreach($this->plans as $plan)
+                            <option value="{{ $plan->id }}">
+                                {{ $plan->name }}
+                                ({{ ucfirst($plan->billing_model) }} — {{ $plan->currency }} {{ number_format($plan->base_price) }}/{{ $plan->billing_cycle }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('selectedPlanId') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Custom Price Override</span>
+                        <span class="label-text-alt text-base-content/50">Leave blank to use plan default</span>
+                    </label>
+                    <input type="number" wire:model="customPrice" class="input input-bordered" placeholder="e.g. 90000" min="0" step="1000" />
+                    @error('customPrice') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text font-medium">Discount %</span></label>
+                        <input type="number" wire:model="discountPercent" class="input input-bordered" placeholder="0" min="0" max="100" step="1" />
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text font-medium">Discount Reason</span></label>
+                        <input type="text" wire:model="discountReason" class="input input-bordered" placeholder="e.g. Early adopter" />
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label cursor-pointer gap-3 justify-start">
+                        <input type="checkbox" wire:model="waiveSetupFee" class="checkbox checkbox-sm" />
+                        <span class="label-text">Waive setup fee</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <button wire:click="closeAssignPlan" class="btn btn-ghost">Cancel</button>
+                <button wire:click="assignPlan" wire:loading.attr="disabled" wire:target="assignPlan"
+                    class="btn btn-primary">
+                    <span wire:loading wire:target="assignPlan" class="loading loading-spinner loading-sm"></span>
+                    Assign Plan
+                </button>
+            </div>
+        </div>
+        <div class="modal-backdrop" wire:click="closeAssignPlan"></div>
+    </div>
+    @endif
 </div>

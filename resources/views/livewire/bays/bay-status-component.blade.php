@@ -1,7 +1,27 @@
 <div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold">Bay Status</h1>
-        <p class="text-base-content/60">Real-time view of all service and wash bays</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">Bay Status</h1>
+            <p class="text-base-content/60">Real-time view of all service and wash bays</p>
+        </div>
+        <div class="flex gap-2">
+            @can('view wash orders')
+            <a href="{{ route('wash-orders.index') }}" class="btn btn-ghost btn-sm gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                </svg>
+                View Queue
+            </a>
+            @endcan
+            @can('create wash orders')
+            <a href="{{ route('wash-orders.create') }}" class="btn btn-primary btn-sm gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                New Wash Order
+            </a>
+            @endcan
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -112,14 +132,24 @@
                     </svg>
                     Wash Bays ({{ $this->washBays->count() }})
                 </h2>
-                @can('manage bays')
-                <button wire:click="createWashBay" class="btn btn-info btn-sm gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Bay
-                </button>
-                @endcan
+                <div class="flex gap-2">
+                    @can('create wash orders')
+                    <a href="{{ route('wash-orders.create') }}" class="btn btn-primary btn-sm gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        New Wash Order
+                    </a>
+                    @endcan
+                    @can('manage bays')
+                    <button wire:click="createWashBay" class="btn btn-info btn-sm gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Bay
+                    </button>
+                    @endcan
+                </div>
             </div>
 
             @if($this->washBays->count() === 0)
@@ -138,16 +168,21 @@
 
             <div class="space-y-4">
                 @foreach($this->washBays as $bay)
-                    <div class="card bg-base-100 shadow-sm border-l-4 {{ $bay->status === 'available' ? 'border-success' : ($bay->status === 'occupied' ? 'border-info' : 'border-error') }}">
+                    @php
+                        $statusValue = $bay->status instanceof \App\Enums\WashBayStatus ? $bay->status->value : $bay->status;
+                        $statusLabel = $bay->status instanceof \App\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status);
+                        $typeLabel   = $bay->bay_type instanceof \App\Enums\WashBayType   ? $bay->bay_type->label()   : ucfirst(str_replace('_', ' ', $bay->bay_type));
+                    @endphp
+                    <div class="card bg-base-100 shadow-sm border-l-4 {{ $statusValue === 'available' ? 'border-success' : ($statusValue === 'occupied' ? 'border-info' : 'border-error') }}">
                         <div class="card-body p-4">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h3 class="font-bold">{{ $bay->name }}</h3>
                                     <div class="flex items-center gap-2 mt-1">
-                                        <span class="badge badge-{{ $bay->status === 'available' ? 'success' : ($bay->status === 'occupied' ? 'info' : 'error') }} badge-sm">
-                                            {{ ucfirst($bay->status) }}
+                                        <span class="badge badge-{{ $statusValue === 'available' ? 'success' : ($statusValue === 'occupied' ? 'info' : 'error') }} badge-sm">
+                                            {{ $statusLabel }}
                                         </span>
-                                        <span class="text-xs text-base-content/50">{{ ucfirst($bay->bay_type) }}</span>
+                                        <span class="text-xs text-base-content/50">{{ $typeLabel }}</span>
                                     </div>
                                 </div>
 
@@ -156,10 +191,10 @@
                                     <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
                                         <li><button wire:click="editWashBay({{ $bay->id }})">Edit</button></li>
-                                        @if($bay->status !== 'available')
+                                        @if($statusValue !== 'available')
                                             <li><button wire:click="markWashBayAvailable({{ $bay->id }})">Mark Available</button></li>
                                         @endif
-                                        @if($bay->status !== 'maintenance')
+                                        @if($statusValue !== 'maintenance')
                                             <li><button wire:click="markWashBayMaintenance({{ $bay->id }})">Set Maintenance</button></li>
                                         @endif
                                         @if(!$bay->isOccupied())
@@ -180,12 +215,34 @@
                                         </div>
                                         <a href="{{ route('wash-orders.show', $bay->currentWashOrder) }}" class="btn btn-info btn-sm">View</a>
                                     </div>
+                                    @if($bay->currentWashOrder->assignedAttendant)
+                                        <div class="flex items-center gap-2 mt-2 text-sm">
+                                            <div class="avatar placeholder">
+                                                <div class="bg-neutral text-neutral-content rounded-full w-6">
+                                                    <span class="text-xs">{{ substr($bay->currentWashOrder->assignedAttendant->name, 0, 1) }}</span>
+                                                </div>
+                                            </div>
+                                            <span>{{ $bay->currentWashOrder->assignedAttendant->name }}</span>
+                                        </div>
+                                    @endif
                                     @if($bay->currentWashOrder->started_at)
                                         <p class="text-xs text-base-content/50 mt-2">Started {{ $bay->currentWashOrder->started_at->diffForHumans() }}</p>
                                     @endif
                                 </div>
                             @else
-                                <p class="mt-3 text-base-content/50 text-sm">Ready for next vehicle</p>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <p class="text-base-content/50 text-sm">Ready for next vehicle</p>
+                                    @can('create wash orders')
+                                    @if($statusValue === 'available')
+                                    <a href="{{ route('wash-orders.create') }}" class="btn btn-primary btn-xs gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        New Wash
+                                    </a>
+                                    @endif
+                                    @endcan
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -247,9 +304,12 @@
                 <div class="form-control">
                     <label class="label"><span class="label-text">Bay Type *</span></label>
                     <select wire:model="washBayType" class="select select-bordered">
+                        <option value="basic">Basic</option>
                         <option value="standard">Standard</option>
                         <option value="premium">Premium</option>
+                        <option value="full_service">Full Service</option>
                         <option value="detailing">Detailing</option>
+                        <option value="automated">Automated</option>
                     </select>
                     @error('washBayType') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
                 </div>

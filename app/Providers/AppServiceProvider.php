@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\WashBay;
+use App\Models\WashOrder;
+use App\Observers\WashOrderObserver;
+use App\Policies\WashBayPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
@@ -27,5 +32,11 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Blade::component('layouts.dash-layout', 'layouts.dash-layout');
 
         // Livewire::component('staff.create-staff-component', CreateStaffComponent::class);
+
+        // Observers
+        WashOrder::observe(WashOrderObserver::class);
+
+        // Policies
+        Gate::policy(WashBay::class, WashBayPolicy::class);
     }
 }

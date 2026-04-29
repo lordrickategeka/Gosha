@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\WashOrderPriority;
+use App\Enums\WashOrderStatus;
 use App\Traits\BelongsToBranch;
 use App\Traits\GeneratesOrderNumber;
 use App\Traits\HasAuditLog;
@@ -40,9 +42,11 @@ class WashOrder extends Model
 
     protected $casts = [
         'queue_position' => 'integer',
-        'queued_at' => 'datetime',
-        'started_at' => 'datetime',
-        'completed_at' => 'datetime',
+        'queued_at'      => 'datetime',
+        'started_at'     => 'datetime',
+        'completed_at'   => 'datetime',
+        'status'         => WashOrderStatus::class,
+        'priority'       => WashOrderPriority::class,
     ];
 
     protected static function boot()
@@ -50,7 +54,11 @@ class WashOrder extends Model
         parent::boot();
 
         static::creating(function ($washOrder) {
-            if ($washOrder->status === 'queued' && !$washOrder->queue_position) {
+            $status = $washOrder->status instanceof WashOrderStatus
+                ? $washOrder->status
+                : WashOrderStatus::tryFrom($washOrder->status);
+
+            if ($status === WashOrderStatus::Queued && !$washOrder->queue_position) {
                 $washOrder->queue_position = static::getNextQueuePosition($washOrder->branch_id);
             }
         });
@@ -106,22 +114,22 @@ class WashOrder extends Model
     // Scopes
     public function scopeQueued($query)
     {
-        return $query->where('status', 'queued');
+        return $query->where('status', WashOrderStatus::Queued);
     }
 
     public function scopeInProgress($query)
     {
-        return $query->where('status', 'in_progress');
+        return $query->where('status', WashOrderStatus::InProgress);
     }
 
     public function scopeCompleted($query)
     {
-        return $query->where('status', 'completed');
+        return $query->where('status', WashOrderStatus::Completed);
     }
 
     public function scopeActive($query)
     {
-        return $query->whereIn('status', ['queued', 'in_progress']);
+        return $query->whereIn('status', [WashOrderStatus::Queued->value, WashOrderStatus::InProgress->value]);
     }
 
     public function scopeCombo($query)
@@ -159,17 +167,17 @@ class WashOrder extends Model
     // Helpers
     public function isQueued(): bool
     {
-        return $this->status === 'queued';
+        return $this->status === WashOrderStatus::Queued;
     }
 
     public function isInProgress(): bool
     {
-        return $this->status === 'in_progress';
+        return $this->status === WashOrderStatus::InProgress;
     }
 
     public function isCompleted(): bool
     {
-        return $this->status === 'completed';
+        return $this->status === WashOrderStatus::Completed;
     }
 
     public function isCombo(): bool
@@ -179,60 +187,66 @@ class WashOrder extends Model
 
     public function canStart(): bool
     {
-        return $this->status === 'queued';
+        return $this->status === WashOrderStatus::Queued;
     }
 
     public function canComplete(): bool
     {
-        return $this->status === 'in_progress';
+        return $this->status === WashOrderStatus::InProgress;
     }
 
     public function start(?WashBay $bay = null): void
     {
-        $updateData = [
-            'status' => 'in_progress',
-            'started_at' => now(),
-        ];
+        \Illuminate\Support\Facades\DB::transaction(function () use ($bay) {
+            $updateData = [
+                'status'     => WashOrderStatus::InProgress,
+                'started_at' => now(),
+            ];
 
-        if ($bay) {
-            $updateData['wash_bay_id'] = $bay->id;
-            $bay->markAsOccupied();
-        }
+            if ($bay) {
+                $updateData['wash_bay_id'] = $bay->id;
+                $bay->markAsOccupied();
+            }
 
-        $this->update($updateData);
-        $this->reorderQueue();
+            $this->update($updateData);
+            $this->reorderQueue();
+        });
     }
 
     public function complete(): void
     {
-        $this->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-            'queue_position' => null,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            $this->update([
+                'status'         => WashOrderStatus::Completed,
+                'completed_at'   => now(),
+                'queue_position' => null,
+            ]);
 
-        if ($this->washBay) {
-            $this->washBay->markAsAvailable();
-        }
+            if ($this->washBay) {
+                $this->washBay->markAsAvailable();
+            }
+        });
     }
 
     public function cancel(): void
     {
-        $this->update([
-            'status' => 'cancelled',
-            'queue_position' => null,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            $this->update([
+                'status'         => WashOrderStatus::Cancelled,
+                'queue_position' => null,
+            ]);
 
-        if ($this->washBay) {
-            $this->washBay->markAsAvailable();
-        }
+            if ($this->washBay) {
+                $this->washBay->markAsAvailable();
+            }
 
-        $this->reorderQueue();
+            $this->reorderQueue();
+        });
     }
 
     public function prioritize(): void
     {
-        $this->update(['priority' => 'priority']);
+        $this->update(['priority' => WashOrderPriority::Priority]);
     }
 
     protected function reorderQueue(): void
@@ -275,13 +289,11 @@ class WashOrder extends Model
 
     public function getStatusColorAttribute(): string
     {
-        return match ($this->status) {
-            'queued' => 'info',
-            'in_progress' => 'warning',
-            'completed' => 'success',
-            'cancelled' => 'error',
-            default => 'ghost',
-        };
+        if ($this->status instanceof WashOrderStatus) {
+            return $this->status->color();
+        }
+
+        return 'ghost';
     }
 
     public function getSourceBadgeAttribute(): string

@@ -61,9 +61,13 @@ class CreateVehiclesComponent extends Component
     public function getCustomersProperty()
     {
         if (strlen($this->customerSearch) < 2) return collect();
-        return Customer::where('name', 'like', "%{$this->customerSearch}%")
-            ->orWhere('phone', 'like', "%{$this->customerSearch}%")
-            ->limit(10)->get();
+        $vendorId = auth()->user()->vendor_id;
+        return Customer::where('vendor_id', $vendorId)
+            ->where(function ($q) {
+                $q->where('name', 'like', "%{$this->customerSearch}%")
+                  ->orWhere('phone', 'like', "%{$this->customerSearch}%");
+            })
+            ->orderBy('name')->limit(10)->get();
     }
 
     public function save()

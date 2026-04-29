@@ -35,7 +35,17 @@ class CreateAppointmentsComponent extends Component
 
     public function updatedCustomerSearch()
     {
-        $this->showCustomerDropdown = strlen($this->customerSearch) >= 2;
+        $this->showCustomerDropdown = true;
+    }
+
+    public function openCustomerDropdown()
+    {
+        $this->showCustomerDropdown = true;
+    }
+
+    public function closeCustomerDropdown()
+    {
+        $this->showCustomerDropdown = false;
     }
 
     public function selectCustomer($id)
@@ -50,10 +60,17 @@ class CreateAppointmentsComponent extends Component
 
     public function getCustomersProperty()
     {
-        if (strlen($this->customerSearch) < 2) return collect();
-        return Customer::where('name', 'like', "%{$this->customerSearch}%")
-            ->orWhere('phone', 'like', "%{$this->customerSearch}%")
-            ->limit(10)->get();
+        $vendorId = auth()->user()->vendor_id;
+        $query = Customer::where('vendor_id', $vendorId);
+
+        if (strlen($this->customerSearch) >= 2) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', "%{$this->customerSearch}%")
+                  ->orWhere('phone', 'like', "%{$this->customerSearch}%");
+            });
+        }
+
+        return $query->orderBy('name')->limit(50)->get();
     }
 
     public function getVehiclesProperty()

@@ -152,6 +152,10 @@ class RolesAndPermissionsSeeder extends Seeder
 
             // Audit Logs
             'view audit logs',
+
+            // Pricing / Quoting
+            'price work orders',
+            'view calendar',
         ];
 
         // Create all permissions
@@ -442,6 +446,37 @@ class RolesAndPermissionsSeeder extends Seeder
             // Expenses (for purchases)
             'view expenses',
             'create expenses',
+        ]);
+
+        // Jobcarder - captures job details and items (no pricing)
+        $jobcarder = Role::create(['name' => 'jobcarder']);
+        $jobcarder->givePermissionTo([
+            'view dashboard',
+            'view customers',
+            'create customers',
+            'view vehicles',
+            'create vehicles',
+            'view work orders',
+            'create work orders',
+            'edit work orders',
+            'change work order status',
+            'view inventory',
+            'view service templates',
+        ]);
+
+        // Quoter - sets prices on items captured by the jobcarder
+        $quoter = Role::create(['name' => 'quoter']);
+        $quoter->givePermissionTo([
+            'view dashboard',
+            'view customers',
+            'view vehicles',
+            'view work orders',
+            'edit work orders',
+            'price work orders',
+            'view invoices',
+            'create invoices',
+            'view service templates',
+            'view inventory',
         ]);
     }
 }

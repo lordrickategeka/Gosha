@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\WashBayStatus;
+use App\Enums\WashBayType;
 use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +23,11 @@ class WashBay extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'status'   => WashBayStatus::class,
+        'bay_type' => WashBayType::class,
+    ];
+
     public function washOrders(): HasMany
     {
         return $this->hasMany(WashOrder::class);
@@ -36,12 +43,12 @@ class WashBay extends Model
     // Scopes
     public function scopeAvailable($query)
     {
-        return $query->where('status', 'available');
+        return $query->where('status', WashBayStatus::Available);
     }
 
     public function scopeOccupied($query)
     {
-        return $query->where('status', 'occupied');
+        return $query->where('status', WashBayStatus::Occupied);
     }
 
     public function scopeOfType($query, string $type)
@@ -52,26 +59,26 @@ class WashBay extends Model
     // Helpers
     public function isAvailable(): bool
     {
-        return $this->status === 'available';
+        return $this->status === WashBayStatus::Available;
     }
 
     public function isOccupied(): bool
     {
-        return $this->status === 'occupied';
+        return $this->status === WashBayStatus::Occupied;
     }
 
     public function markAsOccupied(): void
     {
-        $this->update(['status' => 'occupied']);
+        $this->update(['status' => WashBayStatus::Occupied]);
     }
 
     public function markAsAvailable(): void
     {
-        $this->update(['status' => 'available']);
+        $this->update(['status' => WashBayStatus::Available]);
     }
 
     public function markAsMaintenance(): void
     {
-        $this->update(['status' => 'maintenance']);
+        $this->update(['status' => WashBayStatus::Maintenance]);
     }
 }

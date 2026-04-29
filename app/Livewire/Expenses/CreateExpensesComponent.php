@@ -24,17 +24,28 @@ class CreateExpensesComponent extends Component
         'payment_method' => 'required|in:cash,mobile_money,bank_transfer,card',
     ];
 
+    public $branchId;
+
     public function mount()
     {
+        $this->branchId = session('current_branch_id')
+            ?? auth()->user()?->primaryBranch()?->id
+            ?? auth()->user()?->branches()->first()?->id;
+
         $this->expense_date = today()->format('Y-m-d');
     }
 
     public function save()
     {
+        if (!$this->branchId) {
+            session()->flash('error', 'No active branch selected. Please refresh the page or switch branches.');
+            return;
+        }
+
         $this->validate();
 
         Expense::create([
-            'branch_id' => session('current_branch_id'),
+            'branch_id' => $this->branchId,
             'category_id' => $this->category_id,
             'recorded_by' => auth()->id(),
             'description' => $this->description,

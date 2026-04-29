@@ -136,7 +136,45 @@
             <!-- Job Items -->
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body">
-                    <h3 class="card-title text-lg mb-4">Job Items</h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="card-title text-lg">Job Items</h3>
+                        @can('price work orders')
+                            @if(in_array($workOrder->status, ['open', 'quoted']))
+                                <button wire:click="$toggle('showQuotingPanel')" class="btn btn-outline btn-sm">
+                                    {{ $showQuotingPanel ? 'Cancel' : 'Set Prices (Quoter)' }}
+                                </button>
+                            @endif
+                        @endcan
+                    </div>
+
+                    {{-- Quoter pricing panel --}}
+                    @if($showQuotingPanel)
+                        <div class="bg-warning/10 border border-warning rounded-lg p-4 mb-4">
+                            <h4 class="font-semibold text-warning mb-3">Set Item Prices</h4>
+                            <div class="space-y-3">
+                                @foreach($workOrder->items as $item)
+                                    <div class="flex items-center gap-3">
+                                        <span class="badge badge-sm badge-{{ $item->item_type === 'labor' ? 'primary' : 'secondary' }}">{{ ucfirst($item->item_type) }}</span>
+                                        <span class="flex-1 text-sm">{{ $item->description }} <span class="text-base-content/50">(qty: {{ $item->quantity }})</span></span>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" wire:model="quotingItemPrices.{{ $item->id }}.unit_price"
+                                                placeholder="Unit price" step="1" min="0"
+                                                class="input input-bordered input-sm w-36" />
+                                            <input type="number" wire:model="quotingItemPrices.{{ $item->id }}.discount"
+                                                placeholder="Discount" step="1" min="0"
+                                                class="input input-bordered input-sm w-28" />
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="flex justify-end mt-4">
+                                <button wire:click="saveQuote" class="btn btn-warning btn-sm" wire:loading.attr="disabled">
+                                    <span wire:loading.remove wire:target="saveQuote">Save Quote</span>
+                                    <span wire:loading wire:target="saveQuote" class="loading loading-spinner loading-xs"></span>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="overflow-x-auto">
                         <table class="table">
@@ -157,9 +195,27 @@
                                                 {{ ucfirst($item->item_type) }}
                                             </span>
                                         </td>
-                                        <td>{{ $item->description }}</td>
+                                        <td>
+                                            {{ $item->description }}
+                                            {{-- Item images --}}
+                                            @if($item->images->count())
+                                                <div class="flex gap-1 mt-1 flex-wrap">
+                                                    @foreach($item->images as $img)
+                                                        <a href="{{ $img->url }}" target="_blank">
+                                                            <img src="{{ $img->url }}" class="w-12 h-12 rounded object-cover border border-base-300" alt="item image" />
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="text-right">{{ $item->quantity }}</td>
-                                        <td class="text-right">UGX {{ number_format($item->unit_price) }}</td>
+                                        <td class="text-right">
+                                            @if($item->unit_price > 0)
+                                                UGX {{ number_format($item->unit_price) }}
+                                            @else
+                                                <span class="badge badge-warning badge-sm">Unpriced</span>
+                                            @endif
+                                        </td>
                                         <td class="text-right font-medium">UGX {{ number_format($item->total) }}</td>
                                     </tr>
                                 @endforeach

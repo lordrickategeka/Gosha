@@ -179,7 +179,7 @@ class WorkOrder extends Model
 
     public function canStart(): bool
     {
-        return $this->status === 'open';
+        return in_array($this->status, ['open', 'quoted']);
     }
 
     public function canComplete(): bool
@@ -283,6 +283,7 @@ class WorkOrder extends Model
     {
         return match ($this->status) {
             'open' => 'info',
+            'quoted' => 'accent',
             'in_progress' => 'warning',
             'quality_check' => 'secondary',
             'ready' => 'success',

@@ -42,6 +42,27 @@ class CreateWashOrdersComponent extends Component
         $this->showCustomerDropdown = strlen($this->customerSearch) >= 2;
     }
 
+    public function showNewCustomerForm()
+    {
+        $this->showNewCustomerForm = true;
+        $this->showCustomerDropdown = false;
+    }
+
+    public function hideNewCustomerForm()
+    {
+        $this->showNewCustomerForm = false;
+    }
+
+    public function showNewVehicleForm()
+    {
+        $this->showNewVehicleForm = true;
+    }
+
+    public function hideNewVehicleForm()
+    {
+        $this->showNewVehicleForm = false;
+    }
+
     public function selectCustomer($customerId)
     {
         $customer = Customer::find($customerId);
@@ -97,10 +118,10 @@ class CreateWashOrdersComponent extends Component
             if ($package) {
                 $this->wash_type = $package->wash_type;
                 $this->items = [];
-                foreach ($package->services as $service) {
+                foreach ($package->includes ?? [] as $item) {
                     $this->items[] = [
-                        'description' => $service['name'],
-                        'price' => $service['price'] ?? 0,
+                        'description' => is_array($item) ? ($item['name'] ?? $item['description'] ?? $item) : $item,
+                        'price' => is_array($item) ? ($item['price'] ?? 0) : 0,
                     ];
                 }
             }
@@ -121,9 +142,13 @@ class CreateWashOrdersComponent extends Component
     public function getCustomersProperty()
     {
         if (strlen($this->customerSearch) < 2) return collect();
-        return Customer::where('name', 'like', "%{$this->customerSearch}%")
-            ->orWhere('phone', 'like', "%{$this->customerSearch}%")
-            ->limit(10)->get();
+        $vendorId = auth()->user()->vendor_id;
+        return Customer::where('vendor_id', $vendorId)
+            ->where(function ($q) {
+                $q->where('name', 'like', "%{$this->customerSearch}%")
+                  ->orWhere('phone', 'like', "%{$this->customerSearch}%");
+            })
+            ->orderBy('name')->limit(10)->get();
     }
 
     public function getVehiclesProperty()
@@ -144,6 +169,11 @@ class CreateWashOrdersComponent extends Component
 
     public function save()
     {
+        if (!session('current_branch_id')) {
+            session()->flash('error', 'No active branch selected. Please refresh the page or switch branches.');
+            return;
+        }
+
         $this->validate();
 
         $washOrder = WashOrder::create([
@@ -157,7 +187,7 @@ class CreateWashOrdersComponent extends Component
             'status' => 'queued',
             'priority' => $this->priority,
             'customer_notes' => $this->customer_notes,
-            'queue_position' => WashOrder::getNextQueuePosition(session('current_branch_id')),
+            'queue_position' => WashOrder::getNextQueuePosition((int) session('current_branch_id')),
             'queued_at' => now(),
         ]);
 

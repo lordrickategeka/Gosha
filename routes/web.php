@@ -19,7 +19,10 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('login', \App\Livewire\Auth\Login::class)->name('login');
     Route::get('register', \App\Livewire\Auth\VendorRegistration::class)->name('register');
-});
+
+
+    });
+
 
 Route::middleware(['auth'])->group(function () {
     // Logout
@@ -62,7 +65,7 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('can:edit work orders');
     });
 
-    // Wash Orders
+    // Wash Orders ==> washing bays.
     Route::prefix('wash-orders')->name('wash-orders.')->group(function () {
         Route::get('/', \App\Livewire\WashOrders\WashOrdersComponent::class)->name('index');
         Route::get('/create', \App\Livewire\WashOrders\CreateWashOrdersComponent::class)->name('create')
@@ -123,6 +126,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', \App\Livewire\Appointments\CreateAppointmentsComponent::class)->name('create')
             ->middleware('can:create appointments');
     });
+
+    // // Calendar
+    Route::get('/calendar', \App\Livewire\Calendar\CalendarComponent::class)
+        ->name('calendar');
 
     // // Bay Status
     Route::get('/bays', \App\Livewire\Bays\BayStatusComponent::class)->name('bays.status');
@@ -187,4 +194,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendors/{vendor}', \App\Livewire\Platform\Vendors\Show::class)->name('vendors.show');
         Route::get('/billing', \App\Livewire\Platform\Billing::class)->name('billing');
     });
+
+    // new vendor -platform -pricing
+    Route::get('/platform-pricing', \App\Livewire\Platform\PlansComponent::class)->name('platform.pricing');
+
 });

@@ -11,7 +11,9 @@ class ShowWorkOrdersComponent extends Component
 {
     public WorkOrder $workOrder;
 
-    public $showAssignModal = false;
+    // Quoter pricing
+    public $quotingItemPrices = []; // [item_id => ['unit_price' => ..., 'discount' => ...]]
+    public $showQuotingPanel = false;
     public $selectedBay = '';
     public $selectedTechnician = '';
     public $technicianNotes = '';
@@ -25,12 +27,21 @@ class ShowWorkOrdersComponent extends Component
             'assignedTechnician',
             'createdBy',
             'items.inventoryItem',
+            'items.images',
             'invoice.payments',
             'washOrder',
         ]);
 
         $this->selectedBay = $workOrder->service_bay_id ?? '';
         $this->selectedTechnician = $workOrder->assigned_technician_id ?? '';
+
+        // Pre-fill quoter pricing fields from existing item prices
+        foreach ($workOrder->items as $item) {
+            $this->quotingItemPrices[$item->id] = [
+                'unit_price' => $item->unit_price,
+                'discount'   => $item->discount,
+            ];
+        }
     }
 
     public function startWork()
@@ -119,6 +130,36 @@ class ShowWorkOrdersComponent extends Component
             ->where('is_active', true)
             ->whereHas('branches', fn($q) => $q->where('branch_id', $this->workOrder->branch_id))
             ->get();
+    }
+
+    // ─── Quoter actions ──────────────────────────────────────────────────────
+
+    public function saveQuote()
+    {
+        $this->authorize('price work orders');
+
+        $this->validate([
+            'quotingItemPrices.*.unit_price' => 'required|numeric|min:0',
+            'quotingItemPrices.*.discount'   => 'nullable|numeric|min:0',
+        ]);
+
+        foreach ($this->workOrder->items as $item) {
+            if (!isset($this->quotingItemPrices[$item->id])) continue;
+
+            $unitPrice = $this->quotingItemPrices[$item->id]['unit_price'] ?? 0;
+            $discount  = $this->quotingItemPrices[$item->id]['discount'] ?? 0;
+
+            $item->update([
+                'unit_price' => $unitPrice,
+                'discount'   => $discount,
+                'total'      => ($item->quantity * $unitPrice) - $discount,
+            ]);
+        }
+
+        $this->workOrder->update(['status' => 'quoted']);
+        $this->workOrder->refresh();
+        $this->showQuotingPanel = false;
+        session()->flash('success', 'Quote saved. Work order is now quoted.');
     }
 
     public function render()

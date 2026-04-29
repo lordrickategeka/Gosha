@@ -156,12 +156,12 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     @foreach($this->washBays->flatten() as $bay)
-                        <div class="p-3 rounded-lg border {{ $bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5') }}">
+                        <div class="p-3 rounded-lg border {{ $bay->status === \App\Enums\WashBayStatus::Available ? 'border-success bg-success/5' : ($bay->status === \App\Enums\WashBayStatus::Occupied ? 'border-warning bg-warning/5' : 'border-error bg-error/5') }}">
                             <p class="font-medium text-sm">{{ $bay->name }}</p>
                             @if($bay->currentWashOrder)
                                 <p class="text-xs text-base-content/60 truncate">{{ $bay->currentWashOrder->vehicle?->registration_number }}</p>
                             @else
-                                <p class="text-xs text-base-content/40">{{ ucfirst($bay->status) }}</p>
+                                <p class="text-xs text-base-content/40">{{ $bay->status->label() }}</p>
                             @endif
                         </div>
                     @endforeach

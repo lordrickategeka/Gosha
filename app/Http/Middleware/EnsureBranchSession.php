@@ -11,11 +11,14 @@ class EnsureBranchSession
     {
         if (auth()->check() && !session('current_branch_id')) {
             $user = auth()->user();
+            $branch = null;
+
             if ($user->vendor_id) {
                 $branch = $user->primaryBranch() ?? $user->branches()->first();
-                if ($branch) {
-                    session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
-                }
+            }
+
+            if ($branch) {
+                session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
             }
         }
 

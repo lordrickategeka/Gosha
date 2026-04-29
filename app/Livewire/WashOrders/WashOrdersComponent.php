@@ -17,15 +17,72 @@ class WashOrdersComponent extends Component
     public $source = '';
     public $view = 'queue'; // queue, list
 
+    // Assign-bay modal state
+    public $showAssignBayModal = false;
+    public $assigningOrderId = null;
+    public $selectedBayId = '';
+    public $selectedAttendantId = '';
+
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
-        'view' => ['except' => 'queue'],
+        'view'   => ['except' => 'queue'],
     ];
 
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    // Open the assign-bay chooser for a queued order
+    public function openAssignBayModal(WashOrder $washOrder)
+    {
+        $this->authorize('change wash order status');
+        $this->assigningOrderId   = $washOrder->id;
+        $this->selectedBayId      = '';
+        $this->selectedAttendantId = '';
+        $this->showAssignBayModal = true;
+    }
+
+    public function closeAssignBayModal()
+    {
+        $this->showAssignBayModal  = false;
+        $this->assigningOrderId    = null;
+        $this->selectedBayId       = '';
+        $this->selectedAttendantId = '';
+    }
+
+    // Confirm the bay selection and start the wash
+    public function confirmAssignAndStart()
+    {
+        $this->authorize('change wash order status');
+
+        $this->validate([
+            'selectedBayId' => 'required|exists:wash_bays,id',
+        ]);
+
+        $washOrder = WashOrder::findOrFail($this->assigningOrderId);
+
+        if (! $washOrder->canStart()) {
+            session()->flash('error', 'This order cannot be started at this time.');
+            $this->closeAssignBayModal();
+            return;
+        }
+
+        $bay = WashBay::findOrFail($this->selectedBayId);
+
+        if (! $bay->isAvailable()) {
+            $this->addError('selectedBayId', 'Selected bay is no longer available.');
+            return;
+        }
+
+        if ($this->selectedAttendantId) {
+            $washOrder->update(['assigned_attendant_id' => $this->selectedAttendantId]);
+        }
+
+        $washOrder->start($bay);
+        session()->flash('success', 'Wash started on ' . $bay->name . '.');
+        $this->closeAssignBayModal();
     }
 
     public function startWash(WashOrder $washOrder, $bayId = null)
@@ -70,6 +127,21 @@ class WashOrdersComponent extends Component
             ->get();
     }
 
+    public function getAvailableBaysProperty()
+    {
+        return WashBay::where('branch_id', session('current_branch_id'))
+            ->where('status', 'available')
+            ->get();
+    }
+
+    public function getAttendantsProperty()
+    {
+        return User::where('vendor_id', auth()->user()->vendor_id)
+            ->role('wash-attendant')
+            ->orderBy('name')
+            ->get();
+    }
+
     public function getQueueProperty()
     {
         return WashOrder::with(['vehicle', 'customer'])
@@ -85,6 +157,37 @@ class WashOrdersComponent extends Component
             ->where('branch_id', session('current_branch_id'))
             ->where('status', 'in_progress')
             ->get();
+    }
+
+    // Stats for the stats bar
+    public function getStatsTodayQueuedProperty(): int
+    {
+        return WashOrder::where('branch_id', session('current_branch_id'))
+            ->whereDate('created_at', today())
+            ->where('status', 'queued')
+            ->count();
+    }
+
+    public function getStatsInProgressProperty(): int
+    {
+        return WashOrder::where('branch_id', session('current_branch_id'))
+            ->where('status', 'in_progress')
+            ->count();
+    }
+
+    public function getStatsCompletedTodayProperty(): int
+    {
+        return WashOrder::where('branch_id', session('current_branch_id'))
+            ->whereDate('completed_at', today())
+            ->where('status', 'completed')
+            ->count();
+    }
+
+    public function getStatsAvailableBaysProperty(): int
+    {
+        return WashBay::where('branch_id', session('current_branch_id'))
+            ->where('status', 'available')
+            ->count();
     }
 
     public function render()

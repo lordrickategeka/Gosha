@@ -85,7 +85,7 @@ class BayStatusComponent extends Component
         $this->authorize('manage bays');
         $this->editingWashBayId = $bay->id;
         $this->washBayName = $bay->name;
-        $this->washBayType = $bay->bay_type;
+        $this->washBayType = $bay->bay_type instanceof \App\Enums\WashBayType ? $bay->bay_type->value : $bay->bay_type;
         $this->washBayNotes = $bay->notes ?? '';
         $this->showWashBayModal = true;
     }
@@ -95,15 +95,15 @@ class BayStatusComponent extends Component
         $this->authorize('manage bays');
 
         $this->validate([
-            'washBayName' => 'required|string|max:100',
-            'washBayType' => 'required|in:standard,premium,detailing',
+            'washBayName'  => 'required|string|max:100',
+            'washBayType'  => 'required|in:basic,standard,premium,full_service,detailing,automated',
             'washBayNotes' => 'nullable|string|max:500',
         ]);
 
         $data = [
-            'name' => $this->washBayName,
+            'name'     => $this->washBayName,
             'bay_type' => $this->washBayType,
-            'notes' => $this->washBayNotes ?: null,
+            'notes'    => $this->washBayNotes ?: null,
         ];
 
         if ($this->editingWashBayId) {
@@ -182,7 +182,7 @@ class BayStatusComponent extends Component
     public function markWashBayMaintenance(WashBay $bay)
     {
         $this->authorize('manage bays');
-        $bay->update(['status' => 'maintenance']);
+        $bay->markAsMaintenance();
         session()->flash('success', "{$bay->name} set to maintenance.");
     }
 

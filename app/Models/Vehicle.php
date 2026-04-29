@@ -20,6 +20,7 @@ class Vehicle extends Model
         'year',
         'color',
         'vin',
+        'chassis_number',
         'engine_number',
         'fuel_type',
         'transmission',

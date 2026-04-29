@@ -55,6 +55,11 @@ class WorkOrderItem extends Model
         return $this->belongsTo(InventoryItem::class);
     }
 
+    public function images(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(WorkOrderItemImage::class);
+    }
+
     // Helpers
     public function isLabor(): bool
     {

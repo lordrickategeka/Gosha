@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Platform\Vendors;
 
+use App\Models\PricingPlan;
 use App\Models\Vendor;
+use App\Services\BillingService;
 use Livewire\Component;
 
 class Show extends Component
@@ -11,6 +13,14 @@ class Show extends Component
 
     public $editingTrialDays = false;
     public $trialDays = 14;
+
+    // Subscription assignment modal
+    public $showAssignPlanModal = false;
+    public $selectedPlanId = null;
+    public $customPrice = null;
+    public $discountPercent = 0;
+    public $discountReason = '';
+    public $waiveSetupFee = false;
 
     public function mount(Vendor $vendor)
     {
@@ -59,10 +69,65 @@ class Show extends Component
         session()->flash('success', 'Trial period updated.');
     }
 
+    public function openAssignPlan()
+    {
+        $sub = $this->vendor->activeSubscription;
+        $this->selectedPlanId = $sub?->pricing_plan_id;
+        $this->customPrice = $sub?->custom_base_price;
+        $this->discountPercent = $sub?->discount_percent ?? 0;
+        $this->discountReason = $sub?->discount_reason ?? '';
+        $this->waiveSetupFee = false;
+        $this->showAssignPlanModal = true;
+    }
+
+    public function closeAssignPlan()
+    {
+        $this->showAssignPlanModal = false;
+    }
+
+    public function assignPlan()
+    {
+        $this->validate([
+            'selectedPlanId' => 'required|exists:pricing_plans,id',
+            'discountPercent' => 'nullable|numeric|min:0|max:100',
+            'customPrice' => 'nullable|numeric|min:0',
+        ]);
+
+        $plan = PricingPlan::findOrFail($this->selectedPlanId);
+
+        app(BillingService::class)->createSubscription($this->vendor, $plan, [
+            'custom_price'    => $this->customPrice ?: null,
+            'discount_percent' => $this->discountPercent ?: 0,
+            'discount_reason' => $this->discountReason ?: null,
+            'waive_setup_fee' => $this->waiveSetupFee,
+        ]);
+
+        $this->vendor->refresh();
+        $this->showAssignPlanModal = false;
+
+        session()->flash('success', "Plan \"{$plan->name}\" assigned to {$this->vendor->name}.");
+    }
+
+    public function cancelSubscription()
+    {
+        $sub = $this->vendor->activeSubscription;
+        if ($sub) {
+            $sub->cancel('Cancelled by platform admin', true);
+            $this->vendor->refresh();
+            session()->flash('success', 'Subscription cancelled.');
+        }
+    }
+
+    public function getPlansProperty()
+    {
+        return PricingPlan::where('is_active', true)->orderBy('sort_order')->get();
+    }
+
     public function render()
     {
         $this->vendor->load([
             'billingConfig',
+            'activeSubscription.plan',
             'branches' => fn($q) => $q->withCount('users'),
             'users' => fn($q) => $q->with('roles'),
         ]);

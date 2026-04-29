@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -22,6 +23,7 @@ class Vendor extends Model
         'address',
         'status',
         'trial_ends_at',
+        'pricing_plan_id',
     ];
 
     protected $casts = [
@@ -43,6 +45,23 @@ class Vendor extends Model
     public function billingConfig(): HasOne
     {
         return $this->hasOne(VendorBillingConfig::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(VendorSubscription::class);
+    }
+
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(VendorSubscription::class)
+            ->whereIn('status', [VendorSubscription::STATUS_ACTIVE, VendorSubscription::STATUS_TRIAL, VendorSubscription::STATUS_PAST_DUE])
+            ->latest();
+    }
+
+    public function pricingPlan(): BelongsTo
+    {
+        return $this->belongsTo(PricingPlan::class);
     }
 
     public function branches(): HasMany
