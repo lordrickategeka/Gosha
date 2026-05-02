@@ -42,7 +42,7 @@ class CreateWashOrdersComponent extends Component
         $this->showCustomerDropdown = strlen($this->customerSearch) >= 2;
     }
 
-    public function showNewCustomerForm()
+    public function openNewCustomerForm()
     {
         $this->showNewCustomerForm = true;
         $this->showCustomerDropdown = false;
@@ -53,7 +53,7 @@ class CreateWashOrdersComponent extends Component
         $this->showNewCustomerForm = false;
     }
 
-    public function showNewVehicleForm()
+    public function openNewVehicleForm()
     {
         $this->showNewVehicleForm = true;
     }
@@ -71,6 +71,7 @@ class CreateWashOrdersComponent extends Component
             $this->customerSearch = $customer->name . ' - ' . $customer->phone;
             $this->showCustomerDropdown = false;
             $this->vehicle_id = '';
+            $this->dispatch('close-customer-dropdown');
         }
     }
 

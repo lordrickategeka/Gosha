@@ -3,16 +3,13 @@
 namespace App\Livewire\Appointments;
 
 use App\Models\Appointment;
-use App\Models\Customer;
-use App\Models\Vehicle;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class CreateAppointmentsComponent extends Component
 {
     public $customer_id = '';
     public $vehicle_id = '';
-    public $customerSearch = '';
-    public $showCustomerDropdown = false;
     public $type = 'service';
     public $scheduled_date;
     public $scheduled_time = '09:00';
@@ -33,50 +30,17 @@ class CreateAppointmentsComponent extends Component
         $this->scheduled_date = now()->addDay()->format('Y-m-d');
     }
 
-    public function updatedCustomerSearch()
+    #[On('customerSelected')]
+    public function handleCustomerSelected($customerId)
     {
-        $this->showCustomerDropdown = true;
+        $this->customer_id = $customerId;
+        $this->vehicle_id = '';
     }
 
-    public function openCustomerDropdown()
+    #[On('vehicleSelected')]
+    public function handleVehicleSelected($vehicleId)
     {
-        $this->showCustomerDropdown = true;
-    }
-
-    public function closeCustomerDropdown()
-    {
-        $this->showCustomerDropdown = false;
-    }
-
-    public function selectCustomer($id)
-    {
-        $customer = Customer::find($id);
-        if ($customer) {
-            $this->customer_id = $customer->id;
-            $this->customerSearch = $customer->name . ' - ' . $customer->phone;
-            $this->showCustomerDropdown = false;
-        }
-    }
-
-    public function getCustomersProperty()
-    {
-        $vendorId = auth()->user()->vendor_id;
-        $query = Customer::where('vendor_id', $vendorId);
-
-        if (strlen($this->customerSearch) >= 2) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', "%{$this->customerSearch}%")
-                  ->orWhere('phone', 'like', "%{$this->customerSearch}%");
-            });
-        }
-
-        return $query->orderBy('name')->limit(50)->get();
-    }
-
-    public function getVehiclesProperty()
-    {
-        if (!$this->customer_id) return collect();
-        return Vehicle::where('customer_id', $this->customer_id)->get();
+        $this->vehicle_id = $vehicleId;
     }
 
     public function save()

@@ -9,11 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, TwoFactorAuthenticatable, HasProfilePhoto, HasApiTokens;
 
     protected $fillable = [
         'vendor_id',
@@ -110,7 +113,7 @@ class User extends Authenticatable
     // Helpers
     public function isPlatformUser(): bool
     {
-        return $this->is_platform_user;
+        return (bool) ($this->is_platform_user ?? false);
     }
 
     public function isVendorOwner(): bool

@@ -9,11 +9,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE work_orders MODIFY COLUMN status ENUM('open','quoted','in_progress','quality_check','ready','delivered','cancelled') NOT NULL DEFAULT 'open'");
+        // MySQL only — SQLite stores enums as text and does not support MODIFY COLUMN
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE work_orders MODIFY COLUMN status ENUM('open','quoted','in_progress','quality_check','ready','delivered','cancelled') NOT NULL DEFAULT 'open'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE work_orders MODIFY COLUMN status ENUM('open','in_progress','quality_check','ready','delivered','cancelled') NOT NULL DEFAULT 'open'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE work_orders MODIFY COLUMN status ENUM('open','in_progress','quality_check','ready','delivered','cancelled') NOT NULL DEFAULT 'open'");
+        }
     }
 };

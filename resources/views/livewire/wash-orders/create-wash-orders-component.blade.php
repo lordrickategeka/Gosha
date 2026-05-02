@@ -29,111 +29,11 @@
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Customer & Vehicle Card -->
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title text-lg mb-4">Customer &amp; Vehicle</h2>
-
-                        <!-- Customer Search -->
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text font-medium">Customer *</span>
-                                <button type="button" wire:click="showNewCustomerForm" class="btn btn-ghost btn-xs">
-                                    + New Customer
-                                </button>
-                            </label>
-                            <div class="relative">
-                                <input
-                                    type="text"
-                                    wire:model.live.debounce.300ms="customerSearch"
-                                    wire:focus="$set('showCustomerDropdown', true)"
-                                    placeholder="Search by name or phone..."
-                                    class="input input-bordered w-full"
-                                    autocomplete="off"
-                                />
-                                @if($showCustomerDropdown && $this->customers->count() > 0)
-                                    <ul class="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                        @foreach($this->customers as $customer)
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    wire:click="selectCustomer({{ $customer->id }})"
-                                                    class="w-full px-4 py-2 text-left hover:bg-base-200"
-                                                >
-                                                    <div class="font-medium">{{ $customer->name }}</div>
-                                                    <div class="text-sm text-base-content/60">{{ $customer->phone }}</div>
-                                                </button>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
-                            </div>
-                            @error('customer_id') <span class="label-text-alt text-error mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-
-                        <!-- Inline New Customer Form -->
-                        @if($showNewCustomerForm)
-                            <div class="bg-base-200 p-4 rounded-lg mb-4">
-                                <h3 class="font-medium mb-3">New Customer</h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <input type="text" wire:model="newCustomerName" placeholder="Full Name *" class="input input-bordered input-sm w-full" />
-                                        @error('newCustomerName') <span class="text-error text-xs mt-1 block">{{ $message }}</span> @enderror
-                                    </div>
-                                    <div>
-                                        <input type="text" wire:model="newCustomerPhone" placeholder="Phone *" class="input input-bordered input-sm w-full" />
-                                        @error('newCustomerPhone') <span class="text-error text-xs mt-1 block">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-                                <div class="flex gap-2 mt-3">
-                                    <button type="button" wire:click="createNewCustomer" class="btn btn-primary btn-sm">Save Customer</button>
-                                    <button type="button" wire:click="hideNewCustomerForm" class="btn btn-ghost btn-sm">Cancel</button>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Vehicle Selection (only shown once customer is chosen) -->
-                        @if($customer_id)
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-medium">Vehicle *</span>
-                                    <button type="button" wire:click="showNewVehicleForm" class="btn btn-ghost btn-xs">
-                                        + New Vehicle
-                                    </button>
-                                </label>
-                                <select wire:model="vehicle_id" class="select select-bordered w-full">
-                                    <option value="">Select vehicle...</option>
-                                    @foreach($this->vehicles as $vehicle)
-                                        <option value="{{ $vehicle->id }}">
-                                            {{ $vehicle->registration_number }}
-                                            @if($vehicle->make || $vehicle->model)
-                                                — {{ trim($vehicle->make . ' ' . $vehicle->model) }}
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('vehicle_id') <span class="label-text-alt text-error mt-1 block">{{ $message }}</span> @enderror
-                            </div>
-
-                            @if($showNewVehicleForm)
-                                <div class="bg-base-200 p-4 rounded-lg mt-4">
-                                    <h3 class="font-medium mb-3">New Vehicle</h3>
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <div>
-                                            <input type="text" wire:model="newVehicleRegNumber" placeholder="Reg Number *" class="input input-bordered input-sm w-full uppercase" />
-                                            @error('newVehicleRegNumber') <span class="text-error text-xs mt-1 block">{{ $message }}</span> @enderror
-                                        </div>
-                                        <input type="text" wire:model="newVehicleMake" placeholder="Make (e.g. Toyota)" class="input input-bordered input-sm w-full" />
-                                        <input type="text" wire:model="newVehicleModel" placeholder="Model (e.g. Corolla)" class="input input-bordered input-sm w-full" />
-                                    </div>
-                                    <div class="flex gap-2 mt-3">
-                                        <button type="button" wire:click="createNewVehicle" class="btn btn-primary btn-sm">Save Vehicle</button>
-                                        <button type="button" wire:click="hideNewVehicleForm" class="btn btn-ghost btn-sm">Cancel</button>
-                                    </div>
-                                </div>
-                            @endif
-                        @endif
-                    </div>
-                </div>
+                 <livewire:customer-vehicle-selector
+                    wire:model.live="customer_id"
+                    :customerId="$customer_id"
+                    :vehicleId="$vehicle_id"
+                />
 
                 <!-- Wash Items Card -->
                 <div class="card bg-base-100 shadow-sm">

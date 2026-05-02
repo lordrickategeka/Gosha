@@ -179,6 +179,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', \App\Livewire\Templates\TemplatesComponent::class)->name('index');
     });
 
+    // // Packages (Wash Packages)
+    Route::prefix('packages')->name('packages.')->group(function () {
+        Route::get('/', \App\Livewire\Packages\PackagesComponent::class)->name('index');
+    });
+
     // // Reports
     Route::prefix('reports')->name('reports.')->middleware('can:view reports')->group(function () {
         Route::get('/sales', \App\Livewire\Reports\Sales::class)->name('sales');

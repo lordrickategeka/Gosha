@@ -14,44 +14,13 @@
     <form wire:submit="save" class="max-w-2xl">
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
-                <!-- Customer -->
-                <div class="form-control mb-4">
-                    <label class="label"><span class="label-text font-medium">Customer *</span></label>
-                    <div class="relative">
-                        <input type="text" wire:model.live.debounce.300ms="customerSearch"
-                            wire:focus="openCustomerDropdown"
-                            placeholder="Search customer by name or phone..." class="input input-bordered w-full" autocomplete="off" />
-                        @if($showCustomerDropdown && $this->customers->count() > 0)
-                            <ul class="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                @foreach($this->customers as $customer)
-                                    <li><button type="button" wire:click="selectCustomer({{ $customer->id }})" class="w-full px-4 py-2 text-left hover:bg-base-200">
-                                        <div class="font-medium">{{ $customer->name }}</div>
-                                        <div class="text-sm text-base-content/60">{{ $customer->phone }}</div>
-                                    </button></li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </div>
-                    @if($customer_id)
-                        <span class="label-text-alt text-success mt-1">✓ Customer selected</span>
-                    @endif
-                    @error('customer_id') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                </div>
+                {{-- Reusable Customer/Vehicle Selector --}}
+                <livewire:customer-vehicle-selector
+                    :customerId="$customer_id"
+                    :vehicleId="$vehicle_id"
+                />
 
-                @if($customer_id)
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text font-medium">Vehicle *</span></label>
-                        <select wire:model="vehicle_id" class="select select-bordered">
-                            <option value="">Select vehicle...</option>
-                            @foreach($this->vehicles as $vehicle)
-                                <option value="{{ $vehicle->id }}">{{ $vehicle->registration_number }} - {{ $vehicle->make }} {{ $vehicle->model }}</option>
-                            @endforeach
-                        </select>
-                        @error('vehicle_id') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
-                @endif
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     <div class="form-control">
                         <label class="label"><span class="label-text font-medium">Service Type *</span></label>
                         <select wire:model="type" class="select select-bordered">

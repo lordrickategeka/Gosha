@@ -106,12 +106,29 @@ class CreateWorkOrdersComponent extends Component
 
     // ─── Customer / Vehicle helpers ──────────────────────────────────────────
 
+
+
+    public function openCustomerDropdown()
+    {
+        $this->showCustomerDropdown = true;
+    }
+
+
+
+
+
+
+
+
+
+
+    // ================
     public function updatedCustomerSearch()
     {
         $this->showCustomerDropdown = strlen($this->customerSearch) >= 2;
     }
 
-    public function showNewCustomerForm()
+    public function openNewCustomerForm()
     {
         $this->showNewCustomerForm = true;
         $this->showCustomerDropdown = false;
@@ -122,7 +139,7 @@ class CreateWorkOrdersComponent extends Component
         $this->showNewCustomerForm = false;
     }
 
-    public function showNewVehicleForm()
+    public function openNewVehicleForm()
     {
         $this->showNewVehicleForm = true;
     }
@@ -140,8 +157,10 @@ class CreateWorkOrdersComponent extends Component
             $this->customerSearch = $customer->name . ' - ' . $customer->phone;
             $this->showCustomerDropdown = false;
             $this->vehicle_id = '';
+            $this->dispatch('close-customer-dropdown');
         }
     }
+    // ===========
 
     public function createNewCustomer()
     {
