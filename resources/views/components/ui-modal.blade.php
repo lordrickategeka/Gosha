@@ -16,15 +16,15 @@ $maxWidthClass = [
     '3xl' => 'sm:max-w-3xl',
 ][$maxWidth];
 
-$overlayClass = $overlayType === 'import' 
-    ? 'fixed inset-0 bg-blue-100 opacity-30 transition-opacity' 
-    : 'fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity';
+$overlayClass = $overlayType === 'import'
+  ? 'fixed inset-0 bg-blue-100 opacity-30 transition-opacity'
+  : 'fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity';
 @endphp
 
 @if ($show)
-  <div class="fixed inset-0 z-50 overflow-y-auto" 
-       role="dialog" 
-       aria-modal="true" 
+  <div class="fixed inset-0 z-50 overflow-y-auto"
+       role="dialog"
+       aria-modal="true"
        aria-labelledby="modal-title"
        wire:keydown.escape="{{ $closeMethod }}">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

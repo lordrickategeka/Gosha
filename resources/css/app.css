@@ -14,9 +14,248 @@
     display: none;
 }
 
+@layer base {
+    body {
+        @apply text-base-content antialiased;
+        @apply bg-base-200;
+    }
+}
+
 
 /* Custom styles */
 @layer components {
+    .app-shell {
+        @apply min-h-screen bg-base-200 text-base-content;
+    }
+
+    .app-content-wrap {
+        @apply mx-auto w-full max-w-[1600px];
+    }
+
+    .app-main {
+        @apply flex-1 px-4 py-5 lg:px-6 lg:py-6 xl:px-8 xl:py-8;
+    }
+
+    .app-topbar {
+        @apply sticky top-0 z-30 border-b border-gray-200 bg-base-100;
+    }
+
+    .app-panel {
+        @apply rounded-lg border border-gray-200 bg-base-100 shadow-md;
+    }
+
+    .app-panel-subtle {
+        @apply rounded-lg border border-gray-200 bg-base-100 shadow-sm;
+    }
+
+    .app-sidebar {
+        @apply border-r border-gray-200 bg-base-100;
+    }
+
+    .app-sidebar .menu {
+        @apply gap-1;
+    }
+
+    .app-sidebar .menu-title {
+        @apply px-3 pt-5 pb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500;
+    }
+
+    .app-sidebar .menu li > *:not(ul):not(.menu-title),
+    .app-sidebar .menu li > details > summary {
+        @apply rounded-xl px-3 py-2.5 text-sm font-medium text-base-content transition-colors duration-150;
+    }
+
+    .app-sidebar .menu li > *:not(ul):not(.menu-title):hover,
+    .app-sidebar .menu li > details > summary:hover {
+        @apply bg-base-200 text-base-content;
+    }
+
+    .app-sidebar .menu li > *:not(ul):not(.menu-title).active,
+    .app-sidebar .menu li > *:not(ul):not(.menu-title):active,
+    .app-sidebar .menu li > details > summary:active {
+        @apply bg-primary text-primary-content;
+    }
+
+    .app-sidebar .menu li > details[open] > summary {
+        @apply bg-base-200 text-base-content;
+    }
+
+    .app-sidebar .menu li ul {
+        @apply mt-1 ml-3 space-y-1 border-l pl-3;
+        @apply border-gray-200;
+    }
+
+    .app-sidebar .menu li ul a {
+        @apply rounded-lg px-3 py-2 text-sm text-base-content transition-colors;
+        opacity: 0.85;
+    }
+
+    .app-sidebar .menu li ul a:hover,
+    .app-sidebar .menu li ul a.active {
+        @apply bg-primary text-primary-content;
+        opacity: 1;
+    }
+
+    .app-page-header {
+        @apply mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between;
+    }
+
+    .app-kicker {
+        @apply mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-base-content opacity-45;
+    }
+
+    .app-title {
+        @apply text-3xl font-semibold tracking-[-0.04em] text-base-content lg:text-[2rem];
+    }
+
+    .app-subtitle {
+        @apply mt-2 max-w-2xl text-sm leading-6 text-base-content opacity-60;
+    }
+
+    .app-segmented {
+        @apply inline-flex rounded-lg border border-gray-200 bg-base-100 p-1;
+    }
+
+    .app-segment-button {
+        @apply btn btn-sm rounded-md border-0 bg-transparent px-4 font-medium text-base-content opacity-70 shadow-none;
+    }
+
+    .app-segment-button:hover {
+        @apply bg-base-200 text-base-content;
+    }
+
+    .app-segment-button.is-active {
+        @apply bg-neutral text-neutral-content;
+    }
+
+    .app-filter-bar {
+        @apply app-panel p-4 lg:p-5;
+    }
+
+    .app-filter-bar .input,
+    .app-filter-bar .select {
+        @apply h-11 rounded-lg border border-gray-300 bg-base-100 text-sm shadow-none;
+    }
+
+    .app-filter-bar .input:focus,
+    .app-filter-bar .select:focus {
+        @apply border-primary outline-none ring-2;
+        box-shadow: 0 0 0 3px rgba(77, 107, 186, 0.15);
+    }
+
+    .app-stat-card {
+        @apply app-panel p-5;
+    }
+
+    .app-stat-label {
+        @apply text-xs font-semibold uppercase tracking-[0.16em] text-base-content opacity-45;
+    }
+
+    .app-stat-value {
+        @apply mt-4 text-3xl font-semibold tracking-[-0.04em] text-base-content;
+    }
+
+    .app-stat-meta {
+        @apply mt-2 text-sm text-base-content opacity-55;
+    }
+
+    .app-stat-icon {
+        @apply flex h-12 w-12 items-center justify-center rounded-lg border border-gray-200 bg-base-100 text-black;
+    }
+
+    .app-eyebrow {
+        @apply text-xs font-semibold uppercase tracking-[0.14em] text-base-content opacity-40;
+    }
+
+    .app-mini-card {
+        @apply rounded-lg border border-gray-200 bg-base-100 p-3;
+    }
+
+    .app-table-shell {
+        @apply app-panel overflow-hidden;
+    }
+
+    .app-table-shell .table thead th {
+        @apply border-b border-gray-200 bg-gray-50 px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500;
+    }
+
+    .app-table-shell .table tbody td {
+        @apply border-b border-gray-200 px-4 py-2 align-middle text-xs text-gray-900;
+    }
+
+    .app-table-shell .table tbody tr:nth-child(odd) {
+        @apply bg-white;
+    }
+
+    .app-table-shell .table tbody tr:nth-child(even) {
+        @apply bg-gray-200;
+    }
+
+    .app-table-shell .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .app-table-shell .table tbody tr:hover {
+        @apply bg-blue-200 transition-colors duration-150;
+    }
+
+    .app-empty-state {
+        @apply flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-base-100 px-6 py-10 text-center text-gray-500;
+    }
+
+    .app-badge-soft {
+        @apply badge border-0 bg-base-200 px-3 py-3 text-xs font-medium text-base-content opacity-70;
+    }
+
+    /* Global component defaults for full-system consistency */
+    .card {
+        @apply rounded-lg border border-gray-200 bg-base-100 shadow-md;
+    }
+
+    .card .card-body {
+        @apply p-4;
+    }
+
+    .btn {
+        @apply rounded-lg;
+    }
+
+    .input,
+    .select,
+    .textarea {
+        @apply rounded-lg border border-gray-300 text-xs;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+        @apply border-blue-500 ring-2 ring-blue-500/20;
+    }
+
+    .table thead {
+        @apply bg-gray-50 border-b border-gray-200;
+    }
+
+    .table thead th {
+        @apply px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500;
+    }
+
+    .table tbody td {
+        @apply px-4 py-2 text-xs text-gray-900;
+    }
+
+    .table tbody tr:nth-child(odd) {
+        @apply bg-white;
+    }
+
+    .table tbody tr:nth-child(even) {
+        @apply bg-gray-200;
+    }
+
+    .table tbody tr:hover {
+        @apply bg-blue-200 transition-colors duration-150;
+    }
+
     /* Stat cards */
     .stat-card {
         @apply card bg-base-100 shadow-sm;
@@ -64,7 +303,7 @@
     }
 
     .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-        @apply bg-base-content/30;
+        background-color: rgba(39, 35, 29, 0.3);
     }
 }
 

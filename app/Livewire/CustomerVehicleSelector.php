@@ -8,7 +8,6 @@ use Livewire\Component;
 
 class CustomerVehicleSelector extends Component
 {
-    // Public properties that parent components can bind to
     public $customerId = null;
     public $vehicleId = null;
 
@@ -40,6 +39,18 @@ class CustomerVehicleSelector extends Component
 
     protected $listeners = ['resetCustomerSelector' => 'resetState'];
 
+    // ─── Parent sync ─────────────────────────────────────────────────────────
+
+    public function updatedCustomerId($value): void
+    {
+        $this->dispatch('customerSelected', customerId: $value);
+    }
+
+    public function updatedVehicleId($value): void
+    {
+        $this->dispatch('vehicleSelected', vehicleId: $value);
+    }
+
     // ─── Customer Search ─────────────────────────────────────────────────────
 
     public function updatedCustomerSearch()
@@ -61,9 +72,6 @@ class CustomerVehicleSelector extends Component
             $this->customerSearch = $customer->name . ' - ' . $customer->phone;
             $this->showCustomerDropdown = false;
             $this->vehicleId = null; // Reset vehicle selection
-
-            // Notify parent component
-            $this->dispatch('customerSelected', customerId: $customer->id);
         }
     }
 
@@ -98,10 +106,6 @@ class CustomerVehicleSelector extends Component
         $this->customerSearch = $customer->name . ' - ' . $customer->phone;
         $this->showNewCustomerForm = false;
         $this->resetNewCustomerFields();
-
-        // Notify parent component
-        $this->dispatch('customerSelected', customerId: $customer->id);
-        $this->dispatch('customerCreated', customerId: $customer->id);
 
         session()->flash('customer-selector-success', 'Customer created successfully.');
     }
@@ -146,10 +150,6 @@ class CustomerVehicleSelector extends Component
         $this->vehicleId = $vehicle->id;
         $this->showNewVehicleForm = false;
         $this->resetNewVehicleFields();
-
-        // Notify parent component
-        $this->dispatch('vehicleSelected', vehicleId: $vehicle->id);
-        $this->dispatch('vehicleCreated', vehicleId: $vehicle->id);
 
         session()->flash('customer-selector-success', 'Vehicle added successfully.');
     }

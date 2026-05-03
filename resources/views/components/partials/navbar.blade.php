@@ -1,8 +1,9 @@
 <!-- Navbar -->
-<div class="navbar bg-base-100 shadow-sm border-b border-base-300 sticky top-0 z-30">
+<div class="app-topbar">
+    <div class="app-content-wrap navbar min-h-[78px] gap-3 px-4 lg:px-6 xl:px-8">
     <!-- Mobile menu button -->
     <div class="flex-none lg:hidden">
-        <label for="sidebar-drawer" class="btn btn-square btn-ghost">
+        <label for="sidebar-drawer" class="btn btn-square btn-ghost rounded-2xl text-base-content/70 hover:bg-base-200 hover:text-base-content">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
@@ -10,8 +11,9 @@
     </div>
 
     <!-- Breadcrumb / Page Title -->
-    <div class="flex-1 px-2">
-        <div class="text-sm breadcrumbs hidden sm:block">
+    <div class="min-w-0 flex-1 px-1">
+        <p class="app-kicker mb-1 hidden sm:block">Garage operations</p>
+        <div class="breadcrumbs hidden text-sm text-base-content/55 sm:block">
             <ul>
                 <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 @if(isset($breadcrumbs))
@@ -25,6 +27,10 @@
                 @endif
             </ul>
         </div>
+        <div class="sm:hidden">
+            <p class="text-xs font-medium uppercase tracking-[0.16em] text-base-content/40">Workspace</p>
+            <p class="truncate text-sm font-semibold text-base-content">{{ $title ?? 'Dashboard' }}</p>
+        </div>
     </div>
 
     <!-- Right side items -->
@@ -32,7 +38,7 @@
         <!-- Branch Selector -->
         @if(auth()->user()->branches->count() >= 1)
         <div class="dropdown dropdown-end">
-            <label tabindex="0" class="btn btn-ghost btn-sm gap-2">
+            <label tabindex="0" class="btn btn-sm gap-2 rounded-2xl border border-base-300 bg-base-100 px-3 text-base-content shadow-none hover:bg-base-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
@@ -44,7 +50,7 @@
                 @endif
             </label>
             @if(auth()->user()->branches->count() > 1)
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="dropdown-content z-[1] menu mt-2 w-56 rounded-[20px] border border-base-300 bg-base-100 p-2 shadow-xl">
                 @foreach(auth()->user()->branches as $branch)
                     <li>
                         <a href="{{ route('branch.switch', $branch) }}" class="{{ session('current_branch_id') == $branch->id ? 'active' : '' }}">
@@ -59,15 +65,15 @@
 
         <!-- Notifications -->
         <div class="dropdown dropdown-end">
-            <label tabindex="0" class="btn btn-ghost btn-circle">
+            <label tabindex="0" class="btn btn-circle border border-base-300 bg-base-100 text-base-content shadow-none hover:bg-base-200">
                 <div class="indicator">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    <span class="badge badge-xs badge-primary indicator-item"></span>
+                    <span class="badge badge-xs border-0 bg-primary indicator-item"></span>
                 </div>
             </label>
-            <div tabindex="0" class="dropdown-content z-[1] card card-compact w-80 p-2 shadow-lg bg-base-100">
+            <div tabindex="0" class="dropdown-content z-[1] card card-compact mt-2 w-80 border border-base-300 bg-base-100 p-2 shadow-xl">
                 <div class="card-body">
                     <h3 class="font-bold text-lg">Notifications</h3>
                     <div class="divider my-0"></div>
@@ -80,12 +86,12 @@
 
         <!-- User Menu -->
         <div class="dropdown dropdown-end">
-            <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
-                <div class="bg-primary text-primary-content rounded-full w-10">
+            <label tabindex="0" class="btn btn-circle avatar border border-base-300 bg-base-100 shadow-none hover:bg-base-200 placeholder">
+                <div class="w-10 rounded-full bg-neutral text-neutral-content">
                     <span class="text-sm">{{ substr(auth()->user()->name, 0, 2) }}</span>
                 </div>
             </label>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="dropdown-content z-[1] menu mt-2 w-56 rounded-[20px] border border-base-300 bg-base-100 p-2 shadow-xl">
                 <li class="menu-title">
                     <span>{{ auth()->user()->name }}</span>
                 </li>
@@ -118,5 +124,6 @@
                 </li>
             </ul>
         </div>
+    </div>
     </div>
 </div>

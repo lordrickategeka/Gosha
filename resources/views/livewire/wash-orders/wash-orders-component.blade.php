@@ -1,23 +1,23 @@
-<div>
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="space-y-6">
+    <div class="app-page-header">
         <div>
-            <h1 class="text-2xl font-bold">Wash Bay</h1>
-            <p class="text-base-content/60">Queue management and wash orders</p>
+            <p class="app-kicker">Wash operations</p>
+            <h1 class="app-title">Wash Bay</h1>
+            <p class="app-subtitle">Manage live wash queue activity, assign bays, and complete orders quickly.</p>
         </div>
 
-        <div class="flex gap-2">
-            <div class="join">
-                <button wire:click="$set('view', 'queue')" class="join-item btn btn-sm {{ $view === 'queue' ? 'btn-primary' : 'btn-ghost' }}">
+        <div class="flex flex-wrap items-center gap-2">
+            <div class="app-segmented">
+                <button wire:click="$set('view', 'queue')" class="app-segment-button {{ $view === 'queue' ? 'is-active' : '' }}">
                     Queue View
                 </button>
-                <button wire:click="$set('view', 'list')" class="join-item btn btn-sm {{ $view === 'list' ? 'btn-primary' : 'btn-ghost' }}">
+                <button wire:click="$set('view', 'list')" class="app-segment-button {{ $view === 'list' ? 'is-active' : '' }}">
                     List View
                 </button>
             </div>
 
             @can('create wash orders')
-            <a href="{{ route('wash-orders.create') }}" class="btn btn-primary">
+            <a href="{{ route('wash-orders.create') }}" class="btn btn-primary rounded-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -28,30 +28,22 @@
     </div>
 
     <!-- Stats Bar -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body p-4">
-                <p class="text-xs text-base-content/50 uppercase tracking-wide">Queued Today</p>
-                <p class="text-2xl font-bold text-info">{{ $this->statsTodayQueued }}</p>
-            </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="app-stat-card">
+            <p class="app-stat-label">Queued Today</p>
+            <p class="text-2xl font-semibold text-info mt-3">{{ $this->statsTodayQueued }}</p>
         </div>
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body p-4">
-                <p class="text-xs text-base-content/50 uppercase tracking-wide">In Progress</p>
-                <p class="text-2xl font-bold text-warning">{{ $this->statsInProgress }}</p>
-            </div>
+        <div class="app-stat-card">
+            <p class="app-stat-label">In Progress</p>
+            <p class="text-2xl font-semibold text-warning mt-3">{{ $this->statsInProgress }}</p>
         </div>
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body p-4">
-                <p class="text-xs text-base-content/50 uppercase tracking-wide">Completed Today</p>
-                <p class="text-2xl font-bold text-success">{{ $this->statsCompletedToday }}</p>
-            </div>
+        <div class="app-stat-card">
+            <p class="app-stat-label">Completed Today</p>
+            <p class="text-2xl font-semibold text-success mt-3">{{ $this->statsCompletedToday }}</p>
         </div>
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body p-4">
-                <p class="text-xs text-base-content/50 uppercase tracking-wide">Bays Available</p>
-                <p class="text-2xl font-bold text-primary">{{ $this->statsAvailableBays }}</p>
-            </div>
+        <div class="app-stat-card">
+            <p class="app-stat-label">Bays Available</p>
+            <p class="text-2xl font-semibold text-primary mt-3">{{ $this->statsAvailableBays }}</p>
         </div>
     </div>
 
@@ -60,8 +52,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Wash Bays Status -->
             <div class="lg:col-span-2">
-                <div class="card bg-base-100 shadow-sm mb-6">
-                    <div class="card-body">
+                <div class="app-panel mb-6">
+                    <div class="p-6">
                         <h2 class="card-title text-lg mb-4">Wash Bays</h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -102,8 +94,8 @@
 
                 <!-- In Progress -->
                 @if($this->inProgress->count() > 0)
-                    <div class="card bg-base-100 shadow-sm mb-6">
-                        <div class="card-body">
+                    <div class="app-panel mb-6">
+                        <div class="p-6">
                             <h2 class="card-title text-lg mb-4">
                                 <span class="w-3 h-3 bg-warning rounded-full animate-pulse"></span>
                                 In Progress ({{ $this->inProgress->count() }})
@@ -111,7 +103,7 @@
 
                             <div class="space-y-3">
                                 @foreach($this->inProgress as $order)
-                                    <div class="flex items-center justify-between p-3 bg-warning/10 rounded-lg">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                                         <div class="flex items-center gap-3">
                                             <div>
                                                 <p class="font-bold">{{ $order->vehicle->registration_number }}</p>
@@ -144,8 +136,8 @@
 
             <!-- Queue -->
             <div>
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
+                <div class="app-panel">
+                    <div class="p-6">
                         <h2 class="card-title text-lg mb-4">
                             Queue ({{ $this->queue->count() }})
                         </h2>
@@ -153,7 +145,7 @@
                         @if($this->queue->count() > 0)
                             <div class="space-y-2">
                                 @foreach($this->queue as $order)
-                                    <div class="p-3 border border-base-300 rounded-lg {{ $order->priority === 'priority' ? 'border-accent bg-accent/5' : '' }}">
+                                    <div class="p-3 border border-gray-200 rounded-lg {{ $order->priority === 'priority' ? 'border-warning bg-yellow-50' : '' }}">
                                         <div class="flex items-center justify-between mb-2">
                                             <div class="flex items-center gap-2">
                                                 <span class="badge badge-outline badge-sm">{{ $order->queue_position }}</span>
@@ -214,9 +206,8 @@
         </div>
     @else
         <!-- List View -->
-        <div class="card bg-base-100 shadow-sm mb-6">
-            <div class="card-body p-4">
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="app-filter-bar">
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
                     <input
                         type="text"
                         wire:model.live.debounce.300ms="search"
@@ -236,15 +227,23 @@
                         <option value="combo">Combo</option>
                         <option value="appointment">Appointment</option>
                     </select>
+
+                    <select wire:model.live="perPage" class="select select-bordered select-sm">
+                        <option value="6">6</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
                 </div>
-            </div>
         </div>
 
-        <div class="card bg-base-100 shadow-sm">
+        <div class="app-table-shell">
             <div class="overflow-x-auto">
                 <table class="table">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Order #</th>
                             <th>Vehicle</th>
                             <th>Customer</th>
@@ -253,12 +252,15 @@
                             <th>Bay</th>
                             <th>Status</th>
                             <th>Created</th>
-                            <th></th>
+                            <th class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($washOrders as $order)
+                        @forelse($washOrders as $index => $order)
                             <tr class="hover">
+                                <td>
+                                    <div class="text-xs text-gray-900">{{ $washOrders->firstItem() + $index }}</div>
+                                </td>
                                 <td>
                                     <a href="{{ route('wash-orders.show', $order) }}" class="link link-primary font-mono text-sm">
                                         {{ $order->order_number }}
@@ -285,14 +287,14 @@
                                 <td class="text-sm text-base-content/60">
                                     {{ $order->created_at->format('d M H:i') }}
                                 </td>
-                                <td>
+                                <td class="text-right">
                                     <div class="dropdown dropdown-end">
-                                        <label tabindex="0" class="btn btn-ghost btn-xs">
+                                        <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                             </svg>
                                         </label>
-                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-48">
+                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box border border-gray-200 w-48">
                                             <li><a href="{{ route('wash-orders.show', $order) }}">View</a></li>
                                             @if($order->canStart())
                                                 <li><button wire:click="startWash({{ $order->id }})">Start</button></li>
@@ -306,7 +308,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-8 text-base-content/50">
+                                <td colspan="10" class="text-center py-8 text-base-content/50">
                                     No wash orders found
                                 </td>
                             </tr>
@@ -316,7 +318,7 @@
             </div>
 
             @if($washOrders->hasPages())
-                <div class="p-4 border-t border-base-200">
+                <div class="p-4 border-t border-gray-200">
                     {{ $washOrders->links() }}
                 </div>
             @endif

@@ -1,26 +1,26 @@
 <!-- Sidebar -->
 <div class="drawer-side z-40">
     <label for="sidebar-drawer" class="drawer-overlay"></label>
-    <aside class="bg-base-100 w-72 min-h-screen border-r border-base-300 flex flex-col">
+    <aside class="app-sidebar w-72 min-h-screen flex flex-col">
         <!-- Logo -->
-        <div class="p-4 border-b border-base-300">
+        <div class="border-b border-base-300/80 px-5 py-5">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-base-300 bg-neutral text-neutral-content">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                 </div>
                 <div>
-                    <span class="font-bold text-xl">GarageHQ</span>
+                    <span class="text-lg font-semibold tracking-[-0.03em]">GarageHQ</span>
                     @if(auth()->user()->vendor)
-                        <p class="text-xs text-base-content/60">{{ auth()->user()->vendor->name }}</p>
+                        <p class="mt-0.5 text-xs uppercase tracking-[0.14em] text-base-content/45">{{ auth()->user()->vendor->name }}</p>
                     @endif
                 </div>
             </a>
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 overflow-y-auto p-4">
+        <nav class="flex-1 overflow-y-auto px-4 py-5 scrollbar-thin">
             <ul class="menu menu-md gap-1">
                 <!-- Dashboard -->
                 @can('view dashboard')

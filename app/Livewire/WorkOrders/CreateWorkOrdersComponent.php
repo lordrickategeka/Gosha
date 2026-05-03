@@ -9,6 +9,8 @@ use App\Models\ServiceTemplate;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\WorkOrder;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -20,26 +22,9 @@ class CreateWorkOrdersComponent extends Component
     public int $currentStep = 1;
     public int $totalSteps = 4;
 
-    // Customer & Vehicle
-    public $customer_id = '';
-    public $vehicle_id = '';
-    public $customerSearch = '';
-    public $showCustomerDropdown = false;
-    public $showNewCustomerForm = false;
-    public $showNewVehicleForm = false;
-
-    // New Customer fields
-    public $newCustomerName = '';
-    public $newCustomerPhone = '';
-    public $newCustomerEmail = '';
-
-    // New Vehicle fields
-    public $newVehicleRegNumber = '';
-    public $newVehicleMake = '';
-    public $newVehicleModel = '';
-    public $newVehicleYear = '';
-    public $newVehicleColor = '';
-    public $newVehicleChassisNumber = '';
+    // Customer & Vehicle - bound to CustomerVehicleSelector via wire:model
+    public $customer_id = null;
+    public $vehicle_id = null;
 
     // Work Order details
     public $type = 'service';
@@ -61,6 +46,21 @@ class CreateWorkOrdersComponent extends Component
     public function mount()
     {
         $this->items = [];
+    }
+
+    // ─── Child component event listeners ────────────────────────────────────
+
+    #[On('customerSelected')]
+    public function handleCustomerSelected($customerId): void
+    {
+        $this->customer_id = $customerId;
+        $this->vehicle_id = null;
+    }
+
+    #[On('vehicleSelected')]
+    public function handleVehicleSelected($vehicleId): void
+    {
+        $this->vehicle_id = $vehicleId;
     }
 
     // ─── Wizard navigation ───────────────────────────────────────────────────
@@ -102,109 +102,6 @@ class CreateWorkOrdersComponent extends Component
             ]),
             default => null,
         };
-    }
-
-    // ─── Customer / Vehicle helpers ──────────────────────────────────────────
-
-
-
-    public function openCustomerDropdown()
-    {
-        $this->showCustomerDropdown = true;
-    }
-
-
-
-
-
-
-
-
-
-
-    // ================
-    public function updatedCustomerSearch()
-    {
-        $this->showCustomerDropdown = strlen($this->customerSearch) >= 2;
-    }
-
-    public function openNewCustomerForm()
-    {
-        $this->showNewCustomerForm = true;
-        $this->showCustomerDropdown = false;
-    }
-
-    public function hideNewCustomerForm()
-    {
-        $this->showNewCustomerForm = false;
-    }
-
-    public function openNewVehicleForm()
-    {
-        $this->showNewVehicleForm = true;
-    }
-
-    public function hideNewVehicleForm()
-    {
-        $this->showNewVehicleForm = false;
-    }
-
-    public function selectCustomer($customerId)
-    {
-        $customer = Customer::find($customerId);
-        if ($customer) {
-            $this->customer_id = $customer->id;
-            $this->customerSearch = $customer->name . ' - ' . $customer->phone;
-            $this->showCustomerDropdown = false;
-            $this->vehicle_id = '';
-            $this->dispatch('close-customer-dropdown');
-        }
-    }
-    // ===========
-
-    public function createNewCustomer()
-    {
-        $this->validate([
-            'newCustomerName'  => 'required|string|max:255',
-            'newCustomerPhone' => 'required|string|max:20',
-            'newCustomerEmail' => 'nullable|email',
-        ]);
-
-        $customer = Customer::create([
-            'vendor_id' => auth()->user()->vendor_id,
-            'name'  => $this->newCustomerName,
-            'phone' => $this->newCustomerPhone,
-            'email' => $this->newCustomerEmail,
-        ]);
-
-        $this->customer_id = $customer->id;
-        $this->customerSearch = $customer->name . ' - ' . $customer->phone;
-        $this->showNewCustomerForm = false;
-        $this->reset(['newCustomerName', 'newCustomerPhone', 'newCustomerEmail']);
-    }
-
-    public function createNewVehicle()
-    {
-        $this->validate([
-            'newVehicleRegNumber' => 'required|string|max:20',
-            'newVehicleMake'      => 'nullable|string|max:50',
-            'newVehicleModel'     => 'nullable|string|max:50',
-        ]);
-
-        $vehicle = Vehicle::create([
-            'customer_id'         => $this->customer_id,
-            'registration_number' => strtoupper($this->newVehicleRegNumber),
-            'make'                => $this->newVehicleMake ?: null,
-            'model'               => $this->newVehicleModel ?: null,
-            'year'                => $this->newVehicleYear ?: null,
-            'color'               => $this->newVehicleColor ?: null,
-            'chassis_number'      => $this->newVehicleChassisNumber ?: null,
-        ]);
-
-        $this->vehicle_id = $vehicle->id;
-        $this->showNewVehicleForm = false;
-        $this->reset(['newVehicleRegNumber', 'newVehicleMake', 'newVehicleModel',
-                       'newVehicleYear', 'newVehicleColor', 'newVehicleChassisNumber']);
     }
 
     // ─── Items helpers ───────────────────────────────────────────────────────
@@ -250,31 +147,6 @@ class CreateWorkOrdersComponent extends Component
 
     // ─── Computed properties ─────────────────────────────────────────────────
 
-    public function getCustomersProperty()
-    {
-        $vendorId = auth()->user()->vendor_id;
-        $query = Customer::where('vendor_id', $vendorId);
-
-        if (strlen($this->customerSearch) >= 2) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', "%{$this->customerSearch}%")
-                  ->orWhere('phone', 'like', "%{$this->customerSearch}%");
-            });
-        } elseif (strlen($this->customerSearch) === 0) {
-            return collect();
-        } else {
-            return collect();
-        }
-
-        return $query->orderBy('name')->limit(10)->get();
-    }
-
-    public function getVehiclesProperty()
-    {
-        if (!$this->customer_id) return collect();
-        return Vehicle::where('customer_id', $this->customer_id)->get();
-    }
-
     public function getServiceBaysProperty()
     {
         return ServiceBay::where('branch_id', session('current_branch_id'))
@@ -319,6 +191,14 @@ class CreateWorkOrdersComponent extends Component
 
     public function save()
     {
+        // Add debug logging
+        Log::info('Save method called', [
+            'customer_id' => $this->customer_id,
+            'vehicle_id' => $this->vehicle_id,
+            'items_count' => count($this->items),
+            'branch_id' => session('current_branch_id'),
+        ]);
+
         $this->validate([
             'customer_id' => 'required|exists:customers,id',
             'vehicle_id'  => 'required|exists:vehicles,id',
@@ -336,53 +216,64 @@ class CreateWorkOrdersComponent extends Component
             }
         }
 
-        $workOrder = WorkOrder::create([
-            'branch_id'               => session('current_branch_id'),
-            'customer_id'             => $this->customer_id,
-            'vehicle_id'              => $this->vehicle_id,
-            'service_bay_id'          => $this->service_bay_id ?: null,
-            'assigned_technician_id'  => $this->assigned_technician_id ?: null,
-            'created_by'              => auth()->id(),
-            'type'                    => $this->type,
-            'status'                  => 'open',
-            'priority'                => $this->priority,
-            'is_combo'                => $this->is_combo,
-            'mileage_in'              => $this->mileage_in ?: null,
-            'customer_notes'          => $this->customer_notes,
-            'estimated_completion'    => $this->estimated_completion ?: null,
-            'checked_in_at'           => now(),
-        ]);
-
-        foreach ($this->items as $index => $item) {
-            $workOrderItem = $workOrder->items()->create([
-                'item_type'         => $item['item_type'],
-                'description'       => $item['description'],
-                'inventory_item_id' => $item['inventory_item_id'] ?? null,
-                'quantity'          => $item['quantity'],
-                'unit_price'        => $this->isJobcarder() ? 0 : ($item['unit_price'] ?? 0),
-                'discount'          => 0,
-                'total'             => $this->isJobcarder() ? 0 : ($item['quantity'] * ($item['unit_price'] ?? 0)),
+        try {
+            $workOrder = WorkOrder::create([
+                'branch_id'               => session('current_branch_id'),
+                'customer_id'             => $this->customer_id,
+                'vehicle_id'              => $this->vehicle_id,
+                'service_bay_id'          => $this->service_bay_id ?: null,
+                'assigned_technician_id'  => $this->assigned_technician_id ?: null,
+                'created_by'              => auth()->id(),
+                'type'                    => $this->type,
+                'status'                  => 'open',
+                'priority'                => $this->priority,
+                'is_combo'                => $this->is_combo,
+                'mileage_in'              => $this->mileage_in ?: null,
+                'customer_notes'          => $this->customer_notes,
+                'estimated_completion'    => $this->estimated_completion ?: null,
+                'checked_in_at'           => now(),
             ]);
 
-            // Attach images for this item
-            if (!empty($this->itemImages[$index])) {
-                $images = is_array($this->itemImages[$index])
-                    ? $this->itemImages[$index]
-                    : [$this->itemImages[$index]];
+            Log::info('Work order created', ['id' => $workOrder->id]);
 
-                foreach ($images as $img) {
-                    $path = $img->store('work-order-items', 'public');
-                    $workOrderItem->images()->create(['path' => $path]);
+            foreach ($this->items as $index => $item) {
+                $workOrderItem = $workOrder->items()->create([
+                    'item_type'         => $item['item_type'],
+                    'description'       => $item['description'],
+                    'inventory_item_id' => $item['inventory_item_id'] ?? null,
+                    'quantity'          => $item['quantity'],
+                    'unit_price'        => $this->isJobcarder() ? 0 : ($item['unit_price'] ?? 0),
+                    'discount'          => 0,
+                    'total'             => $this->isJobcarder() ? 0 : ($item['quantity'] * ($item['unit_price'] ?? 0)),
+                ]);
+
+                // Attach images for this item
+                if (!empty($this->itemImages[$index])) {
+                    $images = is_array($this->itemImages[$index])
+                        ? $this->itemImages[$index]
+                        : [$this->itemImages[$index]];
+
+                    foreach ($images as $img) {
+                        $path = $img->store('work-order-items', 'public');
+                        $workOrderItem->images()->create(['path' => $path]);
+                    }
                 }
             }
-        }
 
-        if ($workOrder->serviceBay) {
-            $workOrder->serviceBay->markAsOccupied();
-        }
+            if ($workOrder->serviceBay) {
+                $workOrder->serviceBay->markAsOccupied();
+            }
 
-        session()->flash('success', 'Work order created successfully.');
-        return redirect()->route('work-orders.show', $workOrder);
+            session()->flash('success', 'Work order created successfully.');
+            return redirect()->route('work-orders.show', $workOrder);
+        } catch (\Exception $e) {
+            Log::error('Error creating work order', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $this->addError('save', 'Error creating work order: ' . $e->getMessage());
+        }
     }
 
     public function render()

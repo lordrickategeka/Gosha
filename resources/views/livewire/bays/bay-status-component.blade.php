@@ -1,12 +1,13 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="space-y-6">
+    <div class="app-page-header">
         <div>
-            <h1 class="text-2xl font-bold">Bay Status</h1>
-            <p class="text-base-content/60">Real-time view of all service and wash bays</p>
+            <p class="app-kicker">Floor management</p>
+            <h1 class="app-title">Bay Status</h1>
+            <p class="app-subtitle">Real-time view of service and wash bays, their occupancy, and current assignments.</p>
         </div>
         <div class="flex gap-2">
             @can('view wash orders')
-            <a href="{{ route('wash-orders.index') }}" class="btn btn-ghost btn-sm gap-1">
+            <a href="{{ route('wash-orders.index') }}" class="btn btn-outline btn-primary btn-sm gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
                 </svg>
@@ -61,8 +62,8 @@
 
             <div class="space-y-4">
                 @foreach($this->serviceBays as $bay)
-                    <div class="card bg-base-100 shadow-sm border-l-4 {{ $bay->status === 'available' ? 'border-success' : ($bay->status === 'occupied' ? 'border-warning' : 'border-error') }}">
-                        <div class="card-body p-4">
+                    <div class="app-panel border-l-4 {{ $bay->status === 'available' ? 'border-success' : ($bay->status === 'occupied' ? 'border-warning' : 'border-error') }}">
+                        <div class="p-4">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h3 class="font-bold">{{ $bay->name }}</h3>
@@ -76,8 +77,12 @@
 
                                 @can('manage bays')
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
+                                    <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+                                        </svg>
+                                    </label>
+                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box border border-gray-200 w-44">
                                         <li><button wire:click="editServiceBay({{ $bay->id }})">Edit</button></li>
                                         @if($bay->status !== 'available')
                                             <li><button wire:click="markServiceBayAvailable({{ $bay->id }})">Mark Available</button></li>
@@ -94,7 +99,7 @@
                             </div>
 
                             @if($bay->currentWorkOrder)
-                                <div class="mt-3 p-3 bg-base-200 rounded-lg">
+                                <div class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <p class="font-mono text-sm">{{ $bay->currentWorkOrder->order_number }}</p>
@@ -173,8 +178,8 @@
                         $statusLabel = $bay->status instanceof \App\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status);
                         $typeLabel   = $bay->bay_type instanceof \App\Enums\WashBayType   ? $bay->bay_type->label()   : ucfirst(str_replace('_', ' ', $bay->bay_type));
                     @endphp
-                    <div class="card bg-base-100 shadow-sm border-l-4 {{ $statusValue === 'available' ? 'border-success' : ($statusValue === 'occupied' ? 'border-info' : 'border-error') }}">
-                        <div class="card-body p-4">
+                    <div class="app-panel border-l-4 {{ $statusValue === 'available' ? 'border-success' : ($statusValue === 'occupied' ? 'border-info' : 'border-error') }}">
+                        <div class="p-4">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h3 class="font-bold">{{ $bay->name }}</h3>
@@ -188,8 +193,12 @@
 
                                 @can('manage bays')
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
+                                    <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01" />
+                                        </svg>
+                                    </label>
+                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box border border-gray-200 w-44">
                                         <li><button wire:click="editWashBay({{ $bay->id }})">Edit</button></li>
                                         @if($statusValue !== 'available')
                                             <li><button wire:click="markWashBayAvailable({{ $bay->id }})">Mark Available</button></li>
@@ -206,7 +215,7 @@
                             </div>
 
                             @if($bay->currentWashOrder)
-                                <div class="mt-3 p-3 bg-base-200 rounded-lg">
+                                <div class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <p class="font-mono text-sm">{{ $bay->currentWashOrder->order_number }}</p>
@@ -320,7 +329,7 @@
             </div>
             <div class="modal-action">
                 <button wire:click="$set('showWashBayModal', false)" class="btn btn-ghost">Cancel</button>
-                <button wire:click="saveWashBay" class="btn btn-info">
+                    <button wire:click="saveWashBay" class="btn btn-primary">
                     {{ $editingWashBayId ? 'Update' : 'Create' }}
                 </button>
             </div>

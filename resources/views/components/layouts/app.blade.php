@@ -10,7 +10,7 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,7 +19,7 @@
     @livewireStyles
 </head>
 
-<body class="min-h-screen bg-base-200">
+<body class="app-shell">
     <div class="drawer lg:drawer-open">
         <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
 
@@ -29,8 +29,10 @@
             @include('components.partials.navbar')
 
             <!-- Main Content -->
-            <main class="flex-1 p-4 lg:p-6">
-                {{ $slot }}
+            <main class="app-main">
+                <div class="app-content-wrap">
+                    {{ $slot }}
+                </div>
             </main>
         </div>
 
@@ -42,9 +44,9 @@
     @livewireScripts
 
     <!-- Toast Notifications -->
-    <div class="toast toast-end toast-top z-50">
+    <div class="toast toast-end toast-top z-50 mt-3">
         @if (session('success'))
-            <div class="alert alert-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <div class="alert border-success/20 bg-base-100 text-base-content shadow-lg" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -55,7 +57,7 @@
         @endif
 
         @if (session('error'))
-            <div class="alert alert-error" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <div class="alert border-error/20 bg-base-100 text-base-content shadow-lg" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

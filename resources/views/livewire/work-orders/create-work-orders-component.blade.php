@@ -49,189 +49,18 @@
     @if ($currentStep === 1)
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
-                <!-- Customer & Vehicle Card -->
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title text-lg mb-4">Customer &amp; Vehicle</h2>
+                <h2 class="card-title text-lg mb-4">Customer &amp; Vehicle</h2>
 
-                        <!-- Customer Search -->
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text font-medium">Customer *</span>
-                                <button type="button" wire:click="openNewCustomerForm" class="btn btn-ghost btn-xs">
-                                    + New Customer
-                                </button>
-                            </label>
-                            <div class="relative"
-                                 x-data="{ open: false }"
-                                 @click.outside="open = false"
-                                 @close-customer-dropdown.window="open = false">
-                                <input
-                                    type="text"
-                                    wire:model.live.debounce.300ms="customerSearch"
-                                    @focus="open = true"
-                                    @input="open = true"
-                                    placeholder="Search by name or phone..."
-                                    class="input input-bordered w-full"
-                                    autocomplete="off"
-                                />
-                                <ul x-show="open" x-cloak
-                                    class="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    @forelse($this->customers as $customer)
-                                        <li>
-                                            <button
-                                                type="button"
-                                                @mousedown.prevent
-                                                wire:click="selectCustomer({{ $customer->id }})"
-                                                class="w-full px-4 py-2 text-left hover:bg-base-200"
-                                            >
-                                                <div class="font-medium">{{ $customer->name }}</div>
-                                                <div class="text-sm text-base-content/60">{{ $customer->phone }}</div>
-                                            </button>
-                                        </li>
-                                    @empty
-                                        <li class="px-4 py-3 text-sm text-base-content/50 text-center">
-                                            {{ strlen($customerSearch) < 2 ? 'Type at least 2 characters...' : 'No customers found' }}
-                                        </li>
-                                    @endforelse
-                                </ul>
-                            </div>
-                            @error('customer_id') <span class="label-text-alt text-error mt-1 block">{{ $message }}</span> @enderror
-                        </div>
+                {{-- Use wire:model to bind to child component's customerId and vehicleId --}}
+                <livewire:customer-vehicle-selector
+                    :key="'customer-selector'" />
 
-                        <!-- Inline New Customer Form -->
-                        @if($showNewCustomerForm)
-                            <div class="bg-base-200 p-4 rounded-lg mb-4">
-                                <h3 class="font-medium mb-3">New Customer</h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <input type="text" wire:model="newCustomerName" placeholder="Full Name *" class="input input-bordered input-sm w-full" />
-                                        @error('newCustomerName') <span class="text-error text-xs mt-1 block">{{ $message }}</span> @enderror
-                                    </div>
-                                    <div>
-                                        <input type="text" wire:model="newCustomerPhone" placeholder="Phone *" class="input input-bordered input-sm w-full" />
-                                        @error('newCustomerPhone') <span class="text-error text-xs mt-1 block">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-                                <div class="flex gap-2 mt-3">
-                                    <button type="button" wire:click="createNewCustomer" class="btn btn-primary btn-sm">Save Customer</button>
-                                    <button type="button" wire:click="hideNewCustomerForm" class="btn btn-ghost btn-sm">Cancel</button>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Vehicle Selection (only shown once customer is chosen) -->
-                        @if($customer_id)
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-medium">Vehicle *</span>
-                                    <button type="button" wire:click="openNewVehicleForm" class="btn btn-ghost btn-xs">
-                                        + New Vehicle
-                                    </button>
-                                </label>
-                                <select wire:model="vehicle_id" class="select select-bordered w-full">
-                                    <option value="">Select vehicle...</option>
-                                    @foreach($this->vehicles as $vehicle)
-                                        <option value="{{ $vehicle->id }}">
-                                            {{ $vehicle->registration_number }}
-                                            @if($vehicle->make || $vehicle->model)
-                                                — {{ trim($vehicle->make . ' ' . $vehicle->model) }}
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('vehicle_id') <span class="label-text-alt text-error mt-1 block">{{ $message }}</span> @enderror
-                            </div>
-
-                            @if($showNewVehicleForm)
-                                <div class="bg-base-200 p-4 rounded-lg mt-4">
-                                    <h3 class="font-medium mb-3">New Vehicle</h3>
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <div>
-                                            <input type="text" wire:model="newVehicleRegNumber" placeholder="Reg Number *" class="input input-bordered input-sm w-full uppercase" />
-                                            @error('newVehicleRegNumber') <span class="text-error text-xs mt-1 block">{{ $message }}</span> @enderror
-                                        </div>
-                                        <input type="text" wire:model="newVehicleMake" placeholder="Make (e.g. Toyota)" class="input input-bordered input-sm w-full" />
-                                        <input type="text" wire:model="newVehicleModel" placeholder="Model (e.g. Corolla)" class="input input-bordered input-sm w-full" />
-                                    </div>
-                                    <div class="flex gap-2 mt-3">
-                                        <button type="button" wire:click="createNewVehicle" class="btn btn-primary btn-sm">Save Vehicle</button>
-                                        <button type="button" wire:click="hideNewVehicleForm" class="btn btn-ghost btn-sm">Cancel</button>
-                                    </div>
-                                </div>
-                            @endif
-                        @endif
-                    </div>
-                </div>
-                @if ($showNewCustomerForm)
-                    <div class="bg-base-200 p-4 rounded-lg mb-4">
-                        <h3 class="font-medium mb-3">New Customer</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <input type="text" wire:model="newCustomerName" placeholder="Name *"
-                                class="input input-bordered input-sm" />
-                            <input type="text" wire:model="newCustomerPhone" placeholder="Phone *"
-                                class="input input-bordered input-sm" />
-                            <input type="email" wire:model="newCustomerEmail" placeholder="Email"
-                                class="input input-bordered input-sm" />
-                        </div>
-                        <div class="flex gap-2 mt-3">
-                            <button type="button" wire:click="createNewCustomer" class="btn btn-primary btn-sm">Save
-                                Customer</button>
-                            <button type="button" wire:click="hideNewCustomerForm"
-                                class="btn btn-ghost btn-sm">Cancel</button>
-                        </div>
-                    </div>
-                @endif
-
-                @if ($customer_id)
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-medium">Vehicle *</span>
-                            <button type="button" wire:click="openNewVehicleForm" class="btn btn-ghost btn-xs">+ New
-                                Vehicle</button>
-                        </label>
-                        <select wire:model="vehicle_id" class="select select-bordered w-full">
-                            <option value="">Select vehicle...</option>
-                            @foreach ($this->vehicles as $vehicle)
-                                <option value="{{ $vehicle->id }}">
-                                    {{ $vehicle->registration_number }} - {{ $vehicle->make }} {{ $vehicle->model }}
-                                    @if ($vehicle->chassis_number)
-                                        ({{ $vehicle->chassis_number }})
-                                    @endif
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('vehicle_id')
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    @if ($showNewVehicleForm)
-                        <div class="bg-base-200 p-4 rounded-lg mt-4">
-                            <h3 class="font-medium mb-3">New Vehicle</h3>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <input type="text" wire:model="newVehicleRegNumber" placeholder="Reg Number *"
-                                    class="input input-bordered input-sm" />
-                                <input type="text" wire:model="newVehicleMake" placeholder="Make"
-                                    class="input input-bordered input-sm" />
-                                <input type="text" wire:model="newVehicleModel" placeholder="Model"
-                                    class="input input-bordered input-sm" />
-                                <input type="number" wire:model="newVehicleYear" placeholder="Year"
-                                    class="input input-bordered input-sm" />
-                                <input type="text" wire:model="newVehicleColor" placeholder="Color"
-                                    class="input input-bordered input-sm" />
-                                <input type="text" wire:model="newVehicleChassisNumber"
-                                    placeholder="Chassis Number" class="input input-bordered input-sm" />
-                            </div>
-                            <div class="flex gap-2 mt-3">
-                                <button type="button" wire:click="createNewVehicle"
-                                    class="btn btn-primary btn-sm">Save Vehicle</button>
-                                <button type="button" wire:click="hideNewVehicleForm"
-                                    class="btn btn-ghost btn-sm">Cancel</button>
-                            </div>
-                        </div>
-                    @endif
-                @endif
+                @error('customer_id')
+                    <span class="text-error text-xs mt-2 block">{{ $message }}</span>
+                @enderror
+                @error('vehicle_id')
+                    <span class="text-error text-xs mt-2 block">{{ $message }}</span>
+                @enderror
 
                 <div class="form-control mt-4">
                     <label class="label"><span class="label-text font-medium">Customer Notes</span></label>
@@ -519,10 +348,20 @@
                 </div>
             </div>
 
+            {{-- Debug Info (remove after testing) --}}
+            <div class="alert alert-info text-xs">
+                <div>
+                    <strong>Debug:</strong> Customer ID: {{ $customer_id ?? 'null' }}, Vehicle ID: {{ $vehicle_id ?? 'null' }}
+                </div>
+            </div>
+
             <div class="flex justify-between mt-4">
                 <button type="button" wire:click="previousStep" class="btn btn-ghost">← Back</button>
                 <div class="flex flex-col items-end gap-2">
                     @error('closure')
+                        <div class="alert alert-error py-2 px-4 text-sm">{{ $message }}</div>
+                    @enderror
+                    @error('save')
                         <div class="alert alert-error py-2 px-4 text-sm">{{ $message }}</div>
                     @enderror
                     <button type="button" wire:click="save" class="btn btn-primary" wire:loading.attr="disabled">

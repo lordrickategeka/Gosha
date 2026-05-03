@@ -15,6 +15,7 @@ class WashOrdersComponent extends Component
     public $search = '';
     public $status = '';
     public $source = '';
+    public $perPage = 6;
     public $view = 'queue'; // queue, list
 
     // Assign-bay modal state
@@ -26,6 +27,8 @@ class WashOrdersComponent extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
+        'source' => ['except' => ''],
+        'perPage' => ['except' => 6],
         'view'   => ['except' => 'queue'],
     ];
 
@@ -204,7 +207,7 @@ class WashOrdersComponent extends Component
             ->when($this->source, fn($q) => $q->where('source', $this->source))
             ->when(session('current_branch_id'), fn($q) => $q->where('branch_id', session('current_branch_id')))
             ->latest()
-            ->paginate(15);
+            ->paginate($this->perPage);
 
         return view('livewire.wash-orders.wash-orders-component', [
             'washOrders' => $washOrders,

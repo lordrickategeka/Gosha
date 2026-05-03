@@ -12,7 +12,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
         },
     },
@@ -25,49 +25,53 @@ export default {
         themes: [
             {
                 garage: {
-                    "primary": "#3b82f6",          // Blue
+                    "primary": "#2C72B3",
                     "primary-content": "#ffffff",
-                    "secondary": "#64748b",        // Slate
+                    "secondary": "#5BA3E0",
                     "secondary-content": "#ffffff",
-                    "accent": "#f59e0b",           // Amber
-                    "accent-content": "#000000",
-                    "neutral": "#1e293b",          // Slate 800
-                    "neutral-content": "#f1f5f9",
-                    "base-100": "#ffffff",         // White
-                    "base-200": "#f8fafc",         // Slate 50
-                    "base-300": "#e2e8f0",         // Slate 200
-                    "base-content": "#1e293b",     // Slate 800
-                    "info": "#0ea5e9",             // Sky 500
+                    "accent": "#4A8FCC",
+                    "accent-content": "#ffffff",
+                    "neutral": "#2B3440",
+                    "neutral-content": "#ffffff",
+                    "base-100": "#ffffff",
+                    "base-200": "#f3f4f6",
+                    "base-300": "#e5e7eb",
+                    "base-content": "#1f2937",
+                    "info": "#4A8FCC",
                     "info-content": "#ffffff",
-                    "success": "#22c55e",          // Green 500
+                    "success": "#36D399",
                     "success-content": "#ffffff",
-                    "warning": "#f59e0b",          // Amber 500
-                    "warning-content": "#000000",
-                    "error": "#ef4444",            // Red 500
+                    "warning": "#FBBD23",
+                    "warning-content": "#2B3440",
+                    "error": "#F87272",
                     "error-content": "#ffffff",
+                    "primary-light": "#4A8FCC",
+                    "primary-dark": "#1E4F7F",
+                    "secondary-light": "#7DB9E8",
+                    "secondary-dark": "#2E5F8F",
                 },
             },
             {
                 garageDark: {
-                    "primary": "#60a5fa",          // Blue 400
-                    "primary-content": "#000000",
-                    "secondary": "#94a3b8",        // Slate 400
-                    "secondary-content": "#000000",
-                    "accent": "#fbbf24",           // Amber 400
+                    "primary": "#8da6ea",          // Light blue accent
+                    "primary-content": "#111111",
+                    "secondary": "#a4adb8",        // Muted steel
+                    "secondary-content": "#111111",
+                    "accent": "#d6a36c",           // Warm amber
                     "accent-content": "#000000",
-                    "neutral": "#334155",          // Slate 700
-                    "neutral-content": "#f1f5f9",
-                    "base-100": "#1e293b",         // Slate 800
-                    "base-200": "#0f172a",         // Slate 900
-                    "base-300": "#334155",         // Slate 700
-                    "base-content": "#f1f5f9",     // Slate 100
-                    "info": "#38bdf8",             // Sky 400
+                    "neutral": "#221f1a",          // Warm charcoal
+                    "neutral-content": "#f7f4ee",
+                    "base-100": "#201d19",         // Panel
+                    "base-200": "#171511",         // Canvas
+                    "base-300": "#36312a",         // Border
+                    "base-content": "#f3efe7",     // Text
+                    "info": "#7aa0ea",             // Info blue
                     "info-content": "#000000",
-                    "success": "#4ade80",          // Green 400
+                    "success": "#79b18d",          // Muted green
                     "success-content": "#000000",
-                    "warning": "#fbbf24",          // Amber 400
+                    "warning": "#d6a36c",          // Warm amber
                     "warning-content": "#000000",
-                    "error": "#f87171",            // Red 400
+                    "error": "#df8b80",            // Soft red
                     "error-content": "#000000",
                 },
             },

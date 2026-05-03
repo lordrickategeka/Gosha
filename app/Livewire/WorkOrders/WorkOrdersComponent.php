@@ -18,7 +18,7 @@ class WorkOrdersComponent extends Component
     public $technician = '';
     public $dateFrom = '';
     public $dateTo = '';
-    public $perPage = 15;
+    public $perPage = 6;
 
     protected $queryString = [
         'search' => ['except' => ''],
