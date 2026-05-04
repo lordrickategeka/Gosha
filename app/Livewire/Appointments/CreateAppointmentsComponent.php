@@ -13,16 +13,16 @@ class CreateAppointmentsComponent extends Component
     public $type = 'service';
     public $scheduled_date;
     public $scheduled_time = '09:00';
-    public $estimated_duration = 60;
+    public $duration_minutes = 60;
     public $notes = '';
 
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
         'vehicle_id' => 'required|exists:vehicles,id',
-        'type' => 'required|in:service,repair,wash,diagnostics,other',
+        'type' => 'required|in:service,wash,combo,diagnostics,estimate',
         'scheduled_date' => 'required|date|after_or_equal:today',
         'scheduled_time' => 'required',
-        'estimated_duration' => 'required|integer|min:15',
+        'duration_minutes' => 'required|integer|min:15',
     ];
 
     public function mount()
@@ -55,9 +55,9 @@ class CreateAppointmentsComponent extends Component
             'type' => $this->type,
             'scheduled_date' => $this->scheduled_date,
             'scheduled_time' => $this->scheduled_time,
-            'estimated_duration' => $this->estimated_duration,
+            'duration_minutes' => $this->duration_minutes,
             'status' => 'scheduled',
-            'notes' => $this->notes,
+            'service_notes' => $this->notes,
         ]);
 
         session()->flash('success', 'Appointment scheduled.');

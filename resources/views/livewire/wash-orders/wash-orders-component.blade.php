@@ -16,7 +16,7 @@
                 </button>
             </div>
 
-            @can('create wash orders')
+            @can('create_wash_orders')
             <a href="{{ route('wash-orders.create') }}" class="btn btn-primary rounded-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -58,11 +58,11 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach($this->washBays as $bay)
-                                <div class="p-4 rounded-lg border-2 {{ $bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5') }}">
+                                <div class="p-4 rounded-lg border-2 {{ $bay->status instanceof App\Enums\WashBayStatus ? $bay->status->borderClass() : ($bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5')) }}">
                                     <div class="flex items-center justify-between mb-2">
                                         <h3 class="font-bold">{{ $bay->name }}</h3>
-                                        <span class="badge badge-sm {{ $bay->status === 'available' ? 'badge-success' : ($bay->status === 'occupied' ? 'badge-warning' : 'badge-error') }}">
-                                            {{ ucfirst($bay->status) }}
+                                        <span class="badge badge-sm {{ $bay->status instanceof App\Enums\WashBayStatus ? $bay->status->badgeClass() : ($bay->status === 'available' ? 'badge-success' : ($bay->status === 'occupied' ? 'badge-warning' : 'badge-error')) }}">
+                                            {{ $bay->status instanceof App\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
                                         </span>
                                     </div>
 
@@ -281,7 +281,7 @@
                                 <td>{{ $order->washBay?->name ?? '-' }}</td>
                                 <td>
                                     <span class="badge badge-{{ $order->status_color }} badge-sm">
-                                        {{ ucfirst($order->status) }}
+                                        {{ $order->status instanceof \App\Enums\WashOrderStatus ? $order->status->label() : ucfirst($order->status) }}
                                     </span>
                                 </td>
                                 <td class="text-sm text-base-content/60">

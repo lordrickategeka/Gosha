@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Staff</h1>
             <p class="text-base-content/60">Manage team members and roles</p>
         </div>
-        @can('create users')
+        @can('create_users')
         <a href="{{ route('users.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -87,7 +87,7 @@
                                     <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-40">
                                         <li><a href="{{ route('users.show', $user) }}">View</a></li>
-                                        @can('edit users')
+                                        @can('edit_users')
                                             <li><a href="{{ route('users.edit', $user) }}">Edit</a></li>
                                             <li>
                                                 <button wire:click="toggleStatus({{ $user->id }})" class="{{ $user->is_active ? 'text-error' : 'text-success' }}">

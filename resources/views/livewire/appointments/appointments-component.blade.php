@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Appointments</h1>
             <p class="text-base-content/60">{{ $todayCount }} today, {{ $upcomingCount }} upcoming</p>
         </div>
-        @can('create appointments')
+        @can('create_appointments')
         <a href="{{ route('appointments.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -30,8 +30,8 @@
                     <option value="no_show">No Show</option>
                 </select>
                 <div class="flex gap-2">
-                    <button wire:click="$set('date', '{{ now()->format('Y-m-d') }}')" class="btn btn-ghost btn-sm flex-1">Today</button>
-                    <button wire:click="$set('date', '{{ now()->addDay()->format('Y-m-d') }}')" class="btn btn-ghost btn-sm flex-1">Tomorrow</button>
+                    <button wire:click="$set('date', '{{ now()->format('d-m-Y') }}')" class="btn btn-ghost btn-sm flex-1">Today</button>
+                    <button wire:click="$set('date', '{{ now()->addDay()->format('d-m-Y') }}')" class="btn btn-ghost btn-sm flex-1">Tomorrow</button>
                 </div>
             </div>
         </div>

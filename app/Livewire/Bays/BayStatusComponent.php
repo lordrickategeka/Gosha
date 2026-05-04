@@ -35,7 +35,8 @@ class BayStatusComponent extends Component
 
     public function editServiceBay(ServiceBay $bay)
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
+        abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
         $this->editingServiceBayId = $bay->id;
         $this->serviceBayName = $bay->name;
         $this->serviceBayType = $bay->bay_type;
@@ -45,7 +46,7 @@ class BayStatusComponent extends Component
 
     public function saveServiceBay()
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
 
         $this->validate([
             'serviceBayName' => 'required|string|max:100',
@@ -60,7 +61,9 @@ class BayStatusComponent extends Component
         ];
 
         if ($this->editingServiceBayId) {
-            ServiceBay::findOrFail($this->editingServiceBayId)->update($data);
+            $serviceBay = ServiceBay::findOrFail($this->editingServiceBayId);
+            abort_unless(in_array($serviceBay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
+            $serviceBay->update($data);
             session()->flash('success', 'Service bay updated.');
         } else {
             $data['branch_id'] = session('current_branch_id');
@@ -82,7 +85,8 @@ class BayStatusComponent extends Component
 
     public function editWashBay(WashBay $bay)
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
+        abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
         $this->editingWashBayId = $bay->id;
         $this->washBayName = $bay->name;
         $this->washBayType = $bay->bay_type instanceof \App\Enums\WashBayType ? $bay->bay_type->value : $bay->bay_type;
@@ -92,7 +96,7 @@ class BayStatusComponent extends Component
 
     public function saveWashBay()
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
 
         $this->validate([
             'washBayName'  => 'required|string|max:100',
@@ -107,7 +111,9 @@ class BayStatusComponent extends Component
         ];
 
         if ($this->editingWashBayId) {
-            WashBay::findOrFail($this->editingWashBayId)->update($data);
+            $washBay = WashBay::findOrFail($this->editingWashBayId);
+            abort_unless(in_array($washBay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
+            $washBay->update($data);
             session()->flash('success', 'Wash bay updated.');
         } else {
             $data['branch_id'] = session('current_branch_id');
@@ -128,10 +134,11 @@ class BayStatusComponent extends Component
 
     public function deleteBay()
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
 
         if ($this->confirmingDeleteType === 'service') {
             $bay = ServiceBay::findOrFail($this->confirmingDeleteId);
+            abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
             if ($bay->isOccupied()) {
                 session()->flash('error', 'Cannot delete an occupied bay.');
             } else {
@@ -140,6 +147,7 @@ class BayStatusComponent extends Component
             }
         } elseif ($this->confirmingDeleteType === 'wash') {
             $bay = WashBay::findOrFail($this->confirmingDeleteId);
+            abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
             if ($bay->isOccupied()) {
                 session()->flash('error', 'Cannot delete an occupied bay.');
             } else {
@@ -160,42 +168,48 @@ class BayStatusComponent extends Component
 
     public function markServiceBayAvailable(ServiceBay $bay)
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
+        abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
         $bay->markAsAvailable();
         session()->flash('success', "{$bay->name} marked as available.");
     }
 
     public function markServiceBayMaintenance(ServiceBay $bay)
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
+        abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
         $bay->update(['status' => 'maintenance']);
         session()->flash('success', "{$bay->name} set to maintenance.");
     }
 
     public function markWashBayAvailable(WashBay $bay)
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
+        abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
         $bay->markAsAvailable();
         session()->flash('success', "{$bay->name} marked as available.");
     }
 
     public function markWashBayMaintenance(WashBay $bay)
     {
-        $this->authorize('manage bays');
+        $this->authorize('manage_bays');
+        abort_unless(in_array($bay->branch_id, auth()->user()->getAccessibleBranchIds()), 403);
         $bay->markAsMaintenance();
         session()->flash('success', "{$bay->name} set to maintenance.");
     }
 
     public function getServiceBaysProperty()
     {
-        return ServiceBay::when(session('current_branch_id'), fn($q) => $q->where('branch_id', session('current_branch_id')))
+        return ServiceBay::whereIn('branch_id', auth()->user()->getAccessibleBranchIds())
+            ->when(session('current_branch_id'), fn($q) => $q->where('branch_id', session('current_branch_id')))
             ->with(['currentWorkOrder.vehicle', 'currentWorkOrder.assignedTechnician'])
             ->get();
     }
 
     public function getWashBaysProperty()
     {
-        return WashBay::when(session('current_branch_id'), fn($q) => $q->where('branch_id', session('current_branch_id')))
+        return WashBay::whereIn('branch_id', auth()->user()->getAccessibleBranchIds())
+            ->when(session('current_branch_id'), fn($q) => $q->where('branch_id', session('current_branch_id')))
             ->with(['currentWashOrder.vehicle', 'currentWashOrder.assignedAttendant'])
             ->get();
     }

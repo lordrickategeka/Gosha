@@ -36,7 +36,8 @@ class WashOrderObserver
             return;
         }
 
-        $rule = CommissionRule::where('branch_id', $washOrder->branch_id)
+        $rule = CommissionRule::where('vendor_id', $attendant->vendor_id)
+            ->where('branch_id', $washOrder->branch_id)
             ->where('role', 'wash_attendant')
             ->where('is_active', true)
             ->first();

@@ -18,7 +18,7 @@ class UsersComponent extends Component
 
     public function toggleStatus(User $user)
     {
-        $this->authorize('edit users');
+        $this->authorize('edit_users');
         $user->update(['is_active' => !$user->is_active]);
         session()->flash('success', $user->is_active ? 'User activated.' : 'User deactivated.');
     }

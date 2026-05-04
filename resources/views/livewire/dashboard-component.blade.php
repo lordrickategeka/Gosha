@@ -284,7 +284,7 @@
     </div>
 
     <!-- Unpaid Invoices -->
-    @can('view invoices')
+    @can('view_invoices')
     <div class="app-table-shell">
         <div class="flex items-center justify-between border-b border-gray-200 px-6 py-5">
             <div>

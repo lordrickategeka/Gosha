@@ -17,7 +17,7 @@ class ShowWashOrdersComponent extends Component
 
     public function start($bayId = null)
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
         $bay = $bayId ? WashBay::find($bayId) : null;
         $this->washOrder->start($bay);
         $this->washOrder->refresh();
@@ -26,7 +26,7 @@ class ShowWashOrdersComponent extends Component
 
     public function complete()
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
         $this->washOrder->complete();
         $this->washOrder->refresh();
         session()->flash('success', 'Wash completed.');
@@ -34,7 +34,7 @@ class ShowWashOrdersComponent extends Component
 
     public function cancel()
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
         $this->washOrder->cancel();
         $this->washOrder->refresh();
         session()->flash('success', 'Wash order cancelled.');

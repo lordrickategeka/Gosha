@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Branches</h1>
             <p class="text-base-content/60">Manage your garage locations</p>
         </div>
-        @can('create branches')
+        @can('create_branches')
         <button wire:click="$set('showCreateModal', true)" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -49,7 +49,7 @@
                         @if(session('current_branch_id') != $branch->id)
                             <button wire:click="switchBranch({{ $branch->id }})" class="btn btn-primary btn-sm">Switch</button>
                         @endif
-                        @can('edit branches')
+                        @can('edit_branches')
                             <a href="{{ route('branches.edit', $branch) }}" class="btn btn-ghost btn-sm">Edit</a>
                         @endcan
                     </div>

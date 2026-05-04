@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Invoices</h1>
             <p class="text-base-content/60">Manage billing and payments</p>
         </div>
-        @can('create invoices')
+        @can('create_invoices')
         <a href="{{ route('invoices.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

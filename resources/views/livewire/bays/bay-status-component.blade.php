@@ -6,7 +6,7 @@
             <p class="app-subtitle">Real-time view of service and wash bays, their occupancy, and current assignments.</p>
         </div>
         <div class="flex gap-2">
-            @can('view wash orders')
+            @can('view_wash_orders')
             <a href="{{ route('wash-orders.index') }}" class="btn btn-outline btn-primary btn-sm gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
@@ -14,7 +14,7 @@
                 View Queue
             </a>
             @endcan
-            @can('create wash orders')
+            @can('create_wash_orders')
             <a href="{{ route('wash-orders.create') }}" class="btn btn-primary btn-sm gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -36,7 +36,7 @@
                     </svg>
                     Service Bays ({{ $this->serviceBays->count() }})
                 </h2>
-                @can('manage bays')
+                @can('manage_bays')
                 <button wire:click="createServiceBay" class="btn btn-primary btn-sm gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -53,7 +53,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                         <p class="text-base-content/50">No service bays yet</p>
-                        @can('manage bays')
+                        @can('manage_bays')
                         <button wire:click="createServiceBay" class="btn btn-primary btn-sm mt-3">Add Your First Service Bay</button>
                         @endcan
                     </div>
@@ -75,7 +75,7 @@
                                     </div>
                                 </div>
 
-                                @can('manage bays')
+                                @can('manage_bays')
                                 <div class="dropdown dropdown-end">
                                     <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,7 +138,7 @@
                     Wash Bays ({{ $this->washBays->count() }})
                 </h2>
                 <div class="flex gap-2">
-                    @can('create wash orders')
+                    @can('create_wash_orders')
                     <a href="{{ route('wash-orders.create') }}" class="btn btn-primary btn-sm gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -146,7 +146,7 @@
                         New Wash Order
                     </a>
                     @endcan
-                    @can('manage bays')
+                    @can('manage_bays')
                     <button wire:click="createWashBay" class="btn btn-info btn-sm gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -164,7 +164,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                         </svg>
                         <p class="text-base-content/50">No wash bays yet</p>
-                        @can('manage bays')
+                        @can('manage_bays')
                         <button wire:click="createWashBay" class="btn btn-info btn-sm mt-3">Add Your First Wash Bay</button>
                         @endcan
                     </div>
@@ -191,7 +191,7 @@
                                     </div>
                                 </div>
 
-                                @can('manage bays')
+                                @can('manage_bays')
                                 <div class="dropdown dropdown-end">
                                     <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,7 +241,7 @@
                             @else
                                 <div class="mt-3 flex items-center justify-between">
                                     <p class="text-base-content/50 text-sm">Ready for next vehicle</p>
-                                    @can('create wash orders')
+                                    @can('create_wash_orders')
                                     @if($statusValue === 'available')
                                     <a href="{{ route('wash-orders.create') }}" class="btn btn-primary btn-xs gap-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

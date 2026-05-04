@@ -39,7 +39,7 @@ class WorkOrdersComponent extends Component
 
     public function startWorkOrder(WorkOrder $workOrder)
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         if ($workOrder->canStart()) {
             $workOrder->start();
@@ -49,7 +49,7 @@ class WorkOrdersComponent extends Component
 
     public function markReady(WorkOrder $workOrder)
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         if ($workOrder->canComplete()) {
             $workOrder->markReady();
@@ -59,7 +59,7 @@ class WorkOrdersComponent extends Component
 
     public function deliver(WorkOrder $workOrder)
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         if ($workOrder->canDeliver()) {
             $workOrder->deliver();

@@ -13,7 +13,7 @@
         </div>
         <div class="flex gap-2">
             <a href="{{ route('work-orders.create', ['customer' => $vehicle->customer_id, 'vehicle' => $vehicle->id]) }}" class="btn btn-primary btn-sm">New Work Order</a>
-            @can('edit vehicles')
+            @can('edit_vehicles')
                 <a href="{{ route('vehicles.edit', $vehicle) }}" class="btn btn-ghost btn-sm">Edit</a>
             @endcan
         </div>

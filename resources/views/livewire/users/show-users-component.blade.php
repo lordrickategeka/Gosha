@@ -23,7 +23,7 @@
                 </div>
             </div>
         </div>
-        @can('edit users')
+        @can('edit_users')
             <a href="{{ route('users.edit', $user) }}" class="btn btn-ghost">Edit</a>
         @endcan
     </div>

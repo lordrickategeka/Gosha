@@ -71,7 +71,9 @@ class CustomerVehicleSelector extends Component
             $this->customerId = $customer->id;
             $this->customerSearch = $customer->name . ' - ' . $customer->phone;
             $this->showCustomerDropdown = false;
-            $this->vehicleId = null; // Reset vehicle selection
+            $this->vehicleId = null;
+            $this->dispatch('customerSelected', customerId: $customer->id);
+            $this->dispatch('vehicleSelected', vehicleId: null);
         }
     }
 
@@ -106,6 +108,8 @@ class CustomerVehicleSelector extends Component
         $this->customerSearch = $customer->name . ' - ' . $customer->phone;
         $this->showNewCustomerForm = false;
         $this->resetNewCustomerFields();
+        $this->dispatch('customerSelected', customerId: $customer->id);
+        $this->dispatch('vehicleSelected', vehicleId: null);
 
         session()->flash('customer-selector-success', 'Customer created successfully.');
     }
@@ -150,6 +154,7 @@ class CustomerVehicleSelector extends Component
         $this->vehicleId = $vehicle->id;
         $this->showNewVehicleForm = false;
         $this->resetNewVehicleFields();
+        $this->dispatch('vehicleSelected', vehicleId: $vehicle->id);
 
         session()->flash('customer-selector-success', 'Vehicle added successfully.');
     }
@@ -169,12 +174,19 @@ class CustomerVehicleSelector extends Component
     public function getCustomersProperty()
     {
         $vendorId = auth()->user()->vendor_id;
+        $branchId = session('current_branch_id');
 
         if (strlen($this->customerSearch) < $this->minSearchLength) {
             return collect();
         }
 
         return Customer::where('vendor_id', $vendorId)
+            ->when($branchId, function ($q) use ($branchId) {
+                $q->where(function ($sub) use ($branchId) {
+                    $sub->whereHas('workOrders', fn($wq) => $wq->where('branch_id', $branchId))
+                        ->orWhereHas('washOrders', fn($wq) => $wq->where('branch_id', $branchId));
+                });
+            })
             ->where(function ($q) {
                 $q->where('name', 'like', "%{$this->customerSearch}%")
                   ->orWhere('phone', 'like', "%{$this->customerSearch}%")

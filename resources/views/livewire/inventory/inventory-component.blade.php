@@ -8,7 +8,7 @@
             <a href="{{ route('inventory.low-stock') }}" class="btn btn-warning btn-sm">
                 Low Stock ({{ $stats['low_stock'] }})
             </a>
-            @can('create inventory')
+            @can('create_inventory')
             <a href="{{ route('inventory.create') }}" class="btn btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -102,10 +102,10 @@
                                     <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-40">
                                         <li><a href="{{ route('inventory.show', $item) }}">View</a></li>
-                                        @can('edit inventory')
+                                        @can('edit_inventory')
                                             <li><a href="{{ route('inventory.edit', $item) }}">Edit</a></li>
                                         @endcan
-                                        @can('adjust stock')
+                                        @can('adjust_stock')
                                             <li><a href="{{ route('inventory.movements') }}?item={{ $item->id }}">Adjust Stock</a></li>
                                         @endcan
                                     </ul>

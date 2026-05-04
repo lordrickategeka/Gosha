@@ -12,10 +12,10 @@
             </div>
         </div>
         <div class="flex gap-2">
-            @can('adjust stock')
+            @can('adjust_stock')
                 <button wire:click="$set('showAdjustModal', true)" class="btn btn-primary">Adjust Stock</button>
             @endcan
-            @can('edit inventory')
+            @can('edit_inventory')
                 <a href="{{ route('inventory.edit', $item) }}" class="btn btn-ghost">Edit</a>
             @endcan
         </div>

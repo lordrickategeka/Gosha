@@ -20,7 +20,7 @@ class CommissionsComponent extends Component
 
     public function markPaid(Commission $commission)
     {
-        $this->authorize('pay commissions');
+        $this->authorize('pay_commissions');
         $commission->update(['status' => 'paid', 'paid_at' => now()]);
         session()->flash('success', 'Commission marked as paid.');
     }

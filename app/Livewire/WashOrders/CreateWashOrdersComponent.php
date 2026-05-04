@@ -2,115 +2,42 @@
 
 namespace App\Livewire\WashOrders;
 
-use App\Models\Customer;
-use App\Models\Vehicle;
 use App\Models\WashOrder;
 use App\Models\WashPackage;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class CreateWashOrdersComponent extends Component
 {
     public $customer_id = '';
     public $vehicle_id = '';
-    public $customerSearch = '';
-    public $showCustomerDropdown = false;
-    public $showNewCustomerForm = false;
-    public $showNewVehicleForm = false;
-
-    public $newCustomerName = '';
-    public $newCustomerPhone = '';
-
-    public $newVehicleRegNumber = '';
-    public $newVehicleMake = '';
-    public $newVehicleModel = '';
 
     public $wash_type = 'basic';
     public $wash_package_id = '';
     public $priority = 'normal';
+    public $source = 'walk_in';
     public $customer_notes = '';
 
     public $items = [];
+
+    #[On('customerSelected')]
+    public function onCustomerSelected($customerId): void
+    {
+        $this->customer_id = $customerId ?? '';
+        $this->vehicle_id = '';
+    }
+
+    #[On('vehicleSelected')]
+    public function onVehicleSelected($vehicleId): void
+    {
+        $this->vehicle_id = $vehicleId ?? '';
+    }
 
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
         'vehicle_id' => 'required|exists:vehicles,id',
         'wash_type' => 'required|in:basic,full,premium,interior,exterior,engine,detailing',
     ];
-
-    public function updatedCustomerSearch()
-    {
-        $this->showCustomerDropdown = strlen($this->customerSearch) >= 2;
-    }
-
-    public function openNewCustomerForm()
-    {
-        $this->showNewCustomerForm = true;
-        $this->showCustomerDropdown = false;
-    }
-
-    public function hideNewCustomerForm()
-    {
-        $this->showNewCustomerForm = false;
-    }
-
-    public function openNewVehicleForm()
-    {
-        $this->showNewVehicleForm = true;
-    }
-
-    public function hideNewVehicleForm()
-    {
-        $this->showNewVehicleForm = false;
-    }
-
-    public function selectCustomer($customerId)
-    {
-        $customer = Customer::find($customerId);
-        if ($customer) {
-            $this->customer_id = $customer->id;
-            $this->customerSearch = $customer->name . ' - ' . $customer->phone;
-            $this->showCustomerDropdown = false;
-            $this->vehicle_id = '';
-            $this->dispatch('close-customer-dropdown');
-        }
-    }
-
-    public function createNewCustomer()
-    {
-        $this->validate([
-            'newCustomerName' => 'required|string|max:255',
-            'newCustomerPhone' => 'required|string|max:20',
-        ]);
-
-        $customer = Customer::create([
-            'vendor_id' => auth()->user()->vendor_id,
-            'name' => $this->newCustomerName,
-            'phone' => $this->newCustomerPhone,
-        ]);
-
-        $this->customer_id = $customer->id;
-        $this->customerSearch = $customer->name . ' - ' . $customer->phone;
-        $this->showNewCustomerForm = false;
-        $this->reset(['newCustomerName', 'newCustomerPhone']);
-    }
-
-    public function createNewVehicle()
-    {
-        $this->validate([
-            'newVehicleRegNumber' => 'required|string|max:20',
-        ]);
-
-        $vehicle = Vehicle::create([
-            'customer_id' => $this->customer_id,
-            'registration_number' => strtoupper($this->newVehicleRegNumber),
-            'make' => $this->newVehicleMake,
-            'model' => $this->newVehicleModel,
-        ]);
-
-        $this->vehicle_id = $vehicle->id;
-        $this->showNewVehicleForm = false;
-        $this->reset(['newVehicleRegNumber', 'newVehicleMake', 'newVehicleModel']);
-    }
 
     public function updatedWashPackageId()
     {
@@ -140,24 +67,6 @@ class CreateWashOrdersComponent extends Component
         $this->items = array_values($this->items);
     }
 
-    public function getCustomersProperty()
-    {
-        if (strlen($this->customerSearch) < 2) return collect();
-        $vendorId = auth()->user()->vendor_id;
-        return Customer::where('vendor_id', $vendorId)
-            ->where(function ($q) {
-                $q->where('name', 'like', "%{$this->customerSearch}%")
-                  ->orWhere('phone', 'like', "%{$this->customerSearch}%");
-            })
-            ->orderBy('name')->limit(10)->get();
-    }
-
-    public function getVehiclesProperty()
-    {
-        if (!$this->customer_id) return collect();
-        return Vehicle::where('customer_id', $this->customer_id)->get();
-    }
-
     public function getPackagesProperty()
     {
         return WashPackage::where('is_active', true)->get();
@@ -183,11 +92,11 @@ class CreateWashOrdersComponent extends Component
             'vehicle_id' => $this->vehicle_id,
             'wash_package_id' => $this->wash_package_id ?: null,
             'created_by' => auth()->id(),
-            'source' => 'walk_in',
+            'source' => $this->source,
             'wash_type' => $this->wash_type,
             'status' => 'queued',
             'priority' => $this->priority,
-            'customer_notes' => $this->customer_notes,
+            'notes' => $this->customer_notes,
             'queue_position' => WashOrder::getNextQueuePosition((int) session('current_branch_id')),
             'queued_at' => now(),
         ]);

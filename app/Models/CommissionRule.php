@@ -14,6 +14,7 @@ class CommissionRule extends Model
 
     protected $fillable = [
         'vendor_id',
+        'branch_id',
         'name',
         'role',
         'type',

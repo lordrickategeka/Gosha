@@ -14,27 +14,24 @@
     <form wire:submit="save" class="max-w-2xl">
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
-                {{-- Reusable Customer/Vehicle Selector --}}
                 <livewire:customer-vehicle-selector
-                    :customerId="$customer_id"
-                    :vehicleId="$vehicle_id"
-                />
+                    :key="'customer-selector'" />
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     <div class="form-control">
                         <label class="label"><span class="label-text font-medium">Service Type *</span></label>
                         <select wire:model="type" class="select select-bordered">
                             <option value="service">General Service</option>
-                            <option value="repair">Repair</option>
                             <option value="wash">Wash</option>
+                            <option value="combo">Combo (Service + Wash)</option>
                             <option value="diagnostics">Diagnostics</option>
-                            <option value="other">Other</option>
+                            <option value="estimate">Estimate</option>
                         </select>
                     </div>
 
                     <div class="form-control">
                         <label class="label"><span class="label-text font-medium">Est. Duration (mins)</span></label>
-                        <select wire:model="estimated_duration" class="select select-bordered">
+                        <select wire:model="duration_minutes" class="select select-bordered">
                             <option value="30">30 minutes</option>
                             <option value="60">1 hour</option>
                             <option value="120">2 hours</option>

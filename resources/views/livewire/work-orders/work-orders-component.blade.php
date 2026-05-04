@@ -6,7 +6,7 @@
             <p class="app-subtitle">Track active service jobs, filter operational load, and move vehicles cleanly through the workshop pipeline.</p>
         </div>
 
-        @can('create work orders')
+        @can('create_work_orders')
         <a href="{{ route('work-orders.create') }}" class="btn btn-primary rounded-lg px-5">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -201,10 +201,10 @@
                                     </label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu mt-2 w-48 rounded-lg border border-gray-200 bg-base-100 p-2 shadow-lg">
                                         <li><a href="{{ route('work-orders.show', $order) }}">View Details</a></li>
-                                        @can('edit work orders')
+                                        @can('edit_work_orders')
                                             <li><a href="{{ route('work-orders.edit', $order) }}">Edit</a></li>
                                         @endcan
-                                        @can('change work order status')
+                                        @can('change_work_order_status')
                                             @if($order->canStart())
                                                 <li><button wire:click="startWorkOrder({{ $order->id }})">Start Work</button></li>
                                             @endif
@@ -215,9 +215,9 @@
                                                 <li><button wire:click="deliver({{ $order->id }})">Deliver</button></li>
                                             @endif
                                         @endcan
-                                        @can('create invoices')
-                                            @if($order->status === 'ready' && !$order->invoice)
-                                                <li><a href="{{ route('invoices.create', ['work_order' => $order->id]) }}">Create Invoice</a></li>
+                                        @can('view_invoices')
+                                            @if($order->invoice)
+                                                <li><a href="{{ route('invoices.show', $order->invoice) }}">View Invoice</a></li>
                                             @endif
                                         @endcan
                                     </ul>

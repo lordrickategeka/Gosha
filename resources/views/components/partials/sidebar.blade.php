@@ -1,4 +1,19 @@
 <!-- Sidebar -->
+<style>
+    .app-sidebar details > summary::after,
+    .app-sidebar details > summary::before,
+    .app-sidebar details > summary::marker {
+        display: none !important;
+        content: none !important;
+    }
+    .app-sidebar details[open] > summary .nav-chevron {
+        transform: rotate(90deg);
+    }
+    .nav-chevron {
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    }
+</style>
 <div class="drawer-side z-40">
     <label for="sidebar-drawer" class="drawer-overlay"></label>
     <aside class="app-sidebar w-72 min-h-screen flex flex-col">
@@ -23,7 +38,7 @@
         <nav class="flex-1 overflow-y-auto px-4 py-5 scrollbar-thin">
             <ul class="menu menu-md gap-1">
                 <!-- Dashboard -->
-                @can('view dashboard')
+                @can('view_dashboard')
                 <li>
                     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,10 +55,13 @@
                 </li>
 
                 <!-- Work Orders -->
-                @canany(['view work orders', 'view assigned work orders'])
+                @canany(['view_work_orders', 'view_assigned_work_orders'])
                 <li>
                     <details {{ request()->routeIs('work-orders.*') ? 'open' : '' }}>
-                        <summary>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
@@ -51,7 +69,7 @@
                         </summary>
                         <ul>
                             <li><a href="{{ route('work-orders.index') }}" class="{{ request()->routeIs('work-orders.index') ? 'active' : '' }}">All Orders</a></li>
-                            @can('create work orders')
+                            @can('create_work_orders')
                             <li><a href="{{ route('work-orders.create') }}" class="{{ request()->routeIs('work-orders.create') ? 'active' : '' }}">New Order</a></li>
                             @endcan
                         </ul>
@@ -60,10 +78,13 @@
                 @endcanany
 
                 <!-- Wash Bay -->
-                @canany(['view wash orders', 'view assigned wash orders'])
+                @canany(['view_wash_orders', 'view_assigned_wash_orders'])
                 <li>
                     <details {{ request()->routeIs('wash-orders.*') ? 'open' : '' }}>
-                        <summary>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                             </svg>
@@ -71,7 +92,7 @@
                         </summary>
                         <ul>
                             <li><a href="{{ route('wash-orders.index') }}" class="{{ request()->routeIs('wash-orders.index') ? 'active' : '' }}">Queue</a></li>
-                            @can('create wash orders')
+                            @can('create_wash_orders')
                             <li><a href="{{ route('wash-orders.create') }}" class="{{ request()->routeIs('wash-orders.create') ? 'active' : '' }}">New Wash</a></li>
                             @endcan
                         </ul>
@@ -80,7 +101,7 @@
                 @endcanany
 
                 <!-- Appointments -->
-                @can('view appointments')
+                @can('view_appointments')
                 <li>
                     <a href="{{ route('appointments.index') }}" class="{{ request()->routeIs('appointments.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +123,7 @@
                 </li>
 
                 <!-- Bay Status -->
-                @canany(['view service bays', 'view wash bays'])
+                @canany(['view_service_bays', 'view_wash_bays'])
                 <li>
                     <a href="{{ route('bays.status') }}" class="{{ request()->routeIs('bays.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,7 +139,7 @@
                     <span>Customers</span>
                 </li>
 
-                @can('view customers')
+                @can('view_customers')
                 <li>
                     <a href="{{ route('customers.index') }}" class="{{ request()->routeIs('customers.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,7 +150,7 @@
                 </li>
                 @endcan
 
-                @can('view vehicles')
+                @can('view_vehicles')
                 <li>
                     <a href="{{ route('vehicles.index') }}" class="{{ request()->routeIs('vehicles.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,10 +166,13 @@
                     <span>Finance</span>
                 </li>
 
-                @can('view invoices')
+                @can('view_invoices')
                 <li>
                     <details {{ request()->routeIs('invoices.*') ? 'open' : '' }}>
-                        <summary>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -157,7 +181,7 @@
                         <ul>
                             <li><a href="{{ route('invoices.index') }}">All Invoices</a></li>
                             <li><a href="{{ route('invoices.index', ['status' => 'unpaid']) }}">Unpaid</a></li>
-                            @can('create invoices')
+                            @can('create_invoices')
                             <li><a href="{{ route('invoices.create') }}">New Invoice</a></li>
                             @endcan
                         </ul>
@@ -165,7 +189,7 @@
                 </li>
                 @endcan
 
-                @can('view payments')
+                @can('view_payments')
                 <li>
                     <a href="{{ route('payments.index') }}" class="{{ request()->routeIs('payments.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -176,7 +200,7 @@
                 </li>
                 @endcan
 
-                @can('view expenses')
+                @can('view_expenses')
                 <li>
                     <a href="{{ route('expenses.index') }}" class="{{ request()->routeIs('expenses.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -187,7 +211,7 @@
                 </li>
                 @endcan
 
-                @canany(['view commissions', 'view own commissions'])
+                @canany(['view_commissions', 'view_own_commissions'])
                 <li>
                     <a href="{{ route('commissions.index') }}" class="{{ request()->routeIs('commissions.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -199,14 +223,17 @@
                 @endcanany
 
                 <!-- Inventory Section -->
-                @can('view inventory')
+                @can('view_inventory')
                 <li class="menu-title mt-4">
                     <span>Inventory</span>
                 </li>
 
                 <li>
                     <details {{ request()->routeIs('inventory.*') ? 'open' : '' }}>
-                        <summary>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
@@ -215,14 +242,14 @@
                         <ul>
                             <li><a href="{{ route('inventory.index') }}">All Items</a></li>
                             <li><a href="{{ route('inventory.low-stock') }}">Low Stock</a></li>
-                            @can('adjust stock')
+                            @can('adjust_stock')
                             <li><a href="{{ route('inventory.movements') }}">Movements</a></li>
                             @endcan
                         </ul>
                     </details>
                 </li>
 
-                @can('view suppliers')
+                @can('view_suppliers')
                 <li>
                     <a href="{{ route('suppliers.index') }}" class="{{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -235,14 +262,17 @@
                 @endcan
 
                 <!-- Reports Section -->
-                @can('view reports')
+                @can('view_reports')
                 <li class="menu-title mt-4">
                     <span>Reports</span>
                 </li>
 
                 <li>
                     <details {{ request()->routeIs('reports.*') ? 'open' : '' }}>
-                        <summary>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
@@ -259,12 +289,12 @@
                 @endcan
 
                 <!-- Settings Section (for managers) -->
-                @canany(['view users', 'view settings', 'view service templates'])
+                @canany(['view_users', 'view_settings', 'view_service_templates', 'manage_roles'])
                 <li class="menu-title mt-4">
                     <span>Settings</span>
                 </li>
 
-                @can('view users')
+                @can('view_users')
                 <li>
                     <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -275,7 +305,18 @@
                 </li>
                 @endcan
 
-                @can('view branches')
+                @can('manage_roles')
+                <li>
+                    <a href="{{ route('roles.index') }}" class="{{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Roles & Permissions
+                    </a>
+                </li>
+                @endcan
+
+                @can('view_branches')
                 <li>
                     <a href="{{ route('branches.index') }}" class="{{ request()->routeIs('branches.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -286,7 +327,7 @@
                 </li>
                 @endcan
 
-                @can('view service templates')
+                @can('view_service_templates')
                 <li>
                     <a href="{{ route('templates.index') }}" class="{{ request()->routeIs('templates.*') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -306,7 +347,7 @@
                     </a>
                 </li>
 
-                @can('view settings')
+                @can('view_settings')
                 <li>
                     <a href="{{ route('settings') }}" class="{{ request()->routeIs('settings') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

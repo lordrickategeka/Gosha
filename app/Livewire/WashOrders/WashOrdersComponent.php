@@ -40,7 +40,7 @@ class WashOrdersComponent extends Component
     // Open the assign-bay chooser for a queued order
     public function openAssignBayModal(WashOrder $washOrder)
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
         $this->assigningOrderId   = $washOrder->id;
         $this->selectedBayId      = '';
         $this->selectedAttendantId = '';
@@ -58,7 +58,7 @@ class WashOrdersComponent extends Component
     // Confirm the bay selection and start the wash
     public function confirmAssignAndStart()
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
 
         $this->validate([
             'selectedBayId' => 'required|exists:wash_bays,id',
@@ -90,7 +90,7 @@ class WashOrdersComponent extends Component
 
     public function startWash(WashOrder $washOrder, $bayId = null)
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
 
         if ($washOrder->canStart()) {
             $bay = $bayId ? WashBay::find($bayId) : null;
@@ -101,7 +101,7 @@ class WashOrdersComponent extends Component
 
     public function completeWash(WashOrder $washOrder)
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
 
         if ($washOrder->canComplete()) {
             $washOrder->complete();
@@ -111,14 +111,14 @@ class WashOrdersComponent extends Component
 
     public function prioritize(WashOrder $washOrder)
     {
-        $this->authorize('manage wash queue');
+        $this->authorize('manage_wash_queue');
         $washOrder->prioritize();
         session()->flash('success', 'Order prioritized.');
     }
 
     public function cancel(WashOrder $washOrder)
     {
-        $this->authorize('change wash order status');
+        $this->authorize('change_wash_order_status');
         $washOrder->cancel();
         session()->flash('success', 'Order cancelled.');
     }

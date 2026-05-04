@@ -25,7 +25,7 @@
         </div>
 
         <div class="flex gap-2">
-            @can('change work order status')
+            @can('change_work_order_status')
                 @if($workOrder->canStart())
                     <button wire:click="startWork" class="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,7 @@
                 @endif
             @endcan
 
-            @can('edit work orders')
+            @can('edit_work_orders')
                 <a href="{{ route('work-orders.edit', $workOrder) }}" class="btn btn-ghost">Edit</a>
             @endcan
         </div>
@@ -138,7 +138,7 @@
                 <div class="card-body">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="card-title text-lg">Job Items</h3>
-                        @can('price work orders')
+                        @can('price_work_orders')
                             @if(in_array($workOrder->status, ['open', 'quoted']))
                                 <button wire:click="$toggle('showQuotingPanel')" class="btn btn-outline btn-sm">
                                     {{ $showQuotingPanel ? 'Cancel' : 'Set Prices (Quoter)' }}
@@ -330,7 +330,7 @@
                 <div class="card-body">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="card-title text-lg">Assignment</h3>
-                        @can('assign work orders')
+                        @can('assign_work_orders')
                             <button wire:click="$set('showAssignModal', true)" class="btn btn-ghost btn-xs">Edit</button>
                         @endcan
                     </div>
@@ -393,7 +393,7 @@
                         </div>
                     @else
                         <p class="text-base-content/50 mb-4">No invoice created yet</p>
-                        @can('create invoices')
+                        @can('create_invoices')
                             @if(in_array($workOrder->status, ['ready', 'delivered']))
                                 <a href="{{ route('invoices.create', ['work_order' => $workOrder->id]) }}" class="btn btn-primary btn-sm w-full">
                                     Create Invoice

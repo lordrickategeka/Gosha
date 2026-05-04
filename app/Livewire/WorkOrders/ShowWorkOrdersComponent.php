@@ -14,6 +14,7 @@ class ShowWorkOrdersComponent extends Component
     // Quoter pricing
     public $quotingItemPrices = []; // [item_id => ['unit_price' => ..., 'discount' => ...]]
     public $showQuotingPanel = false;
+    public $showAssignModal = false;
     public $selectedBay = '';
     public $selectedTechnician = '';
     public $technicianNotes = '';
@@ -46,7 +47,7 @@ class ShowWorkOrdersComponent extends Component
 
     public function startWork()
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         if ($this->workOrder->canStart()) {
             $this->workOrder->start();
@@ -57,7 +58,7 @@ class ShowWorkOrdersComponent extends Component
 
     public function moveToQualityCheck()
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         $this->workOrder->update([
             'status' => 'quality_check',
@@ -69,7 +70,7 @@ class ShowWorkOrdersComponent extends Component
 
     public function markReady()
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         if ($this->workOrder->canComplete()) {
             $this->workOrder->markReady();
@@ -80,7 +81,7 @@ class ShowWorkOrdersComponent extends Component
 
     public function deliver()
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         if ($this->workOrder->canDeliver()) {
             $this->workOrder->deliver();
@@ -107,7 +108,7 @@ class ShowWorkOrdersComponent extends Component
 
     public function cancel()
     {
-        $this->authorize('change work order status');
+        $this->authorize('change_work_order_status');
 
         $this->workOrder->cancel();
         $this->workOrder->refresh();
@@ -136,7 +137,7 @@ class ShowWorkOrdersComponent extends Component
 
     public function saveQuote()
     {
-        $this->authorize('price work orders');
+        $this->authorize('price_work_orders');
 
         $this->validate([
             'quotingItemPrices.*.unit_price' => 'required|numeric|min:0',

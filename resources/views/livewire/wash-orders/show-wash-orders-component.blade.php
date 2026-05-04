@@ -19,7 +19,7 @@
         </div>
 
         <div class="flex gap-2">
-            @can('change wash order status')
+            @can('change_wash_order_status')
                 @if($washOrder->canStart())
                     @if($this->availableBays->count() > 0)
                         <div class="dropdown dropdown-end">

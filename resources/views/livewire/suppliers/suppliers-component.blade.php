@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Suppliers</h1>
             <p class="text-base-content/60">Manage parts and supplies vendors</p>
         </div>
-        @can('create suppliers')
+        @can('create_suppliers')
         <button wire:click="$set('showCreateModal', true)" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

@@ -29,11 +29,8 @@
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Customer & Vehicle Card -->
-                 <livewire:customer-vehicle-selector
-                    wire:model.live="customer_id"
-                    :customerId="$customer_id"
-                    :vehicleId="$vehicle_id"
-                />
+                <livewire:customer-vehicle-selector
+                    :key="'customer-selector'" />
 
                 <!-- Wash Items Card -->
                 <div class="card bg-base-100 shadow-sm">

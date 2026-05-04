@@ -16,7 +16,7 @@
         </div>
         <div class="flex gap-2">
             @if($invoice->balance_due > 0)
-                @can('record payments')
+                @can('receive_payments')
                     <button wire:click="$set('showPaymentModal', true)" class="btn btn-primary">Record Payment</button>
                 @endcan
             @endif

@@ -16,146 +16,147 @@ class RolesAndPermissionsSeeder extends Seeder
         // Define permissions by module
         $permissions = [
             // Dashboard
-            'view dashboard',
-            'view reports',
-            'export reports',
+            'view_dashboard',
+            'view_reports',
+            'export_reports',
 
             // Vendors (platform level)
-            'view vendors',
-            'create vendors',
-            'edit vendors',
-            'delete vendors',
-            'manage vendor billing',
+            'view_vendors',
+            'create_vendors',
+            'edit_vendors',
+            'delete_vendors',
+            'manage_vendor_billing',
 
             // Branches
-            'view branches',
-            'create branches',
-            'edit branches',
-            'delete branches',
+            'view_branches',
+            'create_branches',
+            'edit_branches',
+            'delete_branches',
 
             // Users/Staff
-            'view users',
-            'create users',
-            'edit users',
-            'delete users',
-            'assign roles',
+            'view_users',
+            'create_users',
+            'edit_users',
+            'delete_users',
+            'assign_roles',
+            'manage_roles',
 
             // Customers
-            'view customers',
-            'create customers',
-            'edit customers',
-            'delete customers',
-            'manage customer credit',
+            'view_customers',
+            'create_customers',
+            'edit_customers',
+            'delete_customers',
+            'manage_customer_credit',
 
             // Vehicles
-            'view vehicles',
-            'create vehicles',
-            'edit vehicles',
-            'delete vehicles',
+            'view_vehicles',
+            'create_vehicles',
+            'edit_vehicles',
+            'delete_vehicles',
 
             // Service Bays
-            'view service bays',
-            'create service bays',
-            'edit service bays',
-            'delete service bays',
-            'manage bay status',
+            'view_service_bays',
+            'create_service_bays',
+            'edit_service_bays',
+            'delete_service_bays',
+            'manage_bays',
 
             // Wash Bays
-            'view wash bays',
-            'create wash bays',
-            'edit wash bays',
-            'delete wash bays',
+            'view_wash_bays',
+            'create_wash_bays',
+            'edit_wash_bays',
+            'delete_wash_bays',
 
             // Work Orders
-            'view work orders',
-            'create work orders',
-            'edit work orders',
-            'delete work orders',
-            'assign work orders',
-            'change work order status',
-            'view assigned work orders',
+            'view_work_orders',
+            'create_work_orders',
+            'edit_work_orders',
+            'delete_work_orders',
+            'assign_work_orders',
+            'change_work_order_status',
+            'view_assigned_work_orders',
 
             // Wash Orders
-            'view wash orders',
-            'create wash orders',
-            'edit wash orders',
-            'delete wash orders',
-            'assign wash orders',
-            'change wash order status',
-            'manage wash queue',
-            'view assigned wash orders',
+            'view_wash_orders',
+            'create_wash_orders',
+            'edit_wash_orders',
+            'delete_wash_orders',
+            'assign_wash_orders',
+            'change_wash_order_status',
+            'manage_wash_queue',
+            'view_assigned_wash_orders',
 
             // Invoices
-            'view invoices',
-            'create invoices',
-            'edit invoices',
-            'delete invoices',
-            'send invoices',
-            'void invoices',
+            'view_invoices',
+            'create_invoices',
+            'edit_invoices',
+            'delete_invoices',
+            'send_invoices',
+            'void_invoices',
 
             // Payments
-            'view payments',
-            'receive payments',
-            'refund payments',
+            'view_payments',
+            'receive_payments',
+            'refund_payments',
 
             // Inventory
-            'view inventory',
-            'create inventory',
-            'edit inventory',
-            'delete inventory',
-            'adjust stock',
-            'transfer stock',
-            'view low stock',
+            'view_inventory',
+            'create_inventory',
+            'edit_inventory',
+            'delete_inventory',
+            'adjust_stock',
+            'transfer_stock',
+            'view_low_stock',
 
             // Suppliers
-            'view suppliers',
-            'create suppliers',
-            'edit suppliers',
-            'delete suppliers',
+            'view_suppliers',
+            'create_suppliers',
+            'edit_suppliers',
+            'delete_suppliers',
 
             // Expenses
-            'view expenses',
-            'create expenses',
-            'edit expenses',
-            'delete expenses',
-            'approve expenses',
+            'view_expenses',
+            'create_expenses',
+            'edit_expenses',
+            'delete_expenses',
+            'approve_expenses',
 
             // Commissions
-            'view commissions',
-            'manage commission rules',
-            'approve commissions',
-            'pay commissions',
-            'view own commissions',
+            'view_commissions',
+            'manage_commission_rules',
+            'approve_commissions',
+            'pay_commissions',
+            'view_own_commissions',
 
             // Appointments
-            'view appointments',
-            'create appointments',
-            'edit appointments',
-            'delete appointments',
-            'confirm appointments',
+            'view_appointments',
+            'create_appointments',
+            'edit_appointments',
+            'delete_appointments',
+            'confirm_appointments',
 
             // Service Templates
-            'view service templates',
-            'create service templates',
-            'edit service templates',
-            'delete service templates',
+            'view_service_templates',
+            'create_service_templates',
+            'edit_service_templates',
+            'delete_service_templates',
 
             // Wash Packages
-            'view wash packages',
-            'create wash packages',
-            'edit wash packages',
-            'delete wash packages',
+            'view_wash_packages',
+            'create_wash_packages',
+            'edit_wash_packages',
+            'delete_wash_packages',
 
             // Settings
-            'view settings',
-            'edit settings',
+            'view_settings',
+            'edit_settings',
 
             // Audit Logs
-            'view audit logs',
+            'view_audit_logs',
 
             // Pricing / Quoting
-            'price work orders',
-            'view calendar',
+            'price_work_orders',
+            'view_calendar',
         ];
 
         // Create all permissions
@@ -174,10 +175,10 @@ class RolesAndPermissionsSeeder extends Seeder
         // Platform Support - read-only platform access
         $platformSupport = Role::create(['name' => 'platform-support']);
         $platformSupport->givePermissionTo([
-            'view dashboard',
-            'view vendors',
-            'view reports',
-            'view audit logs',
+            'view_dashboard',
+            'view_vendors',
+            'view_reports',
+            'view_audit_logs',
         ]);
 
         // ========================================
@@ -187,296 +188,297 @@ class RolesAndPermissionsSeeder extends Seeder
         // Vendor Owner - full access to their vendor
         $vendorOwner = Role::create(['name' => 'vendor-owner']);
         $vendorOwner->givePermissionTo([
-            'view dashboard',
-            'view reports',
-            'export reports',
+            'view_dashboard',
+            'view_reports',
+            'export_reports',
+            'manage_roles',
             // Branches
-            'view branches',
-            'create branches',
-            'edit branches',
-            'delete branches',
+            'view_branches',
+            'create_branches',
+            'edit_branches',
+            'delete_branches',
             // Users
-            'view users',
-            'create users',
-            'edit users',
-            'delete users',
-            'assign roles',
+            'view_users',
+            'create_users',
+            'edit_users',
+            'delete_users',
+            'assign_roles',
             // Customers
-            'view customers',
-            'create customers',
-            'edit customers',
-            'delete customers',
-            'manage customer credit',
+            'view_customers',
+            'create_customers',
+            'edit_customers',
+            'delete_customers',
+            'manage_customer_credit',
             // Vehicles
-            'view vehicles',
-            'create vehicles',
-            'edit vehicles',
-            'delete vehicles',
+            'view_vehicles',
+            'create_vehicles',
+            'edit_vehicles',
+            'delete_vehicles',
             // Service Bays
-            'view service bays',
-            'create service bays',
-            'edit service bays',
-            'delete service bays',
-            'manage bay status',
+            'view_service_bays',
+            'create_service_bays',
+            'edit_service_bays',
+            'delete_service_bays',
+            'manage_bays',
             // Wash Bays
-            'view wash bays',
-            'create wash bays',
-            'edit wash bays',
-            'delete wash bays',
+            'view_wash_bays',
+            'create_wash_bays',
+            'edit_wash_bays',
+            'delete_wash_bays',
             // Work Orders
-            'view work orders',
-            'create work orders',
-            'edit work orders',
-            'delete work orders',
-            'assign work orders',
-            'change work order status',
+            'view_work_orders',
+            'create_work_orders',
+            'edit_work_orders',
+            'delete_work_orders',
+            'assign_work_orders',
+            'change_work_order_status',
             // Wash Orders
-            'view wash orders',
-            'create wash orders',
-            'edit wash orders',
-            'delete wash orders',
-            'assign wash orders',
-            'change wash order status',
-            'manage wash queue',
+            'view_wash_orders',
+            'create_wash_orders',
+            'edit_wash_orders',
+            'delete_wash_orders',
+            'assign_wash_orders',
+            'change_wash_order_status',
+            'manage_wash_queue',
             // Invoices
-            'view invoices',
-            'create invoices',
-            'edit invoices',
-            'delete invoices',
-            'send invoices',
-            'void invoices',
+            'view_invoices',
+            'create_invoices',
+            'edit_invoices',
+            'delete_invoices',
+            'send_invoices',
+            'void_invoices',
             // Payments
-            'view payments',
-            'receive payments',
-            'refund payments',
+            'view_payments',
+            'receive_payments',
+            'refund_payments',
             // Inventory
-            'view inventory',
-            'create inventory',
-            'edit inventory',
-            'delete inventory',
-            'adjust stock',
-            'transfer stock',
-            'view low stock',
+            'view_inventory',
+            'create_inventory',
+            'edit_inventory',
+            'delete_inventory',
+            'adjust_stock',
+            'transfer_stock',
+            'view_low_stock',
             // Suppliers
-            'view suppliers',
-            'create suppliers',
-            'edit suppliers',
-            'delete suppliers',
+            'view_suppliers',
+            'create_suppliers',
+            'edit_suppliers',
+            'delete_suppliers',
             // Expenses
-            'view expenses',
-            'create expenses',
-            'edit expenses',
-            'delete expenses',
-            'approve expenses',
+            'view_expenses',
+            'create_expenses',
+            'edit_expenses',
+            'delete_expenses',
+            'approve_expenses',
             // Commissions
-            'view commissions',
-            'manage commission rules',
-            'approve commissions',
-            'pay commissions',
+            'view_commissions',
+            'manage_commission_rules',
+            'approve_commissions',
+            'pay_commissions',
             // Appointments
-            'view appointments',
-            'create appointments',
-            'edit appointments',
-            'delete appointments',
-            'confirm appointments',
+            'view_appointments',
+            'create_appointments',
+            'edit_appointments',
+            'delete_appointments',
+            'confirm_appointments',
             // Templates
-            'view service templates',
-            'create service templates',
-            'edit service templates',
-            'delete service templates',
-            'view wash packages',
-            'create wash packages',
-            'edit wash packages',
-            'delete wash packages',
+            'view_service_templates',
+            'create_service_templates',
+            'edit_service_templates',
+            'delete_service_templates',
+            'view_wash_packages',
+            'create_wash_packages',
+            'edit_wash_packages',
+            'delete_wash_packages',
             // Settings
-            'view settings',
-            'edit settings',
+            'view_settings',
+            'edit_settings',
             // Audit
-            'view audit logs',
+            'view_audit_logs',
         ]);
 
         // Branch Manager - manages a specific branch
         $branchManager = Role::create(['name' => 'branch-manager']);
         $branchManager->givePermissionTo([
-            'view dashboard',
-            'view reports',
+            'view_dashboard',
+            'view_reports',
             // Users (limited)
-            'view users',
+            'view_users',
             // Customers
-            'view customers',
-            'create customers',
-            'edit customers',
+            'view_customers',
+            'create_customers',
+            'edit_customers',
             // Vehicles
-            'view vehicles',
-            'create vehicles',
-            'edit vehicles',
+            'view_vehicles',
+            'create_vehicles',
+            'edit_vehicles',
             // Bays
-            'view service bays',
-            'manage bay status',
-            'view wash bays',
+            'view_service_bays',
+            'manage_bays',
+            'view_wash_bays',
             // Work Orders
-            'view work orders',
-            'create work orders',
-            'edit work orders',
-            'assign work orders',
-            'change work order status',
+            'view_work_orders',
+            'create_work_orders',
+            'edit_work_orders',
+            'assign_work_orders',
+            'change_work_order_status',
             // Wash Orders
-            'view wash orders',
-            'create wash orders',
-            'edit wash orders',
-            'assign wash orders',
-            'change wash order status',
-            'manage wash queue',
+            'view_wash_orders',
+            'create_wash_orders',
+            'edit_wash_orders',
+            'assign_wash_orders',
+            'change_wash_order_status',
+            'manage_wash_queue',
             // Invoices
-            'view invoices',
-            'create invoices',
-            'edit invoices',
-            'send invoices',
+            'view_invoices',
+            'create_invoices',
+            'edit_invoices',
+            'send_invoices',
             // Payments
-            'view payments',
-            'receive payments',
+            'view_payments',
+            'receive_payments',
             // Inventory
-            'view inventory',
-            'adjust stock',
-            'view low stock',
+            'view_inventory',
+            'adjust_stock',
+            'view_low_stock',
             // Expenses
-            'view expenses',
-            'create expenses',
-            'edit expenses',
-            'approve expenses',
+            'view_expenses',
+            'create_expenses',
+            'edit_expenses',
+            'approve_expenses',
             // Commissions
-            'view commissions',
-            'approve commissions',
+            'view_commissions',
+            'approve_commissions',
             // Appointments
-            'view appointments',
-            'create appointments',
-            'edit appointments',
-            'confirm appointments',
+            'view_appointments',
+            'create_appointments',
+            'edit_appointments',
+            'confirm_appointments',
             // Templates (view only)
-            'view service templates',
-            'view wash packages',
+            'view_service_templates',
+            'view_wash_packages',
         ]);
 
         // Technician - handles service work orders
         $technician = Role::create(['name' => 'technician']);
         $technician->givePermissionTo([
-            'view dashboard',
+            'view_dashboard',
             // Customers (view only)
-            'view customers',
+            'view_customers',
             // Vehicles
-            'view vehicles',
+            'view_vehicles',
             // Bays
-            'view service bays',
-            'manage bay status',
+            'view_service_bays',
+            'manage_bays',
             // Work Orders
-            'view assigned work orders',
-            'change work order status',
+            'view_assigned_work_orders',
+            'change_work_order_status',
             // Inventory (view for parts)
-            'view inventory',
+            'view_inventory',
             // Templates
-            'view service templates',
+            'view_service_templates',
             // Commissions
-            'view own commissions',
+            'view_own_commissions',
         ]);
 
         // Wash Attendant - handles wash orders
         $washAttendant = Role::create(['name' => 'wash-attendant']);
         $washAttendant->givePermissionTo([
-            'view dashboard',
+            'view_dashboard',
             // Customers (view only)
-            'view customers',
+            'view_customers',
             // Vehicles
-            'view vehicles',
+            'view_vehicles',
             // Wash Bays
-            'view wash bays',
+            'view_wash_bays',
             // Wash Orders
-            'view assigned wash orders',
-            'change wash order status',
+            'view_assigned_wash_orders',
+            'change_wash_order_status',
             // Packages
-            'view wash packages',
+            'view_wash_packages',
             // Commissions
-            'view own commissions',
+            'view_own_commissions',
         ]);
 
         // Cashier - handles payments and invoicing
         $cashier = Role::create(['name' => 'cashier']);
         $cashier->givePermissionTo([
-            'view dashboard',
+            'view_dashboard',
             // Customers
-            'view customers',
-            'create customers',
-            'edit customers',
+            'view_customers',
+            'create_customers',
+            'edit_customers',
             // Vehicles
-            'view vehicles',
-            'create vehicles',
+            'view_vehicles',
+            'create_vehicles',
             // Work Orders (view)
-            'view work orders',
+            'view_work_orders',
             // Wash Orders (view)
-            'view wash orders',
+            'view_wash_orders',
             // Invoices
-            'view invoices',
-            'create invoices',
-            'edit invoices',
-            'send invoices',
+            'view_invoices',
+            'create_invoices',
+            'edit_invoices',
+            'send_invoices',
             // Payments
-            'view payments',
-            'receive payments',
+            'view_payments',
+            'receive_payments',
             // Appointments
-            'view appointments',
-            'create appointments',
-            'edit appointments',
-            'confirm appointments',
+            'view_appointments',
+            'create_appointments',
+            'edit_appointments',
+            'confirm_appointments',
         ]);
 
         // Storekeeper - manages inventory
         $storekeeper = Role::create(['name' => 'storekeeper']);
         $storekeeper->givePermissionTo([
-            'view dashboard',
+            'view_dashboard',
             // Inventory
-            'view inventory',
-            'create inventory',
-            'edit inventory',
-            'adjust stock',
-            'transfer stock',
-            'view low stock',
+            'view_inventory',
+            'create_inventory',
+            'edit_inventory',
+            'adjust_stock',
+            'transfer_stock',
+            'view_low_stock',
             // Suppliers
-            'view suppliers',
-            'create suppliers',
-            'edit suppliers',
+            'view_suppliers',
+            'create_suppliers',
+            'edit_suppliers',
             // Expenses (for purchases)
-            'view expenses',
-            'create expenses',
+            'view_expenses',
+            'create_expenses',
         ]);
 
         // Jobcarder - captures job details and items (no pricing)
         $jobcarder = Role::create(['name' => 'jobcarder']);
         $jobcarder->givePermissionTo([
-            'view dashboard',
-            'view customers',
-            'create customers',
-            'view vehicles',
-            'create vehicles',
-            'view work orders',
-            'create work orders',
-            'edit work orders',
-            'change work order status',
-            'view inventory',
-            'view service templates',
+            'view_dashboard',
+            'view_customers',
+            'create_customers',
+            'view_vehicles',
+            'create_vehicles',
+            'view_work_orders',
+            'create_work_orders',
+            'edit_work_orders',
+            'change_work_order_status',
+            'view_inventory',
+            'view_service_templates',
         ]);
 
         // Quoter - sets prices on items captured by the jobcarder
         $quoter = Role::create(['name' => 'quoter']);
         $quoter->givePermissionTo([
-            'view dashboard',
-            'view customers',
-            'view vehicles',
-            'view work orders',
-            'edit work orders',
-            'price work orders',
-            'view invoices',
-            'create invoices',
-            'view service templates',
-            'view inventory',
+            'view_dashboard',
+            'view_customers',
+            'view_vehicles',
+            'view_work_orders',
+            'edit_work_orders',
+            'price_work_orders',
+            'view_invoices',
+            'create_invoices',
+            'view_service_templates',
+            'view_inventory',
         ]);
     }
 }

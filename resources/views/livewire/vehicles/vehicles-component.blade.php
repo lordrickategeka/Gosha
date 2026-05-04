@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Vehicles</h1>
             <p class="text-base-content/60">All registered vehicles</p>
         </div>
-        @can('create vehicles')
+        @can('create_vehicles')
         <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -54,7 +54,7 @@
                                     <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
                                         <li><a href="{{ route('vehicles.show', $vehicle) }}">View History</a></li>
-                                        @can('edit vehicles')
+                                        @can('edit_vehicles')
                                             <li><a href="{{ route('vehicles.edit', $vehicle) }}">Edit</a></li>
                                         @endcan
                                         <li><a href="{{ route('work-orders.create', ['vehicle' => $vehicle->id]) }}">New Work Order</a></li>

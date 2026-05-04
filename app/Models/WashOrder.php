@@ -225,7 +225,48 @@ class WashOrder extends Model
             if ($this->washBay) {
                 $this->washBay->markAsAvailable();
             }
+
+            $this->generateInvoice();
         });
+    }
+
+    protected function generateInvoice(): void
+    {
+        if ($this->invoice()->exists()) {
+            return;
+        }
+
+        $subtotal = $this->items()->sum('total');
+
+        $invoice = Invoice::create([
+            'branch_id'       => $this->branch_id,
+            'customer_id'     => $this->customer_id,
+            'wash_order_id'   => $this->id,
+            'created_by'      => $this->created_by,
+            'type'            => 'wash',
+            'status'          => 'draft',
+            'subtotal'        => $subtotal,
+            'tax_rate'        => 0,
+            'tax_amount'      => 0,
+            'discount_amount' => 0,
+            'total'           => $subtotal,
+            'amount_paid'     => 0,
+            'balance_due'     => $subtotal,
+            'issue_date'      => now()->toDateString(),
+            'due_date'        => now()->addDays(7)->toDateString(),
+        ]);
+
+        foreach ($this->items as $item) {
+            $invoice->items()->create([
+                'item_type'   => 'wash',
+                'description' => $item->description,
+                'quantity'    => $item->quantity,
+                'unit_price'  => $item->unit_price,
+                'discount'    => $item->discount,
+                'tax'         => 0,
+                'total'       => $item->total,
+            ]);
+        }
     }
 
     public function cancel(): void
