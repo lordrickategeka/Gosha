@@ -16,6 +16,7 @@ class InventoryItem extends Model
 
     protected $fillable = [
         'vendor_id',
+        'branch_id',
         'category_id',
         'supplier_id',
         'name',
@@ -40,6 +41,11 @@ class InventoryItem extends Model
     ];
 
     // Relationships
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(InventoryCategory::class, 'category_id');
@@ -59,6 +65,16 @@ class InventoryItem extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeForBranch($query, int $branchId)
+    {
+        return $query->where('branch_id', $branchId);
+    }
+
+    public function scopeForOtherBranches($query, int $currentBranchId)
+    {
+        return $query->whereNotNull('branch_id')->where('branch_id', '!=', $currentBranchId);
     }
 
     public function scopeLowStock($query)

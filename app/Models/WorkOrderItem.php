@@ -15,6 +15,7 @@ class WorkOrderItem extends Model
         'item_type',
         'description',
         'inventory_item_id',
+        'supplier_id',
         'quantity',
         'unit_price',
         'discount',
@@ -53,6 +54,11 @@ class WorkOrderItem extends Model
     public function inventoryItem(): BelongsTo
     {
         return $this->belongsTo(InventoryItem::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function images(): \Illuminate\Database\Eloquent\Relations\HasMany

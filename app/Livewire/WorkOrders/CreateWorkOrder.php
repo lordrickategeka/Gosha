@@ -2,8 +2,10 @@
 
 namespace App\Livewire\WorkOrders;
 
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\InventoryItem;
+use App\Models\InventoryMovement;
 use App\Models\ServiceBay;
 use App\Models\ServiceTemplate;
 use App\Models\User;
@@ -35,6 +37,7 @@ class CreateWorkOrder extends Component
 
     // Customer search/list
     public $customerSearch = '';
+    public $vehicleSearch = '';
     public $customers = [];
     public $vehicles = [];
 
@@ -55,8 +58,8 @@ class CreateWorkOrder extends Component
     // STEP 2: JOB DETAILS
     // ═══════════════════════════════════════════════════════════════════════
 
-    public $type = 'service';
-    public $priority = 'normal';
+    public $type = '';
+    public $priority = '';
     public $service_bay_id = null;
     public $assigned_technician_id = null;
     public $is_combo = false;
@@ -69,6 +72,7 @@ class CreateWorkOrder extends Component
 
     public $items = [];
     public $selectedTemplate = null;
+    public $itemSuggestions = []; // [index => ['my_branch' => [...], 'other_branches' => [...]]]
 
     // ═══════════════════════════════════════════════════════════════════════
     // LIFECYCLE
@@ -148,12 +152,15 @@ class CreateWorkOrder extends Component
     protected function validateStep2(): void
     {
         $this->validate([
-            'type' => 'required|in:repair,service,diagnostics,bodywork,electrical,ac,tyres,other',
-            'priority' => 'required|in:low,normal,high,urgent',
-            'service_bay_id' => 'nullable|integer|exists:service_bays,id',
+            'type'                   => 'required|in:repair,service,diagnostics,bodywork,electrical,ac,tyres,other',
+            'priority'               => 'required|in:low,normal,high,urgent',
+            'service_bay_id'         => 'nullable|integer|exists:service_bays,id',
             'assigned_technician_id' => 'nullable|integer|exists:users,id',
-            'mileage_in' => 'nullable|integer|min:0',
-            'estimated_completion' => 'nullable|date',
+            'mileage_in'             => 'nullable|integer|min:0',
+            'estimated_completion'   => 'nullable|date',
+        ], [
+            'type.required'     => 'Please select a job type.',
+            'priority.required' => 'Please select a priority level.',
         ]);
     }
 
@@ -180,11 +187,33 @@ class CreateWorkOrder extends Component
         $this->loadCustomers();
     }
 
+    public function selectCustomer($id): void
+    {
+        $this->customer_id = $id;
+        $this->customerSearch = '';
+        $this->vehicle_id = null;
+        $this->vehicleSearch = '';
+        $this->loadVehicles();
+
+        // Auto-select when customer has exactly one vehicle
+        if (count($this->vehicles) === 1) {
+            $this->vehicle_id = $this->vehicles[0]['id'];
+        }
+    }
+
+    public function clearCustomer(): void
+    {
+        $this->customer_id = null;
+        $this->customerSearch = '';
+        $this->vehicle_id = null;
+        $this->vehicleSearch = '';
+        $this->vehicles = [];
+    }
+
     public function updatedCustomerId($value)
     {
         if ($value) {
             $this->loadVehicles();
-            // Reset vehicle selection when customer changes
             $this->vehicle_id = null;
         } else {
             $this->vehicles = [];
@@ -223,17 +252,9 @@ class CreateWorkOrder extends Component
         }
 
         $this->vehicles = Vehicle::where('customer_id', $this->customer_id)
-            ->where('is_active', true)
             ->orderBy('registration_number')
-            ->get();
-            
-    }
-
-    // Quick-add customer
-    public function openCustomerModal()
-    {
-        $this->showCustomerModal = true;
-        $this->resetCustomerModalFields();
+            ->get()
+            ->toArray();
     }
 
     public function closeCustomerModal()
@@ -364,11 +385,12 @@ class CreateWorkOrder extends Component
     public function addItem($type = 'labor')
     {
         $this->items[] = [
-            'item_type' => $type,
-            'description' => '',
+            'item_type'         => $type,
+            'description'       => '',
             'inventory_item_id' => null,
-            'quantity' => 1,
-            'unit_price' => 0,
+            'source_branch_id'  => null,
+            'quantity'          => 1,
+            'unit_price'        => 0,
         ];
     }
 
@@ -392,11 +414,12 @@ class CreateWorkOrder extends Component
 
         foreach ($template->items as $item) {
             $this->items[] = [
-                'item_type' => $item->item_type,
-                'description' => $item->description,
+                'item_type'         => $item->item_type,
+                'description'       => $item->description,
                 'inventory_item_id' => $item->inventory_item_id,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price ?? 0,
+                'source_branch_id'  => null,
+                'quantity'          => $item->quantity,
+                'unit_price'        => $item->unit_price ?? 0,
             ];
         }
 
@@ -418,12 +441,134 @@ class CreateWorkOrder extends Component
 
     public function getInventoryPartsProperty()
     {
-        return InventoryItem::where('vendor_id', auth()->user()->vendor_id)
-            ->where('is_active', true)
+        $branchId = session('current_branch_id');
+        return InventoryItem::where('is_active', true)
+            ->where(function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId)
+                  ->orWhereNull('branch_id');
+            })
             ->whereHas('category', fn($q) => $q->where('type', 'parts'))
             ->where('quantity', '>', 0)
             ->orderBy('name')
             ->get();
+    }
+
+    // ─── Inventory Search (live, per item row) ───────────────────────────
+
+    public function updatedItems($value, $key): void
+    {
+        // key format: "0.description", "1.description", etc.
+        if (!str_ends_with((string) $key, '.description')) {
+            return;
+        }
+
+        $index = (int) explode('.', $key)[0];
+        $term  = (string) $value;
+
+        // Clear suggestions if term too short or item already linked
+        if (strlen($term) < 2 || !empty($this->items[$index]['inventory_item_id'])) {
+            $this->itemSuggestions[$index] = ['my_branch' => [], 'other_branches' => []];
+            return;
+        }
+
+        $branchId = (int) session('current_branch_id');
+        $vendorId = auth()->user()->vendor_id;
+
+        // Current branch inventory — includes items assigned to this branch AND vendor-wide items (branch_id null)
+        $myBranch = InventoryItem::where('is_active', true)
+            ->where(function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId)
+                  ->orWhereNull('branch_id');
+            })
+            ->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('sku', 'like', "%{$term}%");
+            })
+            ->orderByDesc('quantity')
+            ->limit(8)
+            ->get()
+            ->map(fn($item) => [
+                'id'          => $item->id,
+                'name'        => $item->name,
+                'sku'         => $item->sku ?? '',
+                'quantity'    => (float) $item->quantity,
+                'unit'        => $item->unit,
+                'branch_id'   => $item->branch_id,
+                'branch_name' => null,
+            ])
+            ->toArray();
+
+        // Other branches of the same vendor with stock
+        $otherBranches = InventoryItem::where('vendor_id', $vendorId)
+            ->whereNotNull('branch_id')
+            ->where('branch_id', '!=', $branchId)
+            ->where('is_active', true)
+            ->where('quantity', '>', 0)
+            ->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('sku', 'like', "%{$term}%");
+            })
+            ->with('branch:id,name')
+            ->orderByDesc('quantity')
+            ->limit(5)
+            ->get()
+            ->map(fn($item) => [
+                'id'          => $item->id,
+                'name'        => $item->name,
+                'sku'         => $item->sku ?? '',
+                'quantity'    => (float) $item->quantity,
+                'unit'        => $item->unit,
+                'branch_id'   => $item->branch_id,
+                'branch_name' => $item->branch?->name ?? 'Other Branch',
+            ])
+            ->toArray();
+
+        $this->itemSuggestions[$index] = [
+            'my_branch'      => $myBranch,
+            'other_branches' => $otherBranches,
+        ];
+    }
+
+    public function selectInventoryItem(int $index, int $inventoryId): void
+    {
+        $item = InventoryItem::find($inventoryId);
+        if (!$item || !isset($this->items[$index])) {
+            return;
+        }
+
+        $this->items[$index]['description']       = $item->name;
+        $this->items[$index]['inventory_item_id'] = $item->id;
+        $this->items[$index]['source_branch_id']  = null;
+        $this->itemSuggestions[$index]            = ['my_branch' => [], 'other_branches' => []];
+    }
+
+    public function requestItemFromBranch(int $index, int $inventoryId, int $fromBranchId): void
+    {
+        $item = InventoryItem::with('branch:id,name')->find($inventoryId);
+        if (!$item || !isset($this->items[$index])) {
+            return;
+        }
+
+        $this->items[$index]['description']       = $item->name;
+        $this->items[$index]['inventory_item_id'] = $item->id;
+        $this->items[$index]['source_branch_id']  = $fromBranchId;
+        $this->itemSuggestions[$index]            = ['my_branch' => [], 'other_branches' => []];
+
+        $branchName = $item->branch?->name ?? 'Branch #' . $fromBranchId;
+        $this->dispatch('notify', [
+            'type'    => 'info',
+            'message' => "Transfer request from {$branchName} will be logged when the work order is saved.",
+        ]);
+    }
+
+    public function clearInventoryLink(int $index): void
+    {
+        if (!isset($this->items[$index])) {
+            return;
+        }
+        $this->items[$index]['inventory_item_id'] = null;
+        $this->items[$index]['source_branch_id']  = null;
+        $this->itemSuggestions[$index]            = ['my_branch' => [], 'other_branches' => []];
     }
 
     public function getSubtotalProperty()
@@ -492,14 +637,28 @@ class CreateWorkOrder extends Component
             // Create work order items
             foreach ($this->items as $item) {
                 $workOrder->items()->create([
-                    'item_type' => $item['item_type'],
-                    'description' => $item['description'],
-                    'inventory_item_id' => $item['inventory_item_id'] ?? null,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $this->isJobcarder() ? 0 : ($item['unit_price'] ?? 0),
-                    'discount' => 0,
-                    'total' => $this->isJobcarder() ? 0 : (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)),
+                    'item_type'          => $item['item_type'],
+                    'description'        => $item['description'],
+                    'inventory_item_id'  => $item['inventory_item_id'] ?? null,
+                    'quantity'           => $item['quantity'],
+                    'unit_price'         => $this->isJobcarder() ? 0 : ($item['unit_price'] ?? 0),
+                    'discount'           => 0,
+                    'total'              => $this->isJobcarder() ? 0 : (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)),
                 ]);
+
+                // Log a pending transfer movement when item is requested from another branch
+                if (!empty($item['inventory_item_id']) && !empty($item['source_branch_id'])) {
+                    InventoryMovement::create([
+                        'inventory_item_id' => $item['inventory_item_id'],
+                        'branch_id'         => $branchId,
+                        'movement_type'     => 'transfer',
+                        'quantity'          => $item['quantity'],
+                        'reference_type'    => 'work_order',
+                        'reference_id'      => $workOrder->id,
+                        'notes'             => "Transfer request from branch #{$item['source_branch_id']} – pending fulfillment",
+                        'performed_by'      => auth()->id(),
+                    ]);
+                }
             }
 
             // Mark service bay as occupied

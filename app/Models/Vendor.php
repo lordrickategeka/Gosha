@@ -150,4 +150,14 @@ class Vendor extends Model
         $setting = $this->settings()->where('key', $key)->first();
         return $setting ? $setting->value : $default;
     }
+
+    public function isVatRegistered(): bool
+    {
+        return (bool) $this->vat_registered;
+    }
+
+    public function getDefaultVatRate(): float
+    {
+        return (float) ($this->default_vat_rate ?? 0);
+    }
 }

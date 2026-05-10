@@ -77,6 +77,11 @@ class Branch extends Model
         return $this->hasMany(Commission::class);
     }
 
+    public function inventoryItems(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

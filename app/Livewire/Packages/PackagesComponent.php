@@ -31,7 +31,7 @@ class PackagesComponent extends Component
 
     protected $rules = [
         'name'                       => 'required|string|max:255',
-        'wash_type'                  => 'required|in:basic,full,premium,interior,exterior,engine,detailing',
+        'wash_type'                  => 'required|in:basic,standard,premium,interior,exterior,engine,full_detail,custom',
         'description'                => 'nullable|string|max:1000',
         'includes'                   => 'array',
         'estimated_duration_minutes' => 'required|integer|min:5',

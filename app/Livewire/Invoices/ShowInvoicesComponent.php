@@ -39,7 +39,9 @@ class ShowInvoicesComponent extends Component
             'payment_date' => today(),
         ]);
 
-        $this->invoice->updateBalanceAfterPayment($this->paymentAmount);
+        $this->invoice->refresh();
+        $this->invoice->recalculateTotals();
+        $this->invoice->saveQuietly();
         $this->invoice->refresh();
 
         $this->showPaymentModal = false;

@@ -157,6 +157,14 @@ class RolesAndPermissionsSeeder extends Seeder
             // Pricing / Quoting
             'price_work_orders',
             'view_calendar',
+
+            // Quotations
+            'view_quotations',
+            'create_quotations',
+            'edit_quotations',
+            'send_quotations',
+            'approve_quotations',
+            'delete_quotations',
         ];
 
         // Create all permissions
@@ -295,6 +303,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit_settings',
             // Audit
             'view_audit_logs',
+            // Quotations
+            'view_quotations',
+            'create_quotations',
+            'edit_quotations',
+            'send_quotations',
+            'approve_quotations',
+            'delete_quotations',
         ]);
 
         // Branch Manager - manages a specific branch
@@ -479,6 +494,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'create_invoices',
             'view_service_templates',
             'view_inventory',
+            // Quotations
+            'view_quotations',
+            'create_quotations',
+            'edit_quotations',
+            'send_quotations',
+            'approve_quotations',
         ]);
     }
 }

@@ -5,6 +5,10 @@ use App\Livewire\Dashboard\Index as Dashboard;
 use App\Livewire\WorkOrders\WorkOrdersComponent;
 use Illuminate\Support\Facades\Route;
 
+use App\Livewire\Templates\TemplateList;
+use App\Livewire\Templates\CreateTemplate;
+use App\Livewire\Templates\EditTemplate;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -63,6 +67,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{workOrder}', \App\Livewire\WorkOrders\ShowWorkOrdersComponent::class)->name('show');
         Route::get('/{workOrder}/edit', \App\Livewire\WorkOrders\EditWorkOrdersComponent::class)->name('edit')
             ->middleware('can:edit_work_orders');
+
+        // Quotation builder (scoped under work order)
+        Route::get('/{workOrder}/quotations/create', \App\Livewire\Quotations\QuotationBuilderComponent::class)
+            ->name('quotations.create')
+            ->middleware('can:create_quotations');
+    });
+
+    // Quotations (standalone)
+    Route::prefix('quotations')->name('quotations.')->middleware('can:view_quotations')->group(function () {
+        Route::get('/{quotation}', \App\Livewire\Quotations\ShowQuotationComponent::class)->name('show');
+        Route::get('/{quotation}/edit', \App\Livewire\Quotations\QuotationBuilderComponent::class)->name('edit')
+            ->middleware('can:edit_quotations');
+        Route::get('/{quotation}/pdf', [\App\Http\Controllers\QuotationPdfController::class, 'download'])->name('pdf');
     });
 
     // Wash Orders ==> washing bays.
@@ -209,4 +226,27 @@ Route::middleware(['auth'])->group(function () {
     // new vendor -platform -pricing
     Route::get('/platform-pricing', \App\Livewire\Platform\PlansComponent::class)->name('platform.pricing');
 
+    // Template management
+    // Route::get('/templates', TemplateList::class)
+    //     ->name('templates.index');
+
+    // Route::get('/templates/create', CreateTemplate::class)
+    //     ->name('templates.create');
+
+    // Route::get('/templates/{template}/edit', EditTemplate::class)
+    //     ->name('templates.edit');
+
+    // // Template preview (for testing)
+    // Route::get('/templates/{template}/preview', [TemplateController::class, 'preview'])
+    //     ->name('templates.preview');
+
 });
+
+// ─── Public Quotation Routes (no auth) ───────────────────────────────────────
+Route::get('/q/{token}', [\App\Http\Controllers\PublicQuotationController::class, 'show'])
+    ->name('quotations.public');
+Route::post('/q/{token}/approve', [\App\Http\Controllers\PublicQuotationController::class, 'approve'])
+    ->name('quotations.public.approve');
+Route::post('/q/{token}/reject', [\App\Http\Controllers\PublicQuotationController::class, 'reject'])
+    ->name('quotations.public.reject');
+

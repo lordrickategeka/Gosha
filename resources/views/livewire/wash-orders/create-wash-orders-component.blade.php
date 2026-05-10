@@ -155,12 +155,13 @@
                             </label>
                             <select wire:model="wash_type" class="select select-bordered w-full">
                                 <option value="basic">Basic</option>
-                                <option value="full">Full</option>
+                                <option value="standard">Standard</option>
                                 <option value="premium">Premium</option>
                                 <option value="interior">Interior</option>
                                 <option value="exterior">Exterior</option>
                                 <option value="engine">Engine</option>
-                                <option value="detailing">Detailing</option>
+                                <option value="full_detail">Full Detail</option>
+                                <option value="custom">Custom</option>
                             </select>
                             @error('wash_type') <span class="label-text-alt text-error mt-1 block">{{ $message }}</span> @enderror
                         </div>

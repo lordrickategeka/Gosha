@@ -98,6 +98,16 @@ class WorkOrder extends Model
         return $this->hasOne(Invoice::class);
     }
 
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class)->orderByDesc('version');
+    }
+
+    public function latestQuotation(): HasOne
+    {
+        return $this->hasOne(Quotation::class)->latestOfMany('version');
+    }
+
     public function washOrder(): HasOne
     {
         return $this->hasOne(WashOrder::class);
@@ -167,6 +177,11 @@ class WorkOrder extends Model
         return $this->status === 'open';
     }
 
+    public function hasApprovedQuotation(): bool
+    {
+        return $this->quotations()->where('status', 'approved')->exists();
+    }
+
     public function isInProgress(): bool
     {
         return $this->status === 'in_progress';
@@ -179,7 +194,17 @@ class WorkOrder extends Model
 
     public function canStart(): bool
     {
-        return in_array($this->status, ['open', 'quoted']);
+        if (!in_array($this->status, ['open', 'quoted'])) {
+            return false;
+        }
+
+        // If a quotation exists it must be approved before work can start
+        $latest = $this->latestQuotation;
+        if ($latest && !$latest->isApproved()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function canComplete(): bool

@@ -9,7 +9,7 @@
             <div>
                 <div class="flex items-center gap-2">
                     <h1 class="text-2xl font-bold font-mono">{{ $washOrder->order_number }}</h1>
-                    <span class="badge badge-{{ $washOrder->status_color }}">{{ ucfirst($washOrder->status) }}</span>
+                    <span class="badge badge-{{ $washOrder->status_color }}">{{ $washOrder->status->label() }}</span>
                     @if($washOrder->source === 'combo')
                         <span class="badge badge-accent">COMBO</span>
                     @endif
@@ -123,7 +123,7 @@
                 <div class="card-body">
                     <h3 class="card-title text-lg mb-4">Timeline</h3>
                     <ul class="steps steps-vertical">
-                        <li class="step {{ in_array($washOrder->status, ['queued', 'in_progress', 'completed']) ? 'step-primary' : '' }}">
+                        <li class="step {{ in_array($washOrder->status->value, ['queued', 'in_progress', 'completed']) ? 'step-primary' : '' }}">
                             <div class="text-left">
                                 <p class="font-medium">Queued</p>
                                 @if($washOrder->queued_at)
@@ -131,7 +131,7 @@
                                 @endif
                             </div>
                         </li>
-                        <li class="step {{ in_array($washOrder->status, ['in_progress', 'completed']) ? 'step-primary' : '' }}">
+                        <li class="step {{ in_array($washOrder->status->value, ['in_progress', 'completed']) ? 'step-primary' : '' }}">
                             <div class="text-left">
                                 <p class="font-medium">Started</p>
                                 @if($washOrder->started_at)
@@ -139,7 +139,7 @@
                                 @endif
                             </div>
                         </li>
-                        <li class="step {{ $washOrder->status === 'completed' ? 'step-primary' : '' }}">
+                        <li class="step {{ $washOrder->status->value === 'completed' ? 'step-primary' : '' }}">
                             <div class="text-left">
                                 <p class="font-medium">Completed</p>
                                 @if($washOrder->completed_at)
@@ -158,7 +158,7 @@
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between">
                             <span class="text-base-content/60">Wash Type</span>
-                            <span class="badge badge-ghost">{{ ucfirst($washOrder->wash_type) }}</span>
+                            <span class="badge badge-ghost">{{ ucwords(str_replace('_', ' ', $washOrder->wash_type)) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-base-content/60">Source</span>

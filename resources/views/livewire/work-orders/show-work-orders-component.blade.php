@@ -34,6 +34,15 @@
                         </svg>
                         Start Work
                     </button>
+                @elseif(in_array($workOrder->status, ['open','quoted']) && $this->latestQuotation && !$this->latestQuotation->isApproved())
+                    <div class="tooltip tooltip-left" data-tip="Waiting for customer to approve the quotation">
+                        <button disabled class="btn btn-primary btn-disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Start Work
+                        </button>
+                    </div>
                 @endif
                 @if($workOrder->status === 'in_progress')
                     <button wire:click="moveToQualityCheck" class="btn btn-warning">
@@ -138,41 +147,34 @@
                 <div class="card-body">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="card-title text-lg">Job Items</h3>
-                        @can('price_work_orders')
+                        @can('create_quotations')
                             @if(in_array($workOrder->status, ['open', 'quoted']))
-                                <button wire:click="$toggle('showQuotingPanel')" class="btn btn-outline btn-sm">
-                                    {{ $showQuotingPanel ? 'Cancel' : 'Set Prices (Quoter)' }}
-                                </button>
+                                @if($this->latestQuotation)
+                                    <a href="{{ route('quotations.show', $this->latestQuotation) }}" class="btn btn-outline btn-sm">
+                                        View Quotation
+                                        <span class="badge badge-{{ $this->latestQuotation->status_color }} badge-sm ml-1">{{ ucfirst($this->latestQuotation->status) }}</span>
+                                    </a>
+                                @else
+                                    <a href="{{ route('quotations.create', $workOrder) }}" class="btn btn-primary btn-sm">
+                                        Create Quotation
+                                    </a>
+                                @endif
                             @endif
                         @endcan
                     </div>
 
-                    {{-- Quoter pricing panel --}}
-                    @if($showQuotingPanel)
-                        <div class="bg-warning/10 border border-warning rounded-lg p-4 mb-4">
-                            <h4 class="font-semibold text-warning mb-3">Set Item Prices</h4>
-                            <div class="space-y-3">
-                                @foreach($workOrder->items as $item)
-                                    <div class="flex items-center gap-3">
-                                        <span class="badge badge-sm badge-{{ $item->item_type === 'labor' ? 'primary' : 'secondary' }}">{{ ucfirst($item->item_type) }}</span>
-                                        <span class="flex-1 text-sm">{{ $item->description }} <span class="text-base-content/50">(qty: {{ $item->quantity }})</span></span>
-                                        <div class="flex items-center gap-2">
-                                            <input type="number" wire:model="quotingItemPrices.{{ $item->id }}.unit_price"
-                                                placeholder="Unit price" step="1" min="0"
-                                                class="input input-bordered input-sm w-36" />
-                                            <input type="number" wire:model="quotingItemPrices.{{ $item->id }}.discount"
-                                                placeholder="Discount" step="1" min="0"
-                                                class="input input-bordered input-sm w-28" />
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="flex justify-end mt-4">
-                                <button wire:click="saveQuote" class="btn btn-warning btn-sm" wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="saveQuote">Save Quote</span>
-                                    <span wire:loading wire:target="saveQuote" class="loading loading-spinner loading-xs"></span>
-                                </button>
-                            </div>
+                    {{-- Quotation approval notice --}}
+                    @if($this->latestQuotation && !$this->latestQuotation->isApproved() && in_array($workOrder->status, ['open', 'quoted']))
+                        <div class="alert alert-warning mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span>Awaiting customer approval on quotation
+                                <a href="{{ route('quotations.show', $this->latestQuotation) }}" class="link font-mono">
+                                    {{ $this->latestQuotation->quotation_number }}
+                                </a>.
+                                Work cannot start until approved.
+                            </span>
                         </div>
                     @endif
 
@@ -263,7 +265,7 @@
                                 <p class="text-sm">
                                     <span class="font-mono">{{ $workOrder->washOrder->order_number }}</span>
                                     <span class="badge badge-{{ $workOrder->washOrder->status_color }} badge-sm ml-2">
-                                        {{ ucfirst($workOrder->washOrder->status) }}
+                                        {{ $workOrder->washOrder->status->label() }}
                                     </span>
                                 </p>
                             </div>

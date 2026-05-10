@@ -9,6 +9,7 @@
                     <span class="label-text font-medium">Job Type *</span>
                 </label>
                 <select wire:model="type" class="select select-bordered w-full">
+                    <option value="">Select job type...</option>
                     <option value="service">Service</option>
                     <option value="repair">Repair</option>
                     <option value="diagnostics">Diagnostics</option>
@@ -29,6 +30,7 @@
                     <span class="label-text font-medium">Priority *</span>
                 </label>
                 <select wire:model="priority" class="select select-bordered w-full">
+                    <option value="">Select priority...</option>
                     <option value="low">Low</option>
                     <option value="normal">Normal</option>
                     <option value="high">High</option>

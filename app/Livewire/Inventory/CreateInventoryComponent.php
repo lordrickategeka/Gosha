@@ -47,19 +47,20 @@ class CreateInventoryComponent extends Component
         $this->validate();
 
         $item = InventoryItem::create([
-            'vendor_id' => auth()->user()->vendor_id,
-            'category_id' => $this->category_id,
-            'supplier_id' => $this->supplier_id ?: null,
-            'name' => $this->name,
-            'sku' => $this->sku,
-            'description' => $this->description,
-            'unit' => $this->unit,
-            'quantity' => $this->quantity,
-            'cost_price' => $this->cost_price,
-            'selling_price' => $this->selling_price,
-            'reorder_level' => $this->reorder_level,
-            'location' => $this->location,
-            'is_active' => true,
+            'vendor_id'    => auth()->user()->vendor_id,
+            'branch_id'    => session('current_branch_id') ?: null,
+            'category_id'  => $this->category_id,
+            'supplier_id'  => $this->supplier_id ?: null,
+            'name'         => $this->name,
+            'sku'          => $this->sku,
+            'description'  => $this->description,
+            'unit'         => $this->unit,
+            'quantity'     => $this->quantity,
+            'cost_price'   => $this->cost_price,
+            'selling_price'=> $this->selling_price,
+            'reorder_level'=> $this->reorder_level,
+            'location'     => $this->location,
+            'is_active'    => true,
         ]);
 
         if ($this->quantity > 0) {
