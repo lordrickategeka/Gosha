@@ -299,7 +299,7 @@
     <!-- Assign Plan Modal -->
     @if($showAssignPlanModal)
     <div class="modal modal-open">
-        <div class="modal-box max-w-lg">
+        <div class="modal-box app-modal-shell max-w-lg">
             <h3 class="font-bold text-lg mb-4">Assign Pricing Plan — {{ $vendor->name }}</h3>
 
             <div class="space-y-4">
@@ -345,7 +345,7 @@
                 </div>
             </div>
 
-            <div class="modal-action">
+            <div class="modal-action app-modal-actions">
                 <button wire:click="closeAssignPlan" class="btn btn-ghost">Cancel</button>
                 <button wire:click="assignPlan" wire:loading.attr="disabled" wire:target="assignPlan"
                     class="btn btn-primary">
@@ -354,7 +354,7 @@
                 </button>
             </div>
         </div>
-        <div class="modal-backdrop" wire:click="closeAssignPlan"></div>
+        <div class="modal-backdrop app-modal-backdrop" wire:click="closeAssignPlan"></div>
     </div>
     @endif
 </div>

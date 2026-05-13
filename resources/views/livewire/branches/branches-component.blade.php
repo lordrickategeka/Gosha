@@ -61,7 +61,7 @@
     <!-- Create Modal -->
     @if($showCreateModal)
         <div class="modal modal-open">
-            <div class="modal-box">
+            <div class="modal-box app-modal-shell">
                 <h3 class="font-bold text-lg mb-4">Add Branch</h3>
                 <form wire:submit="createBranch">
                     <div class="form-control mb-4">
@@ -77,13 +77,13 @@
                         <label class="label"><span class="label-text">Phone</span></label>
                         <input type="text" wire:model="phone" class="input input-bordered" placeholder="+256 700 000000" />
                     </div>
-                    <div class="modal-action">
+                    <div class="modal-action app-modal-actions">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn btn-ghost">Cancel</button>
                         <button type="submit" class="btn btn-primary">Create Branch</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
         </div>
     @endif
 </div>

@@ -75,12 +75,12 @@
                                 <tbody>
                                     @foreach($item->movements as $movement)
                                         <tr>
-                                            <td>{{ $movement->created_at->format('d M H:i') }}</td>
-                                            <td><span class="badge badge-ghost badge-sm">{{ ucfirst($movement->type) }}</span></td>
-                                            <td class="{{ $movement->quantity > 0 ? 'text-success' : 'text-error' }} font-medium">
-                                                {{ $movement->quantity > 0 ? '+' : '' }}{{ $movement->quantity }}
+                                            <td>{{ ($movement->movement_date ?? $movement->created_at)?->format('d M Y, H:i') ?? '-' }}</td>
+                                            <td><span class="badge badge-ghost badge-sm">{{ ucfirst(str_replace('_', ' ', $movement->movement_type)) }}</span></td>
+                                            <td class="{{ $movement->quantity_change > 0 ? 'text-success' : 'text-error' }} font-medium">
+                                                {{ $movement->quantity_change > 0 ? '+' : '' }}{{ $movement->quantity_change }}
                                             </td>
-                                            <td>{{ $movement->user?->name ?? 'System' }}</td>
+                                            <td>{{ $movement->performedBy?->name ?? 'System' }}</td>
                                             <td class="text-sm text-base-content/60">{{ $movement->notes ?? '-' }}</td>
                                         </tr>
                                     @endforeach
@@ -132,7 +132,7 @@
     <!-- Adjust Stock Modal -->
     @if($showAdjustModal)
         <div class="modal modal-open">
-            <div class="modal-box">
+            <div class="modal-box app-modal-shell">
                 <h3 class="font-bold text-lg mb-4">Adjust Stock</h3>
                 <div class="form-control mb-4">
                     <label class="label"><span class="label-text">Adjustment Type</span></label>
@@ -153,12 +153,12 @@
                     <label class="label"><span class="label-text">Notes</span></label>
                     <textarea wire:model="adjustNotes" class="textarea textarea-bordered" rows="2" placeholder="Reason for adjustment..."></textarea>
                 </div>
-                <div class="modal-action">
+                <div class="modal-action app-modal-actions">
                     <button wire:click="$set('showAdjustModal', false)" class="btn btn-ghost">Cancel</button>
                     <button wire:click="adjustStock" class="btn btn-primary">Save Adjustment</button>
                 </div>
             </div>
-            <div class="modal-backdrop" wire:click="$set('showAdjustModal', false)"></div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showAdjustModal', false)"></div>
         </div>
     @endif
 </div>

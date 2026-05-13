@@ -203,6 +203,117 @@
         @apply flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-base-100 px-6 py-10 text-center text-gray-500;
     }
 
+    /* System-wide modal design */
+    .modal {
+        @apply backdrop-blur-[1px];
+    }
+
+    .modal::backdrop,
+    .modal-backdrop,
+    .app-modal-backdrop {
+        background:
+            radial-gradient(1000px 420px at 50% -10%, rgba(11, 116, 222, 0.08), transparent 60%),
+            radial-gradient(700px 320px at 15% 110%, rgba(12, 183, 134, 0.05), transparent 70%),
+            rgba(17, 24, 39, 0.35);
+    }
+
+    .modal-box,
+    .app-modal-shell {
+        @apply rounded-2xl border border-base-300 bg-base-100 shadow-2xl;
+        @apply p-6;
+        max-height: min(90vh, 860px);
+        animation: app-modal-pop 180ms ease-out;
+    }
+
+    .modal-box > h3,
+    .app-modal-shell > h3,
+    .modal-box .font-bold.text-lg,
+    .modal-box .font-bold.text-xl,
+    .app-modal-shell .font-bold.text-lg,
+    .app-modal-shell .font-bold.text-xl {
+        @apply tracking-tight text-base-content;
+    }
+
+    .app-modal-shell > h3,
+    .app-modal-shell > .font-bold.text-lg,
+    .app-modal-shell > .font-bold.text-xl {
+        @apply -mx-6 -mt-6 mb-5 border-b border-base-300 bg-base-200 px-6 py-4;
+    }
+
+    .modal-box .form-control .label,
+    .app-modal-shell .form-control .label {
+        @apply pb-1;
+    }
+
+    .modal-box .form-control .label-text,
+    .app-modal-shell .form-control .label-text {
+        @apply text-xs font-semibold uppercase tracking-wide text-base-content opacity-70;
+    }
+
+    .modal-box .input,
+    .modal-box .select,
+    .modal-box .textarea,
+    .app-modal-shell .input,
+    .app-modal-shell .select,
+    .app-modal-shell .textarea {
+        @apply h-11 border-base-300 bg-base-100 text-sm;
+    }
+
+    .modal-box .textarea,
+    .app-modal-shell .textarea {
+        min-height: 6.5rem;
+    }
+
+    .modal-action,
+    .app-modal-actions {
+        @apply mt-6 border-t border-base-300 pt-4;
+    }
+
+    .modal-action .btn,
+    .app-modal-actions .btn {
+        @apply min-w-24;
+    }
+
+    @keyframes app-modal-pop {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .modal {
+            @apply items-end;
+        }
+
+        .modal-box,
+        .app-modal-shell {
+            @apply w-full max-w-none rounded-t-2xl rounded-b-none;
+            max-height: 88vh;
+            animation: app-modal-rise 160ms ease-out;
+        }
+
+        .modal-action,
+        .app-modal-actions {
+            @apply sticky bottom-0 bg-base-100;
+        }
+    }
+
+    @keyframes app-modal-rise {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .app-badge-soft {
         @apply badge border-0 bg-base-200 px-3 py-3 text-xs font-medium text-base-content opacity-70;
     }
@@ -218,6 +329,28 @@
 
     .btn {
         @apply rounded-lg;
+    }
+
+    .btn-primary:not(.btn-outline):not(.btn-ghost):not(.btn-link),
+    .btn-primary:not(.btn-outline):not(.btn-ghost):not(.btn-link):hover,
+    .btn-primary:not(.btn-outline):not(.btn-ghost):not(.btn-link):active,
+    .btn-primary:not(.btn-outline):not(.btn-ghost):not(.btn-link):focus-visible {
+        @apply text-white;
+    }
+
+    .btn-primary.btn-outline,
+    .btn-primary.btn-ghost,
+    .btn-primary.btn-link {
+        @apply text-primary;
+    }
+
+    .btn-primary.btn-disabled,
+    .btn-primary:disabled,
+    .btn-primary[disabled] {
+        color: hsl(var(--bc)) !important;
+        background-color: hsl(var(--b2)) !important;
+        border-color: hsl(var(--b3)) !important;
+        opacity: 0.7;
     }
 
     .input,

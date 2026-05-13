@@ -12,19 +12,55 @@ return new class extends Migration
             $table->id();
             $table->foreignId('inventory_item_id')->constrained()->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
-            $table->enum('movement_type', ['purchase', 'sale', 'adjustment', 'transfer', 'consumption', 'return']);
-            $table->decimal('quantity', 12, 2); // positive for in, negative for out
             $table->decimal('unit_cost', 12, 2)->nullable();
             $table->decimal('total_cost', 12, 2)->nullable();
-            $table->string('reference_type')->nullable(); // work_order, wash_order, manual, purchase_order
-            $table->unsignedBigInteger('reference_id')->nullable();
-            $table->text('notes')->nullable();
             $table->foreignId('performed_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('created_at')->useCurrent();
 
+
+            $table->enum('movement_type', [
+                // Stock in
+                'purchase',          // Purchased from supplier
+                'transfer_in',       // Received from another branch
+                'return_from_customer', // Customer returned item
+                'adjustment_in',     // Manual increase (stock count correction)
+
+                // Stock out
+                'work_order_use',    // Consumed in work order
+                'wash_order_use',    // Consumed in wash order
+                'consumption',       // Generic consumption (work/wash orders)
+                'sale',              // Sold directly (retail)
+                'transfer_out',      // Sent to another branch
+                'wastage',           // Damaged/expired/lost
+                'adjustment_out',    // Manual decrease (stock count correction)
+                'return_to_supplier' // Returned to supplier
+            ]);
+
+            // Quantity (positive for in, negative for out)
+            $table->decimal('quantity_change', 10, 2); // Can be negative
+            $table->decimal('quantity_after', 10, 2);  // Snapshot after movement
+
+            // Costing
+
+            // Reference tracking (polymorphic)
+            $table->nullableMorphs('movable'); // work_order, wash_order, purchase_order, etc.
+
+            // Transfer tracking
+            $table->foreignId('from_branch_id')->nullable()->constrained('branches');
+            $table->foreignId('to_branch_id')->nullable()->constrained('branches');
+
+            // Supplier tracking
+            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
+
+            // Audit
+            $table->text('notes')->nullable();
+            $table->timestamp('movement_date')->useCurrent();
+
+            $table->timestamps();
+
+            // Indexes
+            $table->index(['inventory_item_id', 'movement_type']);
+            $table->index(['branch_id', 'movement_date']);
             $table->index(['inventory_item_id', 'created_at']);
-            $table->index(['reference_type', 'reference_id']);
         });
     }
 

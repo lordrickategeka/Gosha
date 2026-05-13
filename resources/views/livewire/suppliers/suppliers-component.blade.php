@@ -83,7 +83,7 @@
     <!-- Create Modal -->
     @if($showCreateModal)
         <div class="modal modal-open">
-            <div class="modal-box">
+            <div class="modal-box app-modal-shell">
                 <h3 class="font-bold text-lg mb-4">Add Supplier</h3>
                 <form wire:submit="createSupplier">
                     <div class="form-control mb-3">
@@ -109,13 +109,13 @@
                         <label class="label"><span class="label-text">Address</span></label>
                         <textarea wire:model="address" rows="2" class="textarea textarea-bordered"></textarea>
                     </div>
-                    <div class="modal-action">
+                    <div class="modal-action app-modal-actions">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn btn-ghost">Cancel</button>
                         <button type="submit" class="btn btn-primary">Create Supplier</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
         </div>
     @endif
 </div>

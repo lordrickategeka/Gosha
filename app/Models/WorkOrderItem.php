@@ -87,11 +87,12 @@ class WorkOrderItem extends Model
             'inventory_item_id' => $this->inventory_item_id,
             'branch_id' => $this->workOrder->branch_id,
             'movement_type' => 'consumption',
-            'quantity' => -$this->quantity,
+            'quantity_change' => -$this->quantity,
+            'quantity_after' => max(0, $this->inventoryItem->quantity - $this->quantity),
             'unit_cost' => $this->inventoryItem->cost_price,
             'total_cost' => $this->quantity * $this->inventoryItem->cost_price,
-            'reference_type' => 'work_order',
-            'reference_id' => $this->work_order_id,
+            'movable_type' => WorkOrder::class,
+            'movable_id' => $this->work_order_id,
             'performed_by' => auth()->id(),
         ]);
 

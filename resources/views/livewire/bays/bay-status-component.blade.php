@@ -263,7 +263,7 @@
     <!-- Service Bay Modal -->
     @if($showServiceBayModal)
     <div class="modal modal-open">
-        <div class="modal-box">
+        <div class="modal-box app-modal-shell">
             <h3 class="font-bold text-lg">{{ $editingServiceBayId ? 'Edit Service Bay' : 'Add Service Bay' }}</h3>
             <div class="py-4 space-y-4">
                 <div class="form-control">
@@ -288,21 +288,21 @@
                     <textarea wire:model="serviceBayNotes" class="textarea textarea-bordered" rows="2" placeholder="Optional notes..."></textarea>
                 </div>
             </div>
-            <div class="modal-action">
+            <div class="modal-action app-modal-actions">
                 <button wire:click="$set('showServiceBayModal', false)" class="btn btn-ghost">Cancel</button>
                 <button wire:click="saveServiceBay" class="btn btn-primary">
                     {{ $editingServiceBayId ? 'Update' : 'Create' }}
                 </button>
             </div>
         </div>
-        <div class="modal-backdrop" wire:click="$set('showServiceBayModal', false)"></div>
+        <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showServiceBayModal', false)"></div>
     </div>
     @endif
 
     <!-- Wash Bay Modal -->
     @if($showWashBayModal)
     <div class="modal modal-open">
-        <div class="modal-box">
+        <div class="modal-box app-modal-shell">
             <h3 class="font-bold text-lg">{{ $editingWashBayId ? 'Edit Wash Bay' : 'Add Wash Bay' }}</h3>
             <div class="py-4 space-y-4">
                 <div class="form-control">
@@ -327,29 +327,29 @@
                     <textarea wire:model="washBayNotes" class="textarea textarea-bordered" rows="2" placeholder="Optional notes..."></textarea>
                 </div>
             </div>
-            <div class="modal-action">
+            <div class="modal-action app-modal-actions">
                 <button wire:click="$set('showWashBayModal', false)" class="btn btn-ghost">Cancel</button>
                     <button wire:click="saveWashBay" class="btn btn-primary">
                     {{ $editingWashBayId ? 'Update' : 'Create' }}
                 </button>
             </div>
         </div>
-        <div class="modal-backdrop" wire:click="$set('showWashBayModal', false)"></div>
+        <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showWashBayModal', false)"></div>
     </div>
     @endif
 
     <!-- Delete Confirmation Modal -->
     @if($confirmingDeleteId)
     <div class="modal modal-open">
-        <div class="modal-box">
+        <div class="modal-box app-modal-shell">
             <h3 class="font-bold text-lg text-error">Delete Bay</h3>
             <p class="py-4">Are you sure you want to delete this bay? This action cannot be undone.</p>
-            <div class="modal-action">
+            <div class="modal-action app-modal-actions">
                 <button wire:click="cancelDelete" class="btn btn-ghost">Cancel</button>
                 <button wire:click="deleteBay" class="btn btn-error">Delete</button>
             </div>
         </div>
-        <div class="modal-backdrop" wire:click="cancelDelete"></div>
+        <div class="modal-backdrop app-modal-backdrop" wire:click="cancelDelete"></div>
     </div>
     @endif
 </div>

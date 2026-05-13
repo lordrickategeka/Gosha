@@ -1,8 +1,4 @@
 <div>
-    @if (session()->has('error'))
-        <div class="alert alert-error mb-4">{{ session('error') }}</div>
-    @endif
-
     <div class="flex items-center gap-4 mb-6">
         <a href="{{ route('expenses.index') }}" class="btn btn-ghost btn-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

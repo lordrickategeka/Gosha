@@ -24,16 +24,6 @@
         </div>
     </div>
 
-    {{-- Flash Messages --}}
-    @if (session('success'))
-        <div class="alert alert-success mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     {{-- React Editor Container --}}
     <div
         id="react-template-editor"
@@ -59,7 +49,7 @@
 
     {{-- Settings Modal --}}
     <dialog id="settings_modal" class="modal">
-        <div class="modal-box">
+        <div class="modal-box app-modal-shell">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
@@ -163,7 +153,7 @@
                     </div>
                 </div>
 
-                <div class="modal-action">
+                <div class="modal-action app-modal-actions">
                     <button type="button" onclick="settings_modal.close()" class="btn btn-ghost">Cancel</button>
                     <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                         <span wire:loading.remove>Save Settings</span>
@@ -172,7 +162,7 @@
                 </div>
             </form>
         </div>
-        <form method="dialog" class="modal-backdrop">
+        <form method="dialog" class="modal-backdrop app-modal-backdrop">
             <button>close</button>
         </form>
     </dialog>

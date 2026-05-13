@@ -176,7 +176,7 @@
     <!-- Payment Modal -->
     @if($showPaymentModal)
         <div class="modal modal-open">
-            <div class="modal-box">
+            <div class="modal-box app-modal-shell">
                 <h3 class="font-bold text-lg mb-4">Record Payment</h3>
                 <div class="form-control mb-4">
                     <label class="label"><span class="label-text">Amount</span></label>
@@ -197,12 +197,12 @@
                     <label class="label"><span class="label-text">Reference Number</span></label>
                     <input type="text" wire:model="paymentReference" class="input input-bordered" placeholder="Transaction ID, receipt #, etc." />
                 </div>
-                <div class="modal-action">
+                <div class="modal-action app-modal-actions">
                     <button wire:click="$set('showPaymentModal', false)" class="btn btn-ghost">Cancel</button>
                     <button wire:click="recordPayment" class="btn btn-primary">Record Payment</button>
                 </div>
             </div>
-            <div class="modal-backdrop" wire:click="$set('showPaymentModal', false)"></div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showPaymentModal', false)"></div>
         </div>
     @endif
 </div>

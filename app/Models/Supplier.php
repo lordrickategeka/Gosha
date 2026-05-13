@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToBranch;
 use App\Traits\BelongsToVendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,10 +11,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supplier extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToVendor;
+    use HasFactory, SoftDeletes, BelongsToVendor, BelongsToBranch;
 
     protected $fillable = [
         'vendor_id',
+        'branch_id',
         'name',
         'contact_person',
         'email',

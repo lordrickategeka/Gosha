@@ -29,6 +29,7 @@ class SuppliersComponent extends Component
         ]);
 
         Supplier::create([
+            'branch_id' => session('current_branch_id'),
             'name' => $this->name,
             'contact_person' => $this->contact_person,
             'phone' => $this->phone,
@@ -50,6 +51,7 @@ class SuppliersComponent extends Component
     public function render()
     {
         $suppliers = Supplier::withCount('inventoryMovements')
+            ->when(session('current_branch_id'), fn($q) => $q->where('branch_id', session('current_branch_id')))
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy('name')
             ->paginate(15);

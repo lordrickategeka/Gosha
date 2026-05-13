@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\QualityCheck;
 
 class WorkOrder extends Model
 {
@@ -369,4 +370,50 @@ class WorkOrder extends Model
             default => 'ghost',
         };
     }
+
+
+    /**
+ * Get the quality check for this work order
+ */
+public function qualityCheck(): HasOne
+{
+    return $this->hasOne(QualityCheck::class);
+}
+
+/**
+ * Check if work order can proceed to invoicing
+ */
+public function canProceedToInvoicing(): bool
+{
+    // Must have quality check
+    if (!$this->qualityCheck) {
+        return false;
+    }
+
+    // Quality check must be passed
+    if ($this->qualityCheck->status !== 'passed') {
+        return false;
+    }
+
+    // Status must be ready or delivered
+    return in_array($this->status, ['ready', 'delivered']);
+}
+
+/**
+ * Check if work order requires quality check
+ */
+public function requiresQualityCheck(): bool
+{
+    // Quality check is mandatory for all work orders
+    return true;
+}
+
+/**
+ * Check if quality check is pending
+ */
+public function hasQualityCheckPending(): bool
+{
+    return $this->status === 'quality_check' &&
+           (!$this->qualityCheck || $this->qualityCheck->status !== 'passed');
+}
 }

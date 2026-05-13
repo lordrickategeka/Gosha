@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class InventoryMovement extends Model
 {
@@ -15,22 +16,27 @@ class InventoryMovement extends Model
     protected $fillable = [
         'inventory_item_id',
         'branch_id',
-        'supplier_id',
         'movement_type',
-        'quantity',
+        'quantity_change',
+        'quantity_after',
         'unit_cost',
         'total_cost',
-        'reference_type',
-        'reference_id',
-        'notes',
+        'movable_type',
+        'movable_id',
+        'from_branch_id',
+        'to_branch_id',
+        'supplier_id',
         'performed_by',
+        'notes',
+        'movement_date'
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:2',
+        'quantity_change' => 'decimal:2',
+        'quantity_after' => 'decimal:2',
         'unit_cost' => 'decimal:2',
         'total_cost' => 'decimal:2',
-        'created_at' => 'datetime',
+        'movement_date' => 'datetime'
     ];
 
     // Relationships
@@ -105,6 +111,23 @@ class InventoryMovement extends Model
             ->whereYear('created_at', now()->year);
     }
 
+    // new relationships
+
+    public function movable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function fromBranch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'from_branch_id');
+    }
+
+    public function toBranch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'to_branch_id');
+    }
+
     // Helpers
     public function isInward(): bool
     {
@@ -139,5 +162,45 @@ class InventoryMovement extends Model
             'return' => 'error',
             default => 'ghost',
         };
+    }
+
+    // new helpers
+    public function isStockIn(): bool
+    {
+        return in_array($this->movement_type, [
+            'purchase',
+            'transfer_in',
+            'return_from_customer',
+            'adjustment_in'
+        ]);
+    }
+
+    public function isStockOut(): bool
+    {
+        return !$this->isStockIn();
+    }
+
+    //new scopes
+    public function scopeStockIn($query)
+    {
+        return $query->whereIn('movement_type', [
+            'purchase',
+            'transfer_in',
+            'return_from_customer',
+            'adjustment_in'
+        ]);
+    }
+
+    public function scopeStockOut($query)
+    {
+        return $query->whereIn('movement_type', [
+            'work_order_use',
+            'wash_order_use',
+            'sale',
+            'transfer_out',
+            'wastage',
+            'adjustment_out',
+            'return_to_supplier'
+        ]);
     }
 }

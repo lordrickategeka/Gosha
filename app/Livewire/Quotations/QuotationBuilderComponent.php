@@ -27,7 +27,7 @@ class QuotationBuilderComponent extends Component
     public string $notes = '';
     public string $termsAndConditions = '';
     public string $validUntil = '';
-    public float $vatRate = 0;
+    public float $vat_rate = 0;
 
     // ─── Add-to-inventory modal ─────────────────────────────────────────────
     public bool $showAddToInventoryModal = false;
@@ -60,7 +60,7 @@ class QuotationBuilderComponent extends Component
             $this->notes = $this->quotation->notes ?? '';
             $this->termsAndConditions = $this->quotation->terms_and_conditions ?? '';
             $this->validUntil = $this->quotation->valid_until?->format('Y-m-d') ?? $this->validUntil;
-            $this->vatRate = (float) ($this->quotation->vat_rate ?? 0);
+            $this->vat_rate = (float) ($this->quotation->vat_rate ?? 0);
 
             foreach ($this->quotation->items->sortBy('sort_order') as $item) {
                 $this->items[] = [
@@ -76,14 +76,27 @@ class QuotationBuilderComponent extends Component
             }
         } else {
             // Seed rows from work order items (description + type, zero prices)
+            $inventoryItems = InventoryItem::whereIn(
+                'id',
+                $this->workOrder->items->pluck('inventory_item_id')->filter()->unique()->values()
+            )
+                ->get(['id', 'selling_price', 'supplier_id'])
+                ->keyBy('id');
+
             foreach ($this->workOrder->items as $woItem) {
+                $linkedInventory = $woItem->inventory_item_id
+                    ? $inventoryItems->get($woItem->inventory_item_id)
+                    : null;
+
                 $this->items[] = [
                     'item_type'         => $woItem->item_type,
                     'description'       => $woItem->description,
                     'inventory_item_id' => $woItem->inventory_item_id,
-                    'supplier_id'       => null,
+                    'supplier_id'       => $linkedInventory?->supplier_id,
                     'quantity'          => (float) $woItem->quantity,
-                    'unit_price'        => max(0, (float) $woItem->unit_price),
+                    'unit_price'        => $linkedInventory
+                        ? max(0, (float) $linkedInventory->selling_price)
+                        : max(0, (float) $woItem->unit_price),
                     'discount'          => 0.0,
                     'vat_applicable'    => false,
                 ];
@@ -197,7 +210,8 @@ class QuotationBuilderComponent extends Component
 
         $this->items[$index]['description']       = $item->name;
         $this->items[$index]['inventory_item_id'] = $item->id;
-        $this->items[$index]['unit_price']         = (float) $item->selling_price;
+        $this->items[$index]['unit_price']        = (float) $item->selling_price;
+        $this->items[$index]['supplier_id']       = $item->supplier_id;
         $this->itemSuggestions[$index]            = ['my_branch' => [], 'other_branches' => []];
     }
 
@@ -255,6 +269,7 @@ class QuotationBuilderComponent extends Component
             $this->items[$this->addToInventoryIndex]['inventory_item_id'] = $inventoryItem->id;
             $this->items[$this->addToInventoryIndex]['description'] = $inventoryItem->name;
             $this->items[$this->addToInventoryIndex]['unit_price']  = (float) $inventoryItem->selling_price;
+            $this->items[$this->addToInventoryIndex]['supplier_id'] = $inventoryItem->supplier_id;
         }
 
         $this->showAddToInventoryModal = false;
@@ -274,19 +289,27 @@ class QuotationBuilderComponent extends Component
     public function getSubtotalProperty(): float
     {
         return collect($this->items)->sum(function ($item) {
-            return max(0, ($item['quantity'] * $item['unit_price']) - ($item['discount'] ?? 0));
+            $quantity = (float) ($item['quantity'] ?? 0);
+            $unitPrice = (float) ($item['unit_price'] ?? 0);
+            $discount = (float) ($item['discount'] ?? 0);
+
+            return max(0, ($quantity * $unitPrice) - $discount);
         });
     }
 
     public function getVatAmountProperty(): float
     {
-        if ($this->vatRate <= 0) return 0;
+        if ($this->vat_rate <= 0) return 0;
 
         return collect($this->items)
             ->filter(fn($item) => (bool) ($item['vat_applicable'] ?? false))
             ->sum(function ($item) {
-                $lineTotal = max(0, ($item['quantity'] * $item['unit_price']) - ($item['discount'] ?? 0));
-                return $lineTotal * ($this->vatRate / 100);
+                $quantity = (float) ($item['quantity'] ?? 0);
+                $unitPrice = (float) ($item['unit_price'] ?? 0);
+                $discount = (float) ($item['discount'] ?? 0);
+                $lineTotal = max(0, ($quantity * $unitPrice) - $discount);
+
+                return $lineTotal * ($this->vat_rate / 100);
             });
     }
 
@@ -327,7 +350,7 @@ class QuotationBuilderComponent extends Component
             'items.*.unit_price'           => 'required|numeric|min:0',
             'items.*.discount'             => 'nullable|numeric|min:0',
             'validUntil'                   => 'required|date|after:today',
-            'vatRate'                      => 'nullable|numeric|min:0|max:100',
+            'vat_rate'                     => 'nullable|numeric|min:0|max:100',
         ], [
             'items.required'               => 'Add at least one line item.',
             'items.min'                    => 'Add at least one line item.',
@@ -351,7 +374,7 @@ class QuotationBuilderComponent extends Component
                     'notes'              => $this->notes,
                     'terms_and_conditions' => $this->termsAndConditions,
                     'valid_until'        => $this->validUntil,
-                    'vat_rate'           => $this->vatRate,
+                    'vat_rate'           => $this->vat_rate,
                 ]);
                 $quotation->items()->delete();
             } else {
@@ -377,14 +400,17 @@ class QuotationBuilderComponent extends Component
                     'notes'              => $this->notes,
                     'terms_and_conditions' => $this->termsAndConditions,
                     'valid_until'        => $this->validUntil,
-                    'vat_rate'           => $this->vatRate,
+                    'vat_rate'           => $this->vat_rate,
                 ]);
             }
 
             // Persist line items
             foreach ($this->items as $sortOrder => $row) {
-                $lineTotal = max(0, ($row['quantity'] * $row['unit_price']) - ($row['discount'] ?? 0));
-                $vatAmt    = ($row['vat_applicable'] ?? false) ? $lineTotal * ($this->vatRate / 100) : 0;
+                $quantity = (float) ($row['quantity'] ?? 0);
+                $unitPrice = (float) ($row['unit_price'] ?? 0);
+                $discount = (float) ($row['discount'] ?? 0);
+                $lineTotal = max(0, ($quantity * $unitPrice) - $discount);
+                $vatAmt    = ($row['vat_applicable'] ?? false) ? $lineTotal * ($this->vat_rate / 100) : 0;
 
                 QuotationItem::create([
                     'quotation_id'      => $quotation->id,
@@ -392,11 +418,11 @@ class QuotationBuilderComponent extends Component
                     'supplier_id'       => $row['supplier_id'] ?? null,
                     'item_type'         => $row['item_type'],
                     'description'       => $row['description'],
-                    'quantity'          => $row['quantity'],
-                    'unit_price'        => $row['unit_price'],
-                    'discount'          => $row['discount'] ?? 0,
+                    'quantity'          => $quantity,
+                    'unit_price'        => $unitPrice,
+                    'discount'          => $discount,
                     'vat_applicable'    => (bool) ($row['vat_applicable'] ?? false),
-                    'vat_rate'          => $this->vatRate,
+                    'vat_rate'          => $this->vat_rate,
                     'total'             => $lineTotal,
                     'sort_order'        => $sortOrder,
                 ]);

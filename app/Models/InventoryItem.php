@@ -8,28 +8,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InventoryItem extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToVendor, HasAuditLog;
+    use HasFactory, BelongsToVendor, HasAuditLog;
 
     protected $fillable = [
         'vendor_id',
         'branch_id',
         'category_id',
         'supplier_id',
+        'item_type',
         'name',
+        'brand',
         'sku',
         'barcode',
+        'oem_number',
+        'aftermarket_number',
+        'position',
+        'condition',
         'unit',
+        'unit_of_measure',
         'quantity',
         'reorder_level',
         'cost_price',
         'selling_price',
+        'usage_rate',
+        'expiry_date',
         'location',
         'description',
-        'is_active',
+        'notes',
+        'image_path',
+        'is_active'
     ];
 
     protected $casts = [
@@ -37,7 +47,9 @@ class InventoryItem extends Model
         'reorder_level' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
-        'is_active' => 'boolean',
+        'usage_rate' => 'decimal:2',
+        'expiry_date' => 'date',
+        'is_active' => 'boolean'
     ];
 
     // Relationships
@@ -56,9 +68,20 @@ class InventoryItem extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
+    }
+
+    public function workOrderItems(): HasMany
+    {
+        return $this->hasMany(WorkOrderItem::class);
+    }
+
+    public function washOrderItems(): HasMany
+    {
+        return $this->hasMany(WashOrderItem::class);
     }
 
     // Scopes
@@ -94,22 +117,67 @@ class InventoryItem extends Model
 
     public function scopeParts($query)
     {
-        return $query->whereHas('category', fn ($q) => $q->where('type', 'parts'));
+        return $query->whereHas('category', fn($q) => $q->where('type', 'parts'));
     }
 
-    public function scopeWashSupplies($query)
-    {
-        return $query->whereHas('category', fn ($q) => $q->where('type', 'wash_supplies'));
-    }
 
     public function scopeSearch($query, string $search)
     {
         return $query->where(function ($q) use ($search) {
             $q->where('name', 'like', "%{$search}%")
-              ->orWhere('sku', 'like', "%{$search}%")
-              ->orWhere('barcode', 'like', "%{$search}%");
+                ->orWhere('sku', 'like', "%{$search}%")
+                ->orWhere('barcode', 'like', "%{$search}%")
+                ->orWhereHas('part', fn($p) => $p->where('name', 'like', "%{$search}%")
+                    ->orWhere('oem_number', 'like', "%{$search}%")
+                    ->orWhere('aftermarket_number', 'like', "%{$search}%"));
         });
     }
+
+    public function scopeCompatibleWith($query, int $vehicleVariantId)
+    {
+        return $query->whereHas('part.compatibleVehicles', function ($q) use ($vehicleVariantId) {
+            $q->where('vehicle_variant_id', $vehicleVariantId);
+        });
+    }
+
+    public function scopeByCondition($query, string $condition)
+    {
+        return $query->where('condition', $condition);
+    }
+
+    public function scopeWithPart($query)
+    {
+        return $query->whereNotNull('part_id');
+    }
+
+    public function scopeWithoutPart($query)
+    {
+        return $query->whereNull('part_id');
+    }
+
+    //new scopes for inventory types
+    public function scopeServiceParts($query)
+    {
+        return $query->where('item_type', 'service_part');
+    }
+
+    public function scopeWashSupplies($query)
+    {
+        return $query->where('item_type', 'wash_supply');
+    }
+
+    public function scopeExpiringSoon($query, int $days = 30)
+    {
+        return $query->whereNotNull('expiry_date')
+                    ->whereDate('expiry_date', '<=', now()->addDays($days));
+    }
+
+    public function scopeExpired($query)
+    {
+        return $query->whereNotNull('expiry_date')
+                    ->whereDate('expiry_date', '<', now());
+    }
+    // ------------
 
     // Helpers
     public function isLowStock(): bool
@@ -205,6 +273,76 @@ class InventoryItem extends Model
             'notes' => $notes,
             'performed_by' => auth()->id(),
         ]);
+
+        return $movement;
+    }
+
+
+    // Type checks -new helpers for inventory types
+
+    public function isServicePart(): bool
+    {
+        return $this->item_type === 'service_part';
+    }
+
+    public function isWashSupply(): bool
+    {
+        return $this->item_type === 'wash_supply';
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expiry_date && $this->expiry_date->isPast();
+    }
+
+    public function isExpiringSoon(int $days = 30): bool
+    {
+        return $this->expiry_date
+            && $this->expiry_date->lte(now()->addDays($days))
+            && !$this->isExpired();
+    }
+
+    // Stock operations
+    public function consumeForWorkOrder(WorkOrder $workOrder, float $quantity, ?string $notes = null): InventoryMovement
+    {
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $this->id,
+            'branch_id' => $workOrder->branch_id,
+            'movement_type' => 'work_order_use',
+            'quantity_change' => -$quantity,
+            'quantity_after' => $this->quantity - $quantity,
+            'unit_cost' => $this->cost_price,
+            'total_cost' => $quantity * $this->cost_price,
+            'movable_type' => WorkOrder::class,
+            'movable_id' => $workOrder->id,
+            'performed_by' => auth()->id(),
+            'notes' => $notes,
+            'movement_date' => now(),
+        ]);
+
+        $this->decrement('quantity', $quantity);
+
+        return $movement;
+    }
+
+    public function consumeForWashOrder(WashOrder $washOrder, float $quantity, ?string $notes = null): InventoryMovement
+    {
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $this->id,
+            'branch_id' => $washOrder->branch_id,
+            'movement_type' => 'wash_order_use',
+            'quantity_change' => -$quantity,
+            'quantity_after' => $this->quantity - $quantity,
+            'unit_cost' => $this->cost_price,
+            'total_cost' => $quantity * $this->cost_price,
+            'movable_type' => WashOrder::class,
+            'movable_id' => $washOrder->id,
+            'performed_by' => auth()->id(),
+            'notes' => $notes,
+            'movement_date' => now(),
+        ]);
+
+        $this->decrement('quantity', $quantity);
 
         return $movement;
     }

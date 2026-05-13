@@ -19,14 +19,10 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-4">{{ session('success') }}</div>
-    @endif
-
-    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         {{-- ── Line Items ──────────────────────────────────────────────────── --}}
-        <div class="xl:col-span-3 space-y-4">
+        <div class="space-y-4">
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body">
                     <div class="flex items-center justify-between mb-4">
@@ -143,7 +139,7 @@
                                     {{-- Qty --}}
                                     <div class="col-span-4 sm:col-span-1">
                                         <label class="label label-text text-xs pb-1">Qty</label>
-                                        <input type="number" wire:model="items.{{ $index }}.quantity"
+                                        <input type="number" wire:model.live.debounce.300ms="items.{{ $index }}.quantity"
                                             min="0.01" step="0.01"
                                             class="input input-bordered input-sm w-full" />
                                         @error("items.{$index}.quantity") <p class="text-error text-xs">{{ $message }}</p> @enderror
@@ -152,7 +148,7 @@
                                     {{-- Unit Price --}}
                                     <div class="col-span-4 sm:col-span-1">
                                         <label class="label label-text text-xs pb-1">Unit Price</label>
-                                        <input type="number" wire:model="items.{{ $index }}.unit_price"
+                                        <input type="number" wire:model.live.debounce.300ms="items.{{ $index }}.unit_price"
                                             min="0" step="1"
                                             class="input input-bordered input-sm w-full" />
                                         @error("items.{$index}.unit_price") <p class="text-error text-xs">{{ $message }}</p> @enderror
@@ -161,7 +157,7 @@
                                     {{-- Discount --}}
                                     <div class="col-span-4 sm:col-span-1">
                                         <label class="label label-text text-xs pb-1">Discount</label>
-                                        <input type="number" wire:model="items.{{ $index }}.discount"
+                                        <input type="number" wire:model.live.debounce.300ms="items.{{ $index }}.discount"
                                             min="0" step="1"
                                             class="input input-bordered input-sm w-full" />
                                     </div>
@@ -184,9 +180,9 @@
 
                                 {{-- Row total --}}
                                 <div class="flex justify-end mt-2 text-sm text-base-content/60">
-                                    Line total: <span class="font-medium ml-1">UGX {{ number_format(max(0, ($item['quantity'] * $item['unit_price']) - ($item['discount'] ?? 0))) }}</span>
-                                    @if(($item['vat_applicable'] ?? false) && $vatRate > 0)
-                                        <span class="ml-2 text-warning">+VAT {{ $vatRate }}%</span>
+                                    Line total: <span class="font-medium ml-1">UGX {{ number_format(max(0, (((float) ($item['quantity'] ?? 0)) * ((float) ($item['unit_price'] ?? 0))) - ((float) ($item['discount'] ?? 0)))) }}</span>
+                                    @if(($item['vat_applicable'] ?? false) && $vat_rate > 0)
+                                        <span class="ml-2 text-warning">+VAT {{ $vat_rate }}%</span>
                                     @endif
                                 </div>
                             </div>
@@ -228,7 +224,7 @@
         </div>
 
         {{-- ── Sidebar: Totals + Settings ──────────────────────────────────── --}}
-        <div class="xl:col-span-1 space-y-4">
+        <div class="space-y-4">
 
             {{-- Totals --}}
             <div class="card bg-base-100 shadow-sm sticky top-6">
@@ -240,9 +236,9 @@
                             <span class="text-base-content/60">Subtotal</span>
                             <span class="font-medium">UGX {{ number_format($this->subtotal) }}</span>
                         </div>
-                        @if($vatRate > 0)
+                        @if($vat_rate > 0)
                             <div class="flex justify-between text-sm">
-                                <span class="text-base-content/60">VAT ({{ $vatRate }}%)</span>
+                                <span class="text-base-content/60">VAT ({{ $vat_rate }}%)</span>
                                 <span class="font-medium">UGX {{ number_format($this->vatAmount) }}</span>
                             </div>
                         @endif
@@ -256,7 +252,7 @@
                     {{-- VAT Rate --}}
                     <div class="mt-4">
                         <label class="label"><span class="label-text text-sm">VAT Rate (%)</span></label>
-                        <input type="number" wire:model.live="vatRate" min="0" max="100" step="0.5"
+                        <input type="number" wire:model.live="vat_rate" min="0" max="100" step="0.5"
                             class="input input-bordered input-sm w-full" placeholder="0" />
                         <p class="text-xs text-base-content/50 mt-1">Applied to lines with VAT toggled on.</p>
                     </div>
@@ -302,7 +298,7 @@
     {{-- ═══ Add-to-Inventory Modal ═══════════════════════════════════════ --}}
     @if($showAddToInventoryModal)
         <div class="modal modal-open" role="dialog">
-            <div class="modal-box max-w-md">
+            <div class="modal-box app-modal-shell max-w-md">
                 <button wire:click="closeAddToInventoryModal" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 <h3 class="font-bold text-lg mb-4">Add to Inventory</h3>
 
@@ -359,7 +355,7 @@
                     </div>
                 </div>
 
-                <div class="modal-action">
+                <div class="modal-action app-modal-actions">
                     <button wire:click="closeAddToInventoryModal" class="btn btn-ghost">Cancel</button>
                     <button wire:click="saveAddToInventoryItem" class="btn btn-primary"
                         wire:loading.attr="disabled" wire:target="saveAddToInventoryItem">
@@ -368,7 +364,7 @@
                     </button>
                 </div>
             </div>
-            <div class="modal-backdrop bg-black/50" wire:click="closeAddToInventoryModal"></div>
+            <div class="modal-backdrop app-modal-backdrop bg-black/50" wire:click="closeAddToInventoryModal"></div>
         </div>
     @endif
 </div>

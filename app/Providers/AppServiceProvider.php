@@ -11,6 +11,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use App\Http\Livewire\Staff\CreateStaffComponent;
+use App\Models\InventoryItem;
+use App\Models\WorkOrder;
+use App\Observers\InventoryItemObserver;
+use App\Observers\WorkOrderObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,8 +39,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Observers
         WashOrder::observe(WashOrderObserver::class);
+        WorkOrder::observe(WorkOrderObserver::class);
+        InventoryItem::observe(InventoryItemObserver::class);
 
         // Policies
         Gate::policy(WashBay::class, WashBayPolicy::class);
+
     }
 }

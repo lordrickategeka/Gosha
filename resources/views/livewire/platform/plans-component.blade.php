@@ -116,7 +116,7 @@
     <!-- Create/Edit Modal -->
     @if($showCreateModal)
         <div class="modal modal-open">
-            <div class="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="modal-box app-modal-shell max-w-4xl max-h-[90vh] overflow-y-auto">
                 <h3 class="font-bold text-lg mb-4">{{ $editingPlan ? 'Edit Plan' : 'Create Pricing Plan' }}</h3>
 
                 <form wire:submit="save">
@@ -317,13 +317,13 @@
                         </label>
                     </div>
 
-                    <div class="modal-action">
+                    <div class="modal-action app-modal-actions">
                         <button type="button" wire:click="$set('showCreateModal', false)" class="btn btn-ghost">Cancel</button>
                         <button type="submit" class="btn btn-primary">{{ $editingPlan ? 'Update Plan' : 'Create Plan' }}</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
         </div>
     @endif
 </div>

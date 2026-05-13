@@ -5,10 +5,6 @@
                 <h2 class="text-lg font-bold mb-4">Workshop Jobcard #{{ $workshopJobcard->id }}</h2>
                 <h2 class="text-lg font-bold mb-4">Workshop Jobcard Number: {{ $workshopJobcard->workshop_jobcard_number }}</h2>
 
-                @if(session('success'))
-                    <div class="mb-4 p-3 bg-green-50 text-green-800 rounded">{{ session('success') }}</div>
-                @endif
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Notes / Instructions</label>
                     <textarea wire:model.defer="notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md"></textarea>
@@ -44,7 +40,7 @@
 
                 <div class="mt-4 flex items-center space-x-2">
                     <button wire:click.prevent="updateAll" class="px-4 py-2 bg-blue-600 text-white rounded-md">Save Changes</button>
-                    <a href="{{ route('job-cards.index') }}" class="px-4 py-2 border rounded-md text-sm">Back</a>
+                    <a href="{{ route('work-orders.index') }}" class="px-4 py-2 border rounded-md text-sm">Back</a>
                 </div>
             </div>
         </div>

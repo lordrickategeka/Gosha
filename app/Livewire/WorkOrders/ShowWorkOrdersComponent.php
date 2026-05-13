@@ -2,6 +2,7 @@
 
 namespace App\Livewire\WorkOrders;
 
+use App\Models\QualityCheckTemplate;
 use App\Models\Quotation;
 use App\Models\ServiceBay;
 use App\Models\User;
@@ -16,6 +17,7 @@ class ShowWorkOrdersComponent extends Component
     public $selectedBay = '';
     public $selectedTechnician = '';
     public $technicianNotes = '';
+    public $activeTab = 'job-items';
 
     public function mount(WorkOrder $workOrder)
     {
@@ -29,10 +31,58 @@ class ShowWorkOrdersComponent extends Component
             'items.images',
             'invoice.payments',
             'washOrder',
+            'qualityCheck.inspector',
+            'qualityCheck.items',
         ]);
+
+        $this->ensureQualityChecklistItems();
 
         $this->selectedBay = $workOrder->service_bay_id ?? '';
         $this->selectedTechnician = $workOrder->assigned_technician_id ?? '';
+    }
+
+    protected function ensureQualityChecklistItems(): void
+    {
+        // Create QualityCheck record if it doesn't exist
+        if (!$this->workOrder->qualityCheck && $this->workOrder->status === 'quality_check') {
+            $qualityCheck = $this->workOrder->qualityCheck()->create([
+                'vehicle_id' => $this->workOrder->vehicle_id,
+                'customer_id' => $this->workOrder->customer_id,
+                'vendor_id' => $this->workOrder->vendor_id,
+                'branch_id' => $this->workOrder->branch_id,
+                'inspector_user_id' => auth()->id(),
+                'inspection_date' => now()->date(),
+                'status' => 'pending',
+            ]);
+        } else {
+            $qualityCheck = $this->workOrder->qualityCheck;
+        }
+
+        if (!$qualityCheck || $qualityCheck->items->isNotEmpty()) {
+            return;
+        }
+
+        $templates = QualityCheckTemplate::getForVendor($this->workOrder->vendor_id);
+        $requiresRoadTest = $this->workOrder->items()
+            ->where('description', 'like', '%road test%')
+            ->exists();
+
+        foreach ($templates as $section => $items) {
+            if ($section === 'road_test' && !$requiresRoadTest) {
+                continue;
+            }
+
+            foreach ($items as $template) {
+                $qualityCheck->items()->create([
+                    'section' => $template->section,
+                    'item_name' => $template->item_name,
+                    'status' => null,
+                    'remarks' => null,
+                ]);
+            }
+        }
+
+        $this->workOrder->load('qualityCheck.items');
     }
 
     public function startWork()
@@ -54,7 +104,22 @@ class ShowWorkOrdersComponent extends Component
             'status' => 'quality_check',
             'technician_notes' => $this->technicianNotes,
         ]);
-        $this->workOrder->refresh();
+
+        $this->workOrder = $this->workOrder->fresh([
+            'vehicle',
+            'customer',
+            'serviceBay',
+            'assignedTechnician',
+            'createdBy',
+            'items.inventoryItem',
+            'items.images',
+            'invoice.payments',
+            'washOrder',
+            'qualityCheck.inspector',
+            'qualityCheck.items',
+        ]);
+        $this->ensureQualityChecklistItems();
+
         session()->flash('success', 'Moved to quality check.');
     }
 
@@ -126,6 +191,34 @@ class ShowWorkOrdersComponent extends Component
     public function getLatestQuotationProperty(): ?Quotation
     {
         return $this->workOrder->latestQuotation;
+    }
+
+    public function getGroupedQualityCheckItemsProperty()
+    {
+        if (!$this->workOrder->qualityCheck || $this->workOrder->qualityCheck->items->isEmpty()) {
+            return [];
+        }
+
+        $sections = [
+            'exterior' => 'A. Exterior',
+            'interior' => 'B. Interior',
+            'engine_compartment' => 'C. Engine Compartment',
+            'underbody_suspension' => 'D. Underbody & Suspension',
+            'road_test' => 'E. Road Test',
+        ];
+
+        $grouped = [];
+        foreach ($sections as $key => $label) {
+            $items = $this->workOrder->qualityCheck->items
+                ->where('section', $key)
+                ->values()
+                ->toArray();
+            if (!empty($items)) {
+                $grouped[$key] = $label;
+            }
+        }
+
+        return $grouped;
     }
 
     public function render()

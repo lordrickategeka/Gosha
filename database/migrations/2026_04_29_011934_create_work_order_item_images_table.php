@@ -16,7 +16,13 @@ return new class extends Migration
             $table->foreignId('work_order_item_id')->constrained()->cascadeOnDelete();
             $table->string('path');
             $table->string('caption')->nullable();
+
+            $table->foreignId('inventory_item_id')->nullable()->constrained()->nullOnDelete();
+            $table->boolean('inventory_consumed')->default(false);
+            $table->timestamp('consumed_at')->nullable();
             $table->timestamps();
+
+            $table->index(['inventory_item_id', 'inventory_consumed'], 'woii_inv_item_consumed_idx');
         });
     }
 

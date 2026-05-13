@@ -19,18 +19,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-4">
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-error mb-4">
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         @foreach($permissionGroups as $group => $perms)
             @php

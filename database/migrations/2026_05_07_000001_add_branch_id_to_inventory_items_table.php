@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('inventory_items', 'branch_id')) {
+            return;
+        }
+
         Schema::table('inventory_items', function (Blueprint $table) {
             $table->foreignId('branch_id')
                 ->nullable()
@@ -21,9 +25,23 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (!Schema::hasColumn('inventory_items', 'branch_id')) {
+            return;
+        }
+
         Schema::table('inventory_items', function (Blueprint $table) {
-            $table->dropForeign(['branch_id']);
-            $table->dropIndex(['branch_id', 'is_active']);
+            try {
+                $table->dropForeign(['branch_id']);
+            } catch (\Throwable $e) {
+                // no-op when foreign key is absent
+            }
+
+            try {
+                $table->dropIndex(['branch_id', 'is_active']);
+            } catch (\Throwable $e) {
+                // no-op when index is absent
+            }
+
             $table->dropColumn('branch_id');
         });
     }

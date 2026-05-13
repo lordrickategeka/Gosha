@@ -4,10 +4,6 @@
             <div class="bg-white shadow-sm rounded-lg p-6 w-full">
                 <h2 class="text-lg font-bold mb-4">Workshop Jobcard Details</h2>
 
-                @if(session('success'))
-                    <div class="mb-4 p-3 bg-green-50 text-green-800 rounded">{{ session('success') }}</div>
-                @endif
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Job Card</label>
                     <div class="mt-1 text-sm text-gray-900">
@@ -19,7 +15,7 @@
                     </div>
                 </div>
 
-                
+
 
                 {{-- <div class="mb-4">
                     <label for="notes" class="block text-sm font-medium text-gray-700">Notes / Instructions</label>
@@ -100,7 +96,7 @@
 
                 <div class="flex items-center space-x-2">
                     <button wire:click.prevent="save" class="px-4 py-2 bg-yellow-500 text-white rounded-md">Save Workshop Jobcard</button>
-                    <a href="{{ route('job-cards.index') }}" class="px-4 py-2 border rounded-md text-sm">Cancel</a>
+                    <a href="{{ route('work-orders.index') }}" class="px-4 py-2 border rounded-md text-sm">Cancel</a>
                 </div>
             </div>
         </div>

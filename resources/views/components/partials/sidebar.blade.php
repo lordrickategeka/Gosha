@@ -336,6 +336,24 @@
                         Templates
                     </a>
                 </li>
+
+                <li>
+                    <a href="{{ route('service-types.index') }}" class="{{ request()->routeIs('service-types.*') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        Service Types
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('service-categories.index') }}" class="{{ request()->routeIs('service-categories.*') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
+                        </svg>
+                        Service Categories
+                    </a>
+                </li>
                 @endcan
 
                 <li>
@@ -381,6 +399,15 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                         Billing
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('platform.integrations.index') }}" class="{{ request()->routeIs('platform.integrations.*') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                        </svg>
+                        Integrations
                     </a>
                 </li>
                 @endif

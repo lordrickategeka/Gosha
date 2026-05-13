@@ -64,11 +64,12 @@ class WashOrderItem extends Model
             'inventory_item_id' => $this->inventory_item_id,
             'branch_id' => $this->washOrder->branch_id,
             'movement_type' => 'consumption',
-            'quantity' => -$this->quantity,
+            'quantity_change' => -$this->quantity,
+            'quantity_after' => max(0, $this->inventoryItem->quantity - $this->quantity),
             'unit_cost' => $this->inventoryItem->cost_price,
             'total_cost' => $this->quantity * $this->inventoryItem->cost_price,
-            'reference_type' => 'wash_order',
-            'reference_id' => $this->wash_order_id,
+            'movable_type' => WashOrder::class,
+            'movable_id' => $this->wash_order_id,
             'performed_by' => auth()->id(),
         ]);
 

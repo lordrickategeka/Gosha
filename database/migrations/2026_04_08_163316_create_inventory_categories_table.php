@@ -10,14 +10,19 @@ return new class extends Migration
     {
         Schema::create('inventory_categories', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('inventory_categories')->nullOnDelete();
+
             $table->string('name');
-            $table->enum('type', ['parts', 'wash_supplies', 'consumables', 'tools'])->default('parts');
+            $table->string('code')->nullable();
+            $table->enum('type', ['service_parts', 'wash_supplies', 'consumables', 'tools'])->default('service_parts');
             $table->text('description')->nullable();
+             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->softDeletes();
 
             $table->index(['vendor_id', 'type']);
+            $table->unique(['vendor_id', 'name', 'parent_id']);
         });
     }
 

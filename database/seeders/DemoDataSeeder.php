@@ -33,17 +33,25 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-         // ========================================
+        // ========================================
         // DEMO VENDOR: AutoCare Garage
         // ========================================
-        $vendor = Vendor::create([
-            'name' => 'AutoCare Garage',
-            'slug' => 'autocare-garage',
-            'email' => 'info@autocaregarage.com',
-            'phone' => '+256 700 123456',
-            'address' => 'Plot 45, Kampala Road, Kampala',
-            'status' => 'active',
-        ]);
+        $vendor = Vendor::firstOrCreate(
+            ['slug' => 'autocare-garage'],
+            [
+                'name' => 'AutoCare Garage',
+                'email' => 'info@autocaregarage.com',
+                'phone' => '+256 700 123456',
+                'address' => 'Plot 45, Kampala Road, Kampala',
+                'status' => 'active',
+            ]
+        );
+
+        // Skip rest of seeding if vendor already had data
+        if (!$vendor->wasRecentlyCreated) {
+            $this->command->info('DemoDataSeeder: data already exists, skipping.');
+            return;
+        }
 
         // ========================================
         // PLATFORM SUPER ADMIN
@@ -194,31 +202,41 @@ class DemoDataSeeder extends Seeder
         }
 
         // ========================================
-        // INVENTORY CATEGORIES
+        // COMPREHENSIVE INVENTORY CATEGORIES
         // ========================================
-        $partsCategory = InventoryCategory::create([
-            'vendor_id' => $vendor->id,
-            'name' => 'Engine Parts',
-            'type' => 'parts',
-        ]);
+        $this->command->info('Creating comprehensive inventory categories...');
 
-        $oilsCategory = InventoryCategory::create([
-            'vendor_id' => $vendor->id,
-            'name' => 'Oils & Lubricants',
-            'type' => 'consumables',
-        ]);
+        // Use the new comprehensive category seeder logic
+        $this->seedComprehensiveCategories($vendor);
 
-        $filtersCategory = InventoryCategory::create([
-            'vendor_id' => $vendor->id,
-            'name' => 'Filters',
-            'type' => 'parts',
-        ]);
+        // Get created categories for inventory items
+        $oilFiltersCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Oil Filters - Toyota')
+            ->first();
 
-        $washSuppliesCategory = InventoryCategory::create([
-            'vendor_id' => $vendor->id,
-            'name' => 'Wash Supplies',
-            'type' => 'wash_supplies',
-        ]);
+        $brakePadsCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Brake Pads')
+            ->first();
+
+        $sparkPlugsCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Spark Plugs')
+            ->first();
+
+        $oilsCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Engine Oil 5W-30')
+            ->first();
+
+        $brakeFluidCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Brake Fluid DOT4')
+            ->first();
+
+        $washShampooCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Car Shampoo')
+            ->first();
+
+        $tireShineCategory = InventoryCategory::where('vendor_id', $vendor->id)
+            ->where('name', 'Tire Shine')
+            ->first();
 
         // ========================================
         // SUPPLIERS
@@ -247,27 +265,44 @@ class DemoDataSeeder extends Seeder
         // ========================================
         $inventoryItems = [
             // Engine Parts
-            ['category_id' => $partsCategory->id, 'name' => 'Spark Plug - NGK', 'sku' => 'SP-NGK-001', 'unit' => 'pieces', 'quantity' => 50, 'reorder_level' => 10, 'cost_price' => 15000, 'selling_price' => 25000],
-            ['category_id' => $partsCategory->id, 'name' => 'Brake Pads - Front', 'sku' => 'BP-FRT-001', 'unit' => 'set', 'quantity' => 20, 'reorder_level' => 5, 'cost_price' => 80000, 'selling_price' => 120000],
-            ['category_id' => $partsCategory->id, 'name' => 'Brake Pads - Rear', 'sku' => 'BP-RR-001', 'unit' => 'set', 'quantity' => 15, 'reorder_level' => 5, 'cost_price' => 70000, 'selling_price' => 100000],
-            ['category_id' => $partsCategory->id, 'name' => 'Battery - 12V 60Ah', 'sku' => 'BAT-12V-60', 'unit' => 'pieces', 'quantity' => 8, 'reorder_level' => 3, 'cost_price' => 250000, 'selling_price' => 350000],
-            // Oils
-            ['category_id' => $oilsCategory->id, 'name' => 'Engine Oil 5W-30 (5L)', 'sku' => 'OIL-5W30-5L', 'unit' => 'pieces', 'quantity' => 30, 'reorder_level' => 10, 'cost_price' => 120000, 'selling_price' => 160000],
-            ['category_id' => $oilsCategory->id, 'name' => 'Engine Oil 10W-40 (5L)', 'sku' => 'OIL-10W40-5L', 'unit' => 'pieces', 'quantity' => 25, 'reorder_level' => 10, 'cost_price' => 100000, 'selling_price' => 140000],
-            ['category_id' => $oilsCategory->id, 'name' => 'Brake Fluid DOT4 (1L)', 'sku' => 'BRK-DOT4-1L', 'unit' => 'pieces', 'quantity' => 20, 'reorder_level' => 5, 'cost_price' => 25000, 'selling_price' => 40000],
+            ['category_id' => $sparkPlugsCategory?->id, 'name' => 'Spark Plug - NGK', 'sku' => 'SP-NGK-001', 'unit' => 'pieces', 'quantity' => 50, 'reorder_level' => 10, 'cost_price' => 15000, 'selling_price' => 25000],
+            ['category_id' => $brakePadsCategory?->id, 'name' => 'Brake Pads - Front', 'sku' => 'BP-FRT-001', 'unit' => 'set', 'quantity' => 20, 'reorder_level' => 5, 'cost_price' => 80000, 'selling_price' => 120000],
+            ['category_id' => $brakePadsCategory?->id, 'name' => 'Brake Pads - Rear', 'sku' => 'BP-RR-001', 'unit' => 'set', 'quantity' => 15, 'reorder_level' => 5, 'cost_price' => 70000, 'selling_price' => 100000],
+
+            // Electrical
+            ['category_id' => InventoryCategory::where('vendor_id', $vendor->id)->where('name', 'Batteries')->first()?->id, 'name' => 'Battery - 12V 60Ah', 'sku' => 'BAT-12V-60', 'unit' => 'pieces', 'quantity' => 8, 'reorder_level' => 3, 'cost_price' => 250000, 'selling_price' => 350000],
+
+            // Oils & Lubricants
+            ['category_id' => $oilsCategory?->id, 'name' => 'Engine Oil 5W-30 (5L)', 'sku' => 'OIL-5W30-5L', 'unit' => 'pieces', 'quantity' => 30, 'reorder_level' => 10, 'cost_price' => 120000, 'selling_price' => 160000],
+            ['category_id' => InventoryCategory::where('vendor_id', $vendor->id)->where('name', 'Engine Oil 10W-40')->first()?->id, 'name' => 'Engine Oil 10W-40 (5L)', 'sku' => 'OIL-10W40-5L', 'unit' => 'pieces', 'quantity' => 25, 'reorder_level' => 10, 'cost_price' => 100000, 'selling_price' => 140000],
+            ['category_id' => $brakeFluidCategory?->id, 'name' => 'Brake Fluid DOT4 (1L)', 'sku' => 'BRK-DOT4-1L', 'unit' => 'pieces', 'quantity' => 20, 'reorder_level' => 5, 'cost_price' => 25000, 'selling_price' => 40000],
+
             // Filters
-            ['category_id' => $filtersCategory->id, 'name' => 'Oil Filter - Toyota', 'sku' => 'FLT-OIL-TOY', 'unit' => 'pieces', 'quantity' => 40, 'reorder_level' => 10, 'cost_price' => 20000, 'selling_price' => 35000],
-            ['category_id' => $filtersCategory->id, 'name' => 'Air Filter - Universal', 'sku' => 'FLT-AIR-UNI', 'unit' => 'pieces', 'quantity' => 35, 'reorder_level' => 10, 'cost_price' => 30000, 'selling_price' => 50000],
-            ['category_id' => $filtersCategory->id, 'name' => 'Fuel Filter', 'sku' => 'FLT-FUEL-001', 'unit' => 'pieces', 'quantity' => 25, 'reorder_level' => 8, 'cost_price' => 25000, 'selling_price' => 45000],
+            ['category_id' => $oilFiltersCategory?->id, 'name' => 'Oil Filter - Toyota', 'sku' => 'FLT-OIL-TOY', 'unit' => 'pieces', 'quantity' => 40, 'reorder_level' => 10, 'cost_price' => 20000, 'selling_price' => 35000],
+            ['category_id' => InventoryCategory::where('vendor_id', $vendor->id)->where('name', 'Air Filters - Universal')->first()?->id, 'name' => 'Air Filter - Universal', 'sku' => 'FLT-AIR-UNI', 'unit' => 'pieces', 'quantity' => 35, 'reorder_level' => 10, 'cost_price' => 30000, 'selling_price' => 50000],
+            ['category_id' => InventoryCategory::where('vendor_id', $vendor->id)->where('name', 'Fuel Filters')->first()?->id, 'name' => 'Fuel Filter', 'sku' => 'FLT-FUEL-001', 'unit' => 'pieces', 'quantity' => 25, 'reorder_level' => 8, 'cost_price' => 25000, 'selling_price' => 45000],
+
             // Wash Supplies
-            ['category_id' => $washSuppliesCategory->id, 'name' => 'Car Shampoo (20L)', 'sku' => 'WSH-SHMP-20L', 'unit' => 'pieces', 'quantity' => 10, 'reorder_level' => 3, 'cost_price' => 80000, 'selling_price' => 0],
-            ['category_id' => $washSuppliesCategory->id, 'name' => 'Tire Shine (5L)', 'sku' => 'WSH-TIRE-5L', 'unit' => 'pieces', 'quantity' => 8, 'reorder_level' => 2, 'cost_price' => 50000, 'selling_price' => 0],
-            ['category_id' => $washSuppliesCategory->id, 'name' => 'Interior Cleaner (5L)', 'sku' => 'WSH-INT-5L', 'unit' => 'pieces', 'quantity' => 6, 'reorder_level' => 2, 'cost_price' => 60000, 'selling_price' => 0],
-            ['category_id' => $washSuppliesCategory->id, 'name' => 'Wax Polish (1L)', 'sku' => 'WSH-WAX-1L', 'unit' => 'pieces', 'quantity' => 12, 'reorder_level' => 3, 'cost_price' => 45000, 'selling_price' => 0],
+            ['category_id' => $washShampooCategory?->id, 'name' => 'Car Shampoo (20L)', 'sku' => 'WSH-SHMP-20L', 'unit' => 'pieces', 'quantity' => 10, 'reorder_level' => 3, 'cost_price' => 80000, 'selling_price' => 0],
+            ['category_id' => $tireShineCategory?->id, 'name' => 'Tire Shine (5L)', 'sku' => 'WSH-TIRE-5L', 'unit' => 'pieces', 'quantity' => 8, 'reorder_level' => 2, 'cost_price' => 50000, 'selling_price' => 0],
+            ['category_id' => InventoryCategory::where('vendor_id', $vendor->id)->where('name', 'Interior Cleaners')->first()?->id, 'name' => 'Interior Cleaner (5L)', 'sku' => 'WSH-INT-5L', 'unit' => 'pieces', 'quantity' => 6, 'reorder_level' => 2, 'cost_price' => 60000, 'selling_price' => 0],
+            ['category_id' => InventoryCategory::where('vendor_id', $vendor->id)->where('name', 'Car Wax - Paste')->first()?->id, 'name' => 'Wax Polish (1L)', 'sku' => 'WSH-WAX-1L', 'unit' => 'pieces', 'quantity' => 12, 'reorder_level' => 3, 'cost_price' => 45000, 'selling_price' => 0],
         ];
 
         foreach ($inventoryItems as $item) {
-            InventoryItem::create(array_merge($item, ['vendor_id' => $vendor->id, 'is_active' => true]));
+            if ($item['category_id']) { // Only create if category exists
+                // Derive item_type from category type if not set
+                if (!isset($item['item_type'])) {
+                    $catType = InventoryCategory::find($item['category_id'])?->type ?? 'service_parts';
+                    $item['item_type'] = match ($catType) {
+                        'wash_supplies' => 'wash_supply',
+                        'consumables'   => 'consumable',
+                        'tools'         => 'tool',
+                        default         => 'service_part',
+                    };
+                }
+                InventoryItem::create(array_merge($item, ['vendor_id' => $vendor->id, 'is_active' => true]));
+            }
         }
 
         // ========================================
@@ -597,7 +632,7 @@ class DemoDataSeeder extends Seeder
             'status' => 'approved',
         ]);
 
-        $this->command->info('Demo data seeded successfully!');
+        $this->command->info('✓ Demo data seeded successfully!');
         $this->command->info('');
         $this->command->info('Login credentials:');
         $this->command->info('-------------------');
@@ -608,5 +643,50 @@ class DemoDataSeeder extends Seeder
         $this->command->info('Wash Attendant: grace@autocaregarage.com / password');
         $this->command->info('Cashier: mary@autocaregarage.com / password');
         $this->command->info('Storekeeper: david@autocaregarage.com / password');
+    }
+
+    /**
+     * Seed comprehensive inventory categories (inline version)
+     */
+    protected function seedComprehensiveCategories(Vendor $vendor): void
+    {
+        $categories = [
+            // Parts categories
+            ['name' => 'Engine Parts', 'type' => 'service_parts', 'description' => 'Engine components', 'children' => ['Oil Filters - Toyota', 'Oil Filters - Honda', 'Oil Filters - Nissan', 'Air Filters - Universal', 'Fuel Filters', 'Spark Plugs', 'Ignition Coils', 'Timing Belts', 'Water Pumps', 'Thermostats', 'Gaskets & Seals']],
+            ['name' => 'Brake System', 'type' => 'service_parts', 'description' => 'Brake components', 'children' => ['Brake Pads', 'Brake Discs', 'Brake Drums', 'Brake Calipers', 'Master Cylinders', 'Brake Hoses']],
+            ['name' => 'Suspension', 'type' => 'service_parts', 'description' => 'Suspension parts', 'children' => ['Shock Absorbers', 'Struts', 'Control Arms', 'Ball Joints', 'Tie Rod Ends', 'Stabilizer Links']],
+            ['name' => 'Electrical', 'type' => 'service_parts', 'description' => 'Electrical components', 'children' => ['Batteries', 'Alternators', 'Starters', 'Headlights', 'Bulbs', 'Sensors']],
+            ['name' => 'Transmission', 'type' => 'service_parts', 'description' => 'Transmission parts', 'children' => ['Clutch Kits', 'CV Joints', 'Drive Shafts', 'Wheel Bearings']],
+
+            // Consumables
+            ['name' => 'Oils & Lubricants', 'type' => 'consumables', 'description' => 'Oils and fluids', 'children' => ['Engine Oil 5W-30', 'Engine Oil 10W-40', 'Engine Oil 15W-40', 'Transmission Fluid', 'Power Steering Fluid', 'Grease']],
+            ['name' => 'Brake Fluids', 'type' => 'consumables', 'description' => 'Brake fluids', 'children' => ['Brake Fluid DOT3', 'Brake Fluid DOT4', 'Brake Fluid DOT5']],
+            ['name' => 'Coolants', 'type' => 'consumables', 'description' => 'Coolants', 'children' => ['Coolant Green', 'Coolant Red', 'Radiator Flush']],
+
+            // Wash Supplies
+            ['name' => 'Wash Chemicals', 'type' => 'wash_supplies', 'description' => 'Cleaning chemicals', 'children' => ['Car Shampoo', 'Wheel Cleaners', 'Engine Degreasers', 'Glass Cleaners', 'Interior Cleaners', 'All-Purpose Cleaners']],
+            ['name' => 'Polish & Wax', 'type' => 'wash_supplies', 'description' => 'Polishes and waxes', 'children' => ['Tire Shine', 'Dashboard Polish', 'Car Wax - Paste', 'Spray Wax', 'Polish Compound']],
+            ['name' => 'Wash Tools', 'type' => 'wash_supplies', 'description' => 'Cleaning tools', 'children' => ['Microfiber Towels', 'Wash Mitts', 'Wheel Brushes', 'Sponges', 'Chamois']],
+            ['name' => 'Interior Care', 'type' => 'wash_supplies', 'description' => 'Interior care products', 'children' => ['Leather Cleaners', 'Fabric Cleaners', 'Carpet Cleaners', 'Air Fresheners']],
+        ];
+
+        foreach ($categories as $categoryData) {
+            $children = $categoryData['children'] ?? [];
+            unset($categoryData['children']);
+
+            $parent = InventoryCategory::create([
+                'vendor_id' => $vendor->id,
+                ...$categoryData,
+            ]);
+
+            foreach ($children as $childName) {
+                InventoryCategory::create([
+                    'vendor_id' => $vendor->id,
+                    'parent_id' => $parent->id,
+                    'name' => $childName,
+                    'type' => $categoryData['type'],
+                ]);
+            }
+        }
     }
 }

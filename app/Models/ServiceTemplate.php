@@ -20,12 +20,14 @@ class ServiceTemplate extends Model
         'estimated_duration_minutes',
         'base_price',
         'is_active',
+        'requires_road_test',
     ];
 
     protected $casts = [
         'estimated_duration_minutes' => 'integer',
         'base_price' => 'decimal:2',
         'is_active' => 'boolean',
+        'requires_road_test' => 'boolean',
     ];
 
     // Relationships

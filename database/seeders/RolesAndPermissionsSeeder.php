@@ -165,24 +165,39 @@ class RolesAndPermissionsSeeder extends Seeder
             'send_quotations',
             'approve_quotations',
             'delete_quotations',
+
+            // Quality Check
+            'quality-check.create',
+            'quality-check.view',
+            'quality-check.update',
+            'quality-check.download-pdf',
+            'quality-check.upload-signed',
         ];
+
+        
 
         // Create all permissions
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
+
+        $syncRole = function (string $roleName, array $rolePermissions): Role {
+            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            $role->syncPermissions($rolePermissions);
+
+            return $role;
+        };
 
         // ========================================
         // PLATFORM ROLES
         // ========================================
 
         // Super Admin - full platform access
-        $superAdmin = Role::create(['name' => 'super-admin']);
-        $superAdmin->givePermissionTo(Permission::all());
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $superAdmin->syncPermissions(Permission::all());
 
         // Platform Support - read-only platform access
-        $platformSupport = Role::create(['name' => 'platform-support']);
-        $platformSupport->givePermissionTo([
+        $platformSupport = $syncRole('platform-support', [
             'view_dashboard',
             'view_vendors',
             'view_reports',
@@ -194,8 +209,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // ========================================
 
         // Vendor Owner - full access to their vendor
-        $vendorOwner = Role::create(['name' => 'vendor-owner']);
-        $vendorOwner->givePermissionTo([
+        $vendorOwner = $syncRole('vendor-owner', [
             'view_dashboard',
             'view_reports',
             'export_reports',
@@ -310,11 +324,16 @@ class RolesAndPermissionsSeeder extends Seeder
             'send_quotations',
             'approve_quotations',
             'delete_quotations',
+            // Quality Check
+            'quality-check.create',
+            'quality-check.view',
+            'quality-check.update',
+            'quality-check.download-pdf',
+            'quality-check.upload-signed',
         ]);
 
         // Branch Manager - manages a specific branch
-        $branchManager = Role::create(['name' => 'branch-manager']);
-        $branchManager->givePermissionTo([
+        $branchManager = $syncRole('branch-manager', [
             'view_dashboard',
             'view_reports',
             // Users (limited)
@@ -372,11 +391,16 @@ class RolesAndPermissionsSeeder extends Seeder
             // Templates (view only)
             'view_service_templates',
             'view_wash_packages',
+            // Quality Check
+            'quality-check.create',
+            'quality-check.view',
+            'quality-check.update',
+            'quality-check.download-pdf',
+            'quality-check.upload-signed',
         ]);
 
         // Technician - handles service work orders
-        $technician = Role::create(['name' => 'technician']);
-        $technician->givePermissionTo([
+        $technician = $syncRole('technician', [
             'view_dashboard',
             // Customers (view only)
             'view_customers',
@@ -394,11 +418,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_service_templates',
             // Commissions
             'view_own_commissions',
+            // Quality Check
+            'quality-check.view',
         ]);
 
         // Wash Attendant - handles wash orders
-        $washAttendant = Role::create(['name' => 'wash-attendant']);
-        $washAttendant->givePermissionTo([
+        $washAttendant = $syncRole('wash-attendant', [
             'view_dashboard',
             // Customers (view only)
             'view_customers',
@@ -416,8 +441,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Cashier - handles payments and invoicing
-        $cashier = Role::create(['name' => 'cashier']);
-        $cashier->givePermissionTo([
+        $cashier = $syncRole('cashier', [
             'view_dashboard',
             // Customers
             'view_customers',
@@ -446,8 +470,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Storekeeper - manages inventory
-        $storekeeper = Role::create(['name' => 'storekeeper']);
-        $storekeeper->givePermissionTo([
+        $storekeeper = $syncRole('storekeeper', [
             'view_dashboard',
             // Inventory
             'view_inventory',
@@ -466,8 +489,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Jobcarder - captures job details and items (no pricing)
-        $jobcarder = Role::create(['name' => 'jobcarder']);
-        $jobcarder->givePermissionTo([
+        $jobcarder = $syncRole('jobcarder', [
             'view_dashboard',
             'view_customers',
             'create_customers',
@@ -482,8 +504,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ]);
 
         // Quoter - sets prices on items captured by the jobcarder
-        $quoter = Role::create(['name' => 'quoter']);
-        $quoter->givePermissionTo([
+        $quoter = $syncRole('quoter', [
             'view_dashboard',
             'view_customers',
             'view_vehicles',

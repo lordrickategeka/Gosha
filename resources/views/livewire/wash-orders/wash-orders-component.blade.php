@@ -328,7 +328,7 @@
     <!-- Assign Bay Modal -->
     @if($showAssignBayModal)
     <div class="modal modal-open">
-        <div class="modal-box max-w-md">
+        <div class="modal-box app-modal-shell max-w-md">
             <h3 class="font-bold text-lg mb-4">Assign Bay &amp; Start Wash</h3>
 
             <div class="form-control mb-4">
@@ -352,12 +352,12 @@
                 </select>
             </div>
 
-            <div class="modal-action">
+            <div class="modal-action app-modal-actions">
                 <button wire:click="closeAssignBayModal" class="btn btn-ghost">Cancel</button>
                 <button wire:click="confirmAssignAndStart" class="btn btn-primary">Start Wash</button>
             </div>
         </div>
-        <div class="modal-backdrop" wire:click="closeAssignBayModal"></div>
+        <div class="modal-backdrop app-modal-backdrop" wire:click="closeAssignBayModal"></div>
     </div>
     @endif
 </div>

@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('inventory_items', 'supplier_id')) {
+            return;
+        }
+
         Schema::table('inventory_items', function (Blueprint $table) {
             $table->foreignId('supplier_id')->nullable()->after('category_id')->constrained('suppliers')->nullOnDelete();
         });
@@ -21,8 +25,17 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasColumn('inventory_items', 'supplier_id')) {
+            return;
+        }
+
         Schema::table('inventory_items', function (Blueprint $table) {
-            $table->dropForeign(['supplier_id']);
+            try {
+                $table->dropForeign(['supplier_id']);
+            } catch (\Throwable $e) {
+                // no-op when foreign key is absent
+            }
+
             $table->dropColumn('supplier_id');
         });
     }

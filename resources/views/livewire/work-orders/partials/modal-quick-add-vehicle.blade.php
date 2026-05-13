@@ -1,7 +1,7 @@
 {{-- Quick Add Vehicle Modal --}}
 <input type="checkbox" id="vehicle-modal" class="modal-toggle" @if($showVehicleModal) checked @endif />
 <div class="modal" role="dialog">
-    <div class="modal-box">
+    <div class="modal-box app-modal-shell">
         <h3 class="font-bold text-lg mb-4">Quick Add Vehicle</h3>
 
         <div class="space-y-3">
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <div class="modal-action">
+        <div class="modal-action app-modal-actions">
             <button
                 type="button"
                 wire:click="closeVehicleModal"
@@ -86,5 +86,5 @@
             </button>
         </div>
     </div>
-    <label class="modal-backdrop" for="vehicle-modal" wire:click="closeVehicleModal">Close</label>
+    <label class="modal-backdrop app-modal-backdrop" for="vehicle-modal" wire:click="closeVehicleModal">Close</label>
 </div>

@@ -6,16 +6,27 @@ use App\Enums\WashOrderStatus;
 use App\Models\Commission;
 use App\Models\CommissionRule;
 use App\Models\WashOrder;
+use App\Models\QualityCheck;
+use App\Models\WorkOrder;
+use App\Services\InventoryService;
 
 class WashOrderObserver
 {
+    protected InventoryService $inventoryService;
+
+    public function __construct(InventoryService $inventoryService)
+    {
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
-     * When a wash order transitions to 'completed', automatically create
-     * commissions for the assigned attendant if a matching rule exists.
+     * When a wash order transitions to 'completed', automatically:
+     * 1. Consume wash supplies inventory
+     * 2. Create commissions for the assigned attendant
      */
     public function updated(WashOrder $washOrder): void
     {
-        if (! $washOrder->wasChanged('status')) {
+        if (!$washOrder->wasChanged('status')) {
             return;
         }
 
@@ -27,12 +38,40 @@ class WashOrderObserver
             return;
         }
 
-        if (! $washOrder->assigned_attendant_id) {
+        // ✅ NEW: Consume wash supplies inventory
+        $this->consumeInventoryForCompletedOrder($washOrder);
+
+        // Existing: Create commission
+        $this->createCommissionForAttendant($washOrder);
+    }
+
+    /**
+     * Consume wash supplies inventory when wash order completes
+     */
+    protected function consumeInventoryForCompletedOrder(WashOrder $washOrder): void
+    {
+        try {
+            $this->inventoryService->consumeWashOrderInventory($washOrder);
+        } catch (\Exception $e) {
+            // Log error but don't block order completion
+            logger()->error('Failed to consume inventory for wash order', [
+                'wash_order_id' => $washOrder->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Create commission for wash attendant
+     */
+    protected function createCommissionForAttendant(WashOrder $washOrder): void
+    {
+        if (!$washOrder->assigned_attendant_id) {
             return;
         }
 
         $attendant = $washOrder->assignedAttendant;
-        if (! $attendant) {
+        if (!$attendant) {
             return;
         }
 
@@ -42,11 +81,11 @@ class WashOrderObserver
             ->where('is_active', true)
             ->first();
 
-        if (! $rule) {
+        if (!$rule) {
             return;
         }
 
-        // Avoid double-creating commissions if the order already has one
+        // Avoid double-creating commissions
         $alreadyExists = Commission::where('reference_type', 'wash_order')
             ->where('reference_id', $washOrder->id)
             ->exists();

@@ -13,12 +13,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success mb-4" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <!-- Filters -->
     <div class="card bg-base-100 shadow-sm mb-6">
         <div class="card-body p-4">
@@ -147,7 +141,7 @@
     <!-- Create / Edit Modal -->
     @if($showModal)
         <div class="modal modal-open">
-            <div class="modal-box max-w-2xl">
+            <div class="modal-box app-modal-shell max-w-2xl">
                 <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit Package' : 'New Wash Package' }}</h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -227,14 +221,14 @@
                     </div>
                 </div>
 
-                <div class="modal-action">
+                <div class="modal-action app-modal-actions">
                     <button type="button" wire:click="closeModal" class="btn btn-ghost">Cancel</button>
                     <button type="button" wire:click="save" class="btn btn-primary">
                         {{ $editingId ? 'Update Package' : 'Create Package' }}
                     </button>
                 </div>
             </div>
-            <div class="modal-backdrop" wire:click="closeModal"></div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="closeModal"></div>
         </div>
     @endif
 </div>

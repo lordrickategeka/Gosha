@@ -9,6 +9,9 @@ use App\Livewire\Templates\TemplateList;
 use App\Livewire\Templates\CreateTemplate;
 use App\Livewire\Templates\EditTemplate;
 
+use App\Livewire\QualityCheck\QualityCheckFormComponent;
+use App\Livewire\QualityCheck\QualityCheckViewComponent;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -73,6 +76,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('quotations.create')
             ->middleware('can:create_quotations');
     });
+
+    // Backward-compatible alias used by legacy links/calls in production.
+    Route::get('/quotations/create/{workOrder}', function (\App\Models\WorkOrder $workOrder) {
+        return redirect()->route('work-orders.quotations.create', $workOrder);
+    })->name('quotations.create')->middleware('can:create_quotations');
 
     // Quotations (standalone)
     Route::prefix('quotations')->name('quotations.')->middleware('can:view_quotations')->group(function () {
@@ -196,6 +204,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', \App\Livewire\Templates\TemplatesComponent::class)->name('index');
     });
 
+    // // Service Types
+    Route::get('/service-types', \App\Livewire\ServiceTypesComponent::class)
+        ->name('service-types.index')
+        ->middleware('can:view_service_templates');
+
+    // // Service Categories
+    Route::get('/service-categories', \App\Livewire\ServiceCategoriesComponent::class)
+        ->name('service-categories.index')
+        ->middleware('can:view_service_templates');
+
     // // Packages (Wash Packages)
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/', \App\Livewire\Packages\PackagesComponent::class)->name('index');
@@ -221,6 +239,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendors/create', \App\Livewire\Platform\Vendors\Create::class)->name('vendors.create');
         Route::get('/vendors/{vendor}', \App\Livewire\Platform\Vendors\Show::class)->name('vendors.show');
         Route::get('/billing', \App\Livewire\Platform\Billing::class)->name('billing');
+        Route::get('/integrations', \App\Livewire\Platform\ApiIntegrationsComponent::class)->name('integrations.index');
     });
 
     // new vendor -platform -pricing
@@ -239,6 +258,21 @@ Route::middleware(['auth'])->group(function () {
     // // Template preview (for testing)
     // Route::get('/templates/{template}/preview', [TemplateController::class, 'preview'])
     //     ->name('templates.preview');
+
+    // Quality Check Routes
+    Route::prefix('quality-checks')->name('quality-checks.')->group(function () {
+        Route::get('work-order/{workOrder}', QualityCheckFormComponent::class)
+            ->name('create')
+            ->can('quality-check.create');
+
+        Route::get('{qualityCheck}', QualityCheckViewComponent::class)
+            ->name('show')
+            ->can('quality-check.view');
+
+        Route::get('{qualityCheck}/edit', QualityCheckFormComponent::class)
+            ->name('edit')
+            ->can('quality-check.update');
+    });
 
 });
 

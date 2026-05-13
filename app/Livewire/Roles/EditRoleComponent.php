@@ -32,6 +32,8 @@ class EditRoleComponent extends Component
         'Appointments'            => ['view_appointments', 'create_appointments', 'edit_appointments', 'delete_appointments', 'confirm_appointments'],
         'Service Templates'       => ['view_service_templates', 'create_service_templates', 'edit_service_templates', 'delete_service_templates'],
         'Wash Packages'           => ['view_wash_packages', 'create_wash_packages', 'edit_wash_packages', 'delete_wash_packages'],
+        'Quotations'              => ['view_quotations', 'create_quotations', 'edit_quotations', 'send_quotations', 'approve_quotations', 'delete_quotations'],
+        'Quality Check'           => ['quality-check.create', 'quality-check.view', 'quality-check.update', 'quality-check.download-pdf', 'quality-check.upload-signed'],
         'Settings & Audit'        => ['view_settings', 'edit_settings', 'view_audit_logs'],
         'Pricing & Calendar'      => ['price_work_orders', 'view_calendar'],
     ];

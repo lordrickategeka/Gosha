@@ -87,6 +87,6 @@ class ServiceTypesComponent extends Component
     {
         return view('livewire.service-types-component', [
             'serviceTypes' => $this->serviceTypes,
-        ]);
+        ])->layout('components.layouts.app', ['title' => 'Service Types']);
     }
 }

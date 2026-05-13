@@ -65,14 +65,6 @@
         </div>
     </div>
 
-    {{-- Flash messages --}}
-    @if(session('success'))
-        <div class="alert alert-success mb-4">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-error mb-4">{{ session('error') }}</div>
-    @endif
-
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {{-- Main --}}
@@ -277,7 +269,7 @@
     {{-- ═══ Reject Modal ═══════════════════════════════════════════════════ --}}
     @if($showRejectModal)
         <div class="modal modal-open" role="dialog">
-            <div class="modal-box max-w-md">
+            <div class="modal-box app-modal-shell max-w-md">
                 <button wire:click="closeRejectModal" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 <h3 class="font-bold text-lg mb-4">Reject Quotation</h3>
                 <div>
@@ -286,7 +278,7 @@
                         placeholder="Explain why the quotation was rejected..."></textarea>
                     @error('rejectionReason') <p class="text-error text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
-                <div class="modal-action">
+                <div class="modal-action app-modal-actions">
                     <button wire:click="closeRejectModal" class="btn btn-ghost">Cancel</button>
                     <button wire:click="rejectOnBehalf" class="btn btn-error"
                         wire:loading.attr="disabled" wire:target="rejectOnBehalf">
@@ -295,7 +287,7 @@
                     </button>
                 </div>
             </div>
-            <div class="modal-backdrop bg-black/50" wire:click="closeRejectModal"></div>
+            <div class="modal-backdrop app-modal-backdrop bg-black/50" wire:click="closeRejectModal"></div>
         </div>
     @endif
 </div>
