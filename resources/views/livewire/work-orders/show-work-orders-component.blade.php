@@ -175,10 +175,27 @@
                                             class="badge badge-{{ $this->latestQuotation->status_color }} badge-sm ml-1">{{ ucfirst($this->latestQuotation->status) }}</span>
                                     </a>
                                 @else
-                                    <a href="{{ route('work-orders.quotations.create', $workOrder) }}"
-                                        class="btn btn-primary btn-sm">
-                                        Create Quotation
-                                    </a>
+                                    @php
+                                        $quotationCreateRouteName = null;
+
+                                        if (\Illuminate\Support\Facades\Route::has('work-orders.quotations.create')) {
+                                            $quotationCreateRouteName = 'work-orders.quotations.create';
+                                        } elseif (\Illuminate\Support\Facades\Route::has('quotations.create')) {
+                                            $quotationCreateRouteName = 'quotations.create';
+                                        }
+                                    @endphp
+
+                                    @if ($quotationCreateRouteName)
+                                        <a href="{{ route($quotationCreateRouteName, $workOrder) }}"
+                                            class="btn btn-primary btn-sm">
+                                            Create Quotation
+                                        </a>
+                                    @else
+                                        <button type="button" class="btn btn-primary btn-sm" disabled
+                                            title="Quotation create route is not available">
+                                            Create Quotation
+                                        </button>
+                                    @endif
                                 @endif
                             @endif
                         @endcan
