@@ -77,11 +77,6 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('can:create_quotations');
     });
 
-    // Backward-compatible alias used by legacy links/calls in production.
-    Route::get('/quotations/create/{workOrder}', function (\App\Models\WorkOrder $workOrder) {
-        return redirect()->route('work-orders.quotations.create', $workOrder);
-    })->name('quotations.create')->middleware('can:create_quotations');
-
     // Quotations (standalone)
     Route::prefix('quotations')->name('quotations.')->middleware('can:view_quotations')->group(function () {
         Route::get('/{quotation}', \App\Livewire\Quotations\ShowQuotationComponent::class)->name('show');
