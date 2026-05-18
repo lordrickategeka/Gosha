@@ -22,9 +22,10 @@ class InventoryCategory extends Model
     ];
 
     // Relationships
-    public function items(): HasMany
+    // Inventory Types (middle level)
+    public function types(): HasMany
     {
-        return $this->hasMany(InventoryItem::class, 'category_id');
+        return $this->hasMany(InventoryType::class, 'inventory_category_id');
     }
 
     //new relationships

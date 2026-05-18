@@ -263,6 +263,12 @@ class CreateWorkOrder extends Component
         $this->resetCustomerModalFields();
     }
 
+    public function openCustomerModal()
+    {
+        $this->showCustomerModal = true;
+        $this->resetCustomerModalFields();
+    }
+
     public function saveNewCustomer()
     {
         $this->validate([

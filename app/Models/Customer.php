@@ -15,6 +15,7 @@ class Customer extends Model
 
     protected $fillable = [
         'vendor_id',
+        'is_active',
         'name',
         'email',
         'phone',
@@ -29,6 +30,7 @@ class Customer extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'loyalty_points' => 'integer',
         'credit_balance' => 'decimal:2',
         'credit_limit' => 'decimal:2',

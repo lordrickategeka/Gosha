@@ -58,6 +58,11 @@ class InventoryItem extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(InventoryType::class, 'inventory_type_id');
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(InventoryCategory::class, 'category_id');
