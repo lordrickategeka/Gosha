@@ -283,6 +283,12 @@
                             <li><a href="{{ route('reports.operations') }}">Operations</a></li>
                             <li><a href="{{ route('reports.inventory') }}">Inventory</a></li>
                             <li><a href="{{ route('reports.staff') }}">Staff Performance</a></li>
+                            @can('view_debtors')
+                            <li><a href="{{ route('reports.debtors') }}">Debtors</a></li>
+                            @endcan
+                            @can('view_creditors')
+                            <li><a href="{{ route('reports.creditors') }}">Creditors</a></li>
+                            @endcan
                         </ul>
                     </details>
                 </li>

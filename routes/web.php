@@ -220,6 +220,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/operations', \App\Livewire\Reports\Operations::class)->name('operations');
         Route::get('/inventory', \App\Livewire\Reports\Inventory::class)->name('inventory');
         Route::get('/staff', \App\Livewire\Reports\Staff::class)->name('staff');
+        Route::get('/debtors', \App\Livewire\Reports\Debtors::class)->name('debtors')
+            ->middleware('can:view_debtors');
+        Route::get('/creditors', \App\Livewire\Reports\Creditors::class)->name('creditors')
+            ->middleware('can:view_creditors');
     });
 
     // Roles & Permissions

@@ -19,6 +19,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_dashboard',
             'view_reports',
             'export_reports',
+            'view_debtors',
+            'manage_debtors',
+            'view_creditors',
+            'manage_creditors',
 
             // Vendors (platform level)
             'view_vendors',
@@ -174,7 +178,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'quality-check.upload-signed',
         ];
 
-        
+
 
         // Create all permissions
         foreach ($permissions as $permission) {
@@ -213,6 +217,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_dashboard',
             'view_reports',
             'export_reports',
+            'view_debtors',
+            'manage_debtors',
+            'view_creditors',
+            'manage_creditors',
             'manage_roles',
             // Branches
             'view_branches',
@@ -336,6 +344,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $branchManager = $syncRole('branch-manager', [
             'view_dashboard',
             'view_reports',
+            'view_debtors',
+            'view_creditors',
             // Users (limited)
             'view_users',
             // Customers
@@ -462,6 +472,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // Payments
             'view_payments',
             'receive_payments',
+            'view_debtors',
             // Appointments
             'view_appointments',
             'create_appointments',
@@ -486,6 +497,8 @@ class RolesAndPermissionsSeeder extends Seeder
             // Expenses (for purchases)
             'view_expenses',
             'create_expenses',
+            'view_creditors',
+            'manage_creditors',
         ]);
 
         // Jobcarder - captures job details and items (no pricing)

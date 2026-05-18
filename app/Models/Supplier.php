@@ -22,10 +22,20 @@ class Supplier extends Model
         'phone',
         'address',
         'notes',
+        'payment_terms_days',
+        'opening_balance',
+        'current_balance',
+        'credit_limit',
+        'last_statement_at',
         'is_active',
     ];
 
     protected $casts = [
+        'payment_terms_days' => 'integer',
+        'opening_balance' => 'decimal:2',
+        'current_balance' => 'decimal:2',
+        'credit_limit' => 'decimal:2',
+        'last_statement_at' => 'datetime',
         'is_active' => 'boolean',
     ];
 
@@ -43,6 +53,16 @@ class Supplier extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function bills(): HasMany
+    {
+        return $this->hasMany(Bill::class);
+    }
+
+    public function billPayments(): HasMany
+    {
+        return $this->hasMany(BillPayment::class);
     }
 
     // Scopes
@@ -66,5 +86,19 @@ class Supplier extends Model
         return $this->inventoryMovements()
             ->where('movement_type', 'purchase')
             ->sum('total_cost');
+    }
+
+    public function getOutstandingPayablesAttribute(): float
+    {
+        return (float) $this->bills()
+            ->whereIn('status', ['received', 'partially_paid', 'overdue'])
+            ->sum('balance_due');
+    }
+
+    public function refreshCurrentBalance(): void
+    {
+        $this->update([
+            'current_balance' => (float) $this->opening_balance + $this->outstanding_payables,
+        ]);
     }
 }

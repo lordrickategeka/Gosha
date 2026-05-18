@@ -14,6 +14,7 @@ class EditRoleComponent extends Component
     // Permissions grouped by module for display
     public array $permissionGroups = [
         'Dashboard & Reports'     => ['view_dashboard', 'view_reports', 'export_reports'],
+        'Debtors & Creditors'     => ['view_debtors', 'manage_debtors', 'view_creditors', 'manage_creditors'],
         'Vendors'                 => ['view_vendors', 'create_vendors', 'edit_vendors', 'delete_vendors', 'manage_vendor_billing'],
         'Branches'                => ['view_branches', 'create_branches', 'edit_branches', 'delete_branches'],
         'Users & Roles'           => ['view_users', 'create_users', 'edit_users', 'delete_users', 'assign_roles', 'manage_roles'],
