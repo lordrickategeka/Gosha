@@ -334,12 +334,15 @@ class CreateWorkOrder extends Component
             'newVehicleYear' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
         ]);
 
+        $vehicleYear = blank($this->newVehicleYear) ? null : (int) $this->newVehicleYear;
+        $registrationNumber = strtoupper(trim((string) $this->newVehicleRegNumber));
+
         $vehicle = Vehicle::create([
             'customer_id' => $this->customer_id,
-            'registration_number' => strtoupper($this->newVehicleRegNumber),
+            'registration_number' => $registrationNumber,
             'make' => $this->newVehicleMake,
             'model' => $this->newVehicleModel,
-            'year' => $this->newVehicleYear,
+            'year' => $vehicleYear,
             'is_active' => true,
         ]);
 
@@ -358,7 +361,7 @@ class CreateWorkOrder extends Component
         $this->newVehicleRegNumber = '';
         $this->newVehicleMake = '';
         $this->newVehicleModel = '';
-        $this->newVehicleYear = '';
+        $this->newVehicleYear = null;
         $this->resetValidation(['newVehicleRegNumber', 'newVehicleMake', 'newVehicleModel', 'newVehicleYear']);
     }
 
