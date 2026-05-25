@@ -30,6 +30,8 @@ Route::middleware('guest')->group(function () {
 
     });
 
+    // Include expense module routes
+require __DIR__.'/expenses.php';
 
 Route::middleware(['auth'])->group(function () {
     // Logout
@@ -66,7 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('work-orders')->name('work-orders.')->group(function () {
         Route::get('/', WorkOrdersComponent::class)->name('index');
 
-        Route::get('/create', \App\Livewire\WorkOrders\CreateWorkOrder::class)->name('create')->middleware('can:create_work_orders');
+        Route::get('/create', \App\Livewire\WorkOrders\CreateWorkOrdersComponent::class)->name('create')->middleware('can:create_work_orders');
         Route::get('/{workOrder}', \App\Livewire\WorkOrders\ShowWorkOrdersComponent::class)->name('show');
         Route::get('/{workOrder}/edit', \App\Livewire\WorkOrders\EditWorkOrdersComponent::class)->name('edit')
             ->middleware('can:edit_work_orders');
@@ -79,6 +81,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Quotations (standalone)
     Route::prefix('quotations')->name('quotations.')->middleware('can:view_quotations')->group(function () {
+        Route::get('/', \App\Livewire\Quotations\QuotationsComponent::class)->name('index');
         Route::get('/{quotation}', \App\Livewire\Quotations\ShowQuotationComponent::class)->name('show');
         Route::get('/{quotation}/edit', \App\Livewire\Quotations\QuotationBuilderComponent::class)->name('edit')
             ->middleware('can:edit_quotations');
@@ -129,11 +132,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // // Expenses
-    Route::prefix('expenses')->name('expenses.')->middleware('can:view_expenses')->group(function () {
-        Route::get('/', \App\Livewire\Expenses\ExpensesComponent::class)->name('index');
-        Route::get('/create', \App\Livewire\Expenses\CreateExpensesComponent::class)->name('create')
-            ->middleware('can:create_expenses');
-    });
+    // Route::prefix('expenses')->name('expenses.')->middleware('can:view_expenses')->group(function () {
+    //     Route::get('/', \App\Livewire\Expenses\ExpensesComponent::class)->name('index');
+    //     Route::get('/create', \App\Livewire\Expenses\CreateExpensesComponent::class)->name('create')
+    //         ->middleware('can:create_expenses');
+    // });
 
     // // Commissions
     Route::prefix('commissions')->name('commissions.')->group(function () {

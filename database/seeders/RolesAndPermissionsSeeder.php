@@ -178,8 +178,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'quality-check.upload-signed',
         ];
 
-
-
         // Create all permissions
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);

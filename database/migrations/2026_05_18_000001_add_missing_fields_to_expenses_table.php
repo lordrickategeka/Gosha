@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -111,6 +112,15 @@ return new class extends Migration
                 $table->index(['vendor_id', 'expense_type']);
             }
         });
+
+        if (Schema::hasTable('expenses') && ! Schema::hasColumn('expenses', 'vendor_id')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                $table->foreignId('vendor_id')->nullable()->after('id')->constrained()->nullOnDelete();
+                $table->index(['vendor_id', 'branch_id']);
+            });
+
+            DB::statement('update expenses e inner join branches b on e.branch_id = b.id set e.vendor_id = b.vendor_id where e.vendor_id is null');
+        }
     }
 
     public function down(): void
@@ -151,5 +161,13 @@ return new class extends Migration
                 $table->dropColumn($dropColumns);
             }
         });
+
+        if (Schema::hasTable('expenses') && Schema::hasColumn('expenses', 'vendor_id')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                $table->dropForeign(['vendor_id']);
+                $table->dropIndex(['vendor_id', 'branch_id']);
+                $table->dropColumn('vendor_id');
+            });
+        }
     }
 };

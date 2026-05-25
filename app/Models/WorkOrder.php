@@ -246,11 +246,6 @@ class WorkOrder extends Model
             $this->serviceBay->markAsAvailable();
         }
 
-        // Trigger combo flow if applicable
-        if ($this->is_combo) {
-            $this->createWashOrder();
-        }
-
         $this->generateInvoice();
     }
 

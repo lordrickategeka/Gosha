@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Vehicle;
 use Livewire\Component;
@@ -97,8 +98,16 @@ class CustomerVehicleSelector extends Component
             'newCustomerEmail' => 'nullable|email|max:255',
         ]);
 
+        $branchVendorId = Branch::where('id', session('current_branch_id'))->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+
+        if (!$vendorId) {
+            session()->flash('customer-selector-error', 'Unable to determine vendor for this customer. Please select a branch and try again.');
+            return;
+        }
+
         $customer = Customer::create([
-            'vendor_id' => auth()->user()->vendor_id,
+            'vendor_id' => $vendorId,
             'name'      => $this->newCustomerName,
             'phone'     => $this->newCustomerPhone,
             'email'     => $this->newCustomerEmail,

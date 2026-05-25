@@ -32,7 +32,7 @@ class CreateWashOrderTest extends TestCase
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $createPerm = Permission::create(['name' => 'create wash orders', 'guard_name' => 'web']);
+        $createPerm = Permission::create(['name' => 'create_wash_orders', 'guard_name' => 'web']);
         $managerRole = Role::create(['name' => 'branch-manager', 'guard_name' => 'web']);
         $managerRole->givePermissionTo($createPerm);
 

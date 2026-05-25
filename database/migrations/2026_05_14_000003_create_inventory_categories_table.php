@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up() {
+        if (Schema::hasTable('inventory_categories')) {
+            return;
+        }
+
         Schema::create('inventory_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();

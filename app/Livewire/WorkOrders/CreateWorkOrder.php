@@ -58,8 +58,8 @@ class CreateWorkOrder extends Component
     // STEP 2: JOB DETAILS
     // ═══════════════════════════════════════════════════════════════════════
 
-    public $type = '';
-    public $priority = '';
+    public $type = 'service';
+    public $priority = 'normal';
     public $service_bay_id = null;
     public $assigned_technician_id = null;
     public $is_combo = false;
@@ -277,8 +277,19 @@ class CreateWorkOrder extends Component
             'newCustomerEmail' => 'nullable|email|max:255',
         ]);
 
+        $branchVendorId = Branch::where('id', session('current_branch_id'))->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+
+        if (!$vendorId) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Unable to determine vendor for this customer. Please select a branch and try again.',
+            ]);
+            return;
+        }
+
         $customer = Customer::create([
-            'vendor_id' => auth()->user()->vendor_id,
+            'vendor_id' => $vendorId,
             'name' => $this->newCustomerName,
             'phone' => $this->newCustomerPhone,
             'email' => $this->newCustomerEmail,

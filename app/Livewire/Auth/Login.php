@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Models\AuditLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
@@ -28,6 +29,7 @@ class Login extends Component
             return;
         }
 
+        /** @var User $user */
         $user = Auth::user();
 
         // Check if user is active
@@ -52,15 +54,13 @@ class Login extends Component
             }
         }
 
-        // Set default branch in session
-        if (!$user->is_platform_user) {
-            $primaryBranch = $user->primaryBranch();
-            if ($primaryBranch) {
-                session(['current_branch_id' => $primaryBranch->id, 'current_branch_name' => $primaryBranch->name]);
-            } elseif ($user->branches->count() > 0) {
-                $branch = $user->branches->first();
-                session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
-            }
+        // Set default branch in session for both vendor and platform users.
+        $primaryBranch = $user->primaryBranch();
+        if ($primaryBranch) {
+            session(['current_branch_id' => $primaryBranch->id, 'current_branch_name' => $primaryBranch->name]);
+        } elseif ($user->branches->count() > 0) {
+            $branch = $user->branches->first();
+            session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
         }
 
         // Log the login

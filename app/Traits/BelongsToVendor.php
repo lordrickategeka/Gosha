@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Vendor;
 use App\Scopes\VendorScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 
 trait BelongsToVendor
 {
@@ -13,7 +14,7 @@ trait BelongsToVendor
         static::addGlobalScope(new VendorScope);
 
         static::creating(function ($model) {
-            if (!$model->vendor_id && auth()->check() && auth()->user()->vendor_id) {
+            if (Schema::hasColumn($model->getTable(), 'vendor_id') && !$model->vendor_id && auth()->check() && auth()->user()->vendor_id) {
                 $model->vendor_id = auth()->user()->vendor_id;
             }
         });
@@ -26,6 +27,10 @@ trait BelongsToVendor
 
     public function scopeForVendor($query, $vendorId)
     {
-        return $query->where('vendor_id', $vendorId);
+        if (Schema::hasColumn($query->getModel()->getTable(), 'vendor_id')) {
+            return $query->where($query->getModel()->getTable() . '.vendor_id', $vendorId);
+        }
+
+        return $query;
     }
 }

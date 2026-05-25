@@ -32,8 +32,8 @@ class CreateWorkOrderTest extends TestCase
         // Create permissions needed for the tests
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $createPerm = Permission::create(['name' => 'create work orders', 'guard_name' => 'web']);
-        Permission::create(['name' => 'view work orders', 'guard_name' => 'web']);
+        $createPerm = Permission::create(['name' => 'create_work_orders', 'guard_name' => 'web']);
+        Permission::create(['name' => 'view_work_orders', 'guard_name' => 'web']);
         $managerRole = Role::create(['name' => 'branch-manager', 'guard_name' => 'web']);
         $managerRole->givePermissionTo($createPerm);
         // Roles required by the blade view's computed properties

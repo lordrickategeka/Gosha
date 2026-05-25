@@ -47,23 +47,45 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
+        // ========================================
+        // PLATFORM SUPER ADMIN
+        // ========================================
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'admin@garageplatform.com'],
+            [
+                'name' => 'Platform Admin',
+                'password' => Hash::make('password'),
+                'is_platform_user' => true,
+                'is_active' => true,
+            ]
+        );
+        $superAdmin->assignRole('super-admin');
+
+        // ========================================
+        // PLATFORM ADMIN SYSTEM BRANCH ACCESS
+        // ========================================
+        $mainSystemBranch = Branch::firstOrCreate(
+            [
+                'vendor_id' => $vendor->id,
+                'name' => 'Main System Branch',
+            ],
+            [
+                'address' => 'Platform Operations - Kampala',
+                'phone' => '+256 700 000000',
+                'email' => 'system@garageplatform.com',
+                'is_active' => true,
+                'is_main' => false,
+            ]
+        );
+        $superAdmin->branches()->syncWithoutDetaching([
+            $mainSystemBranch->id => ['is_primary' => true],
+        ]);
+
         // Skip rest of seeding if vendor already had data
         if (!$vendor->wasRecentlyCreated) {
             $this->command->info('DemoDataSeeder: data already exists, skipping.');
             return;
         }
-
-        // ========================================
-        // PLATFORM SUPER ADMIN
-        // ========================================
-        $superAdmin = User::create([
-            'name' => 'Platform Admin',
-            'email' => 'admin@garageplatform.com',
-            'password' => Hash::make('password'),
-            'is_platform_user' => true,
-            'is_active' => true,
-        ]);
-        $superAdmin->assignRole('super-admin');
 
 
         VendorBillingConfig::create([
@@ -609,6 +631,7 @@ class DemoDataSeeder extends Seeder
         $suppliesCategory = ExpenseCategory::where('vendor_id', $vendor->id)->where('name', 'Supplies')->first();
 
         Expense::create([
+            'vendor_id' => $vendor->id,
             'branch_id' => $mainBranch->id,
             'category_id' => $utilitiesCategory->id,
             'recorded_by' => $manager->id,
@@ -621,6 +644,7 @@ class DemoDataSeeder extends Seeder
         ]);
 
         Expense::create([
+            'vendor_id' => $vendor->id,
             'branch_id' => $mainBranch->id,
             'category_id' => $suppliesCategory->id,
             'supplier_id' => $supplier2->id,

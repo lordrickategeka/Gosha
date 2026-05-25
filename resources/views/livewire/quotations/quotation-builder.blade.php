@@ -181,8 +181,8 @@
                                 {{-- Row total --}}
                                 <div class="flex justify-end mt-2 text-sm text-base-content/60">
                                     Line total: <span class="font-medium ml-1">UGX {{ number_format(max(0, (((float) ($item['quantity'] ?? 0)) * ((float) ($item['unit_price'] ?? 0))) - ((float) ($item['discount'] ?? 0)))) }}</span>
-                                    @if(($item['vat_applicable'] ?? false) && $vat_rate > 0)
-                                        <span class="ml-2 text-warning">+VAT {{ $vat_rate }}%</span>
+                                    @if(($item['vat_applicable'] ?? false) && $vatRate > 0)
+                                        <span class="ml-2 text-warning">+VAT {{ $vatRate }}%</span>
                                     @endif
                                 </div>
                             </div>
@@ -236,9 +236,9 @@
                             <span class="text-base-content/60">Subtotal</span>
                             <span class="font-medium">UGX {{ number_format($this->subtotal) }}</span>
                         </div>
-                        @if($vat_rate > 0)
+                        @if($vatRate > 0)
                             <div class="flex justify-between text-sm">
-                                <span class="text-base-content/60">VAT ({{ $vat_rate }}%)</span>
+                                <span class="text-base-content/60">VAT ({{ $vatRate }}%)</span>
                                 <span class="font-medium">UGX {{ number_format($this->vatAmount) }}</span>
                             </div>
                         @endif
@@ -252,7 +252,7 @@
                     {{-- VAT Rate --}}
                     <div class="mt-4">
                         <label class="label"><span class="label-text text-sm">VAT Rate (%)</span></label>
-                        <input type="number" wire:model.live="vat_rate" min="0" max="100" step="0.5"
+                        <input type="number" wire:model.live="vatRate" min="0" max="100" step="0.5"
                             class="input input-bordered input-sm w-full" placeholder="0" />
                         <p class="text-xs text-base-content/50 mt-1">Applied to lines with VAT toggled on.</p>
                     </div>

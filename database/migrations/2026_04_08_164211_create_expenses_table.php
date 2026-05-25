@@ -22,6 +22,7 @@ return new class extends Migration
 
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('category_id')->nullable()->constrained('expense_categories')->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
@@ -39,6 +40,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            $table->index(['vendor_id', 'branch_id']);
             $table->index(['branch_id', 'expense_date']);
             $table->index(['branch_id', 'status']);
         });

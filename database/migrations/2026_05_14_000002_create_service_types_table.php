@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up() {
+        if (Schema::hasTable('service_types')) {
+            return;
+        }
+
         Schema::create('service_types', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();

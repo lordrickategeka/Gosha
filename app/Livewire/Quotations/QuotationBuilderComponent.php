@@ -27,7 +27,7 @@ class QuotationBuilderComponent extends Component
     public string $notes = '';
     public string $termsAndConditions = '';
     public string $validUntil = '';
-    public float $vat_rate = 0;
+    public float $vatRate = 0;
 
     // ─── Add-to-inventory modal ─────────────────────────────────────────────
     public bool $showAddToInventoryModal = false;
@@ -60,7 +60,7 @@ class QuotationBuilderComponent extends Component
             $this->notes = $this->quotation->notes ?? '';
             $this->termsAndConditions = $this->quotation->terms_and_conditions ?? '';
             $this->validUntil = $this->quotation->valid_until?->format('Y-m-d') ?? $this->validUntil;
-            $this->vat_rate = (float) ($this->quotation->vat_rate ?? 0);
+            $this->vatRate = (float) ($this->quotation->vat_rate ?? 0);
 
             foreach ($this->quotation->items->sortBy('sort_order') as $item) {
                 $this->items[] = [
@@ -299,7 +299,7 @@ class QuotationBuilderComponent extends Component
 
     public function getVatAmountProperty(): float
     {
-        if ($this->vat_rate <= 0) return 0;
+        if ($this->vatRate <= 0) return 0;
 
         return collect($this->items)
             ->filter(fn($item) => (bool) ($item['vat_applicable'] ?? false))
@@ -309,7 +309,7 @@ class QuotationBuilderComponent extends Component
                 $discount = (float) ($item['discount'] ?? 0);
                 $lineTotal = max(0, ($quantity * $unitPrice) - $discount);
 
-                return $lineTotal * ($this->vat_rate / 100);
+                return $lineTotal * ($this->vatRate / 100);
             });
     }
 
@@ -350,7 +350,7 @@ class QuotationBuilderComponent extends Component
             'items.*.unit_price'           => 'required|numeric|min:0',
             'items.*.discount'             => 'nullable|numeric|min:0',
             'validUntil'                   => 'required|date|after:today',
-            'vat_rate'                     => 'nullable|numeric|min:0|max:100',
+            'vatRate'                      => 'nullable|numeric|min:0|max:100',
         ], [
             'items.required'               => 'Add at least one line item.',
             'items.min'                    => 'Add at least one line item.',
@@ -374,7 +374,7 @@ class QuotationBuilderComponent extends Component
                     'notes'              => $this->notes,
                     'terms_and_conditions' => $this->termsAndConditions,
                     'valid_until'        => $this->validUntil,
-                    'vat_rate'           => $this->vat_rate,
+                    'vat_rate'           => $this->vatRate,
                 ]);
                 $quotation->items()->delete();
             } else {
@@ -400,7 +400,7 @@ class QuotationBuilderComponent extends Component
                     'notes'              => $this->notes,
                     'terms_and_conditions' => $this->termsAndConditions,
                     'valid_until'        => $this->validUntil,
-                    'vat_rate'           => $this->vat_rate,
+                    'vat_rate'           => $this->vatRate,
                 ]);
             }
 
@@ -410,7 +410,7 @@ class QuotationBuilderComponent extends Component
                 $unitPrice = (float) ($row['unit_price'] ?? 0);
                 $discount = (float) ($row['discount'] ?? 0);
                 $lineTotal = max(0, ($quantity * $unitPrice) - $discount);
-                $vatAmt    = ($row['vat_applicable'] ?? false) ? $lineTotal * ($this->vat_rate / 100) : 0;
+                $vatAmt    = ($row['vat_applicable'] ?? false) ? $lineTotal * ($this->vatRate / 100) : 0;
 
                 QuotationItem::create([
                     'quotation_id'      => $quotation->id,
@@ -422,7 +422,7 @@ class QuotationBuilderComponent extends Component
                     'unit_price'        => $unitPrice,
                     'discount'          => $discount,
                     'vat_applicable'    => (bool) ($row['vat_applicable'] ?? false),
-                    'vat_rate'          => $this->vat_rate,
+                    'vat_rate'          => $this->vatRate,
                     'total'             => $lineTotal,
                     'sort_order'        => $sortOrder,
                 ]);

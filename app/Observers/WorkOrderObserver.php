@@ -91,15 +91,16 @@ class WorkOrderObserver
         try {
             // Create wash order automatically
             $workOrder->washOrder()->create([
-                'vendor_id' => $workOrder->vendor_id,
                 'branch_id' => $workOrder->branch_id,
                 'customer_id' => $workOrder->customer_id,
                 'vehicle_id' => $workOrder->vehicle_id,
-                'order_number' => 'WSH-' . strtoupper(uniqid()),
-                'order_date' => now(),
-                'status' => 'pending',
-                'wash_bay_id' => null, // To be assigned
+                'work_order_id' => $workOrder->id,
+                'wash_type' => 'standard',
+                'status' => 'queued',
+                'source' => 'combo',
+                'priority' => 'normal',
                 'notes' => "Auto-created from Work Order #{$workOrder->order_number}",
+                'queued_at' => now(),
             ]);
         } catch (\Exception $e) {
             logger()->error('Failed to create wash order for combo', [

@@ -32,8 +32,8 @@ class CreateAppointmentTest extends TestCase
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $viewPerm   = Permission::create(['name' => 'view appointments', 'guard_name' => 'web']);
-        $createPerm = Permission::create(['name' => 'create appointments', 'guard_name' => 'web']);
+        $viewPerm   = Permission::create(['name' => 'view_appointments', 'guard_name' => 'web']);
+        $createPerm = Permission::create(['name' => 'create_appointments', 'guard_name' => 'web']);
         $managerRole = Role::create(['name' => 'branch-manager', 'guard_name' => 'web']);
         $managerRole->givePermissionTo([$viewPerm, $createPerm]);
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Customers;
 
+use App\Models\Branch;
 use App\Models\Customer;
 use Livewire\Component;
 
@@ -29,8 +30,16 @@ class CreateCustomersComponent extends Component
     {
         $this->validate();
 
+        $branchVendorId = Branch::where('id', session('current_branch_id'))->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+
+        if (!$vendorId) {
+            $this->addError('name', 'Unable to determine vendor for this customer. Please select a branch and try again.');
+            return;
+        }
+
         $customer = Customer::create([
-            'vendor_id' => auth()->user()->vendor_id,
+            'vendor_id' => $vendorId,
             'name' => $this->name,
             'phone' => $this->phone,
             'email' => $this->email,
