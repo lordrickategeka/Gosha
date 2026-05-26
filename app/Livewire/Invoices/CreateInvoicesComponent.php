@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Invoices;
 
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\WashOrder;
@@ -13,6 +14,10 @@ class CreateInvoicesComponent extends Component
     public $customer_id = '';
     public $work_order_id = '';
     public $wash_order_id = '';
+    public $showCustomerModal = false;
+    public $newCustomerName = '';
+    public $newCustomerPhone = '';
+    public $newCustomerEmail = '';
     public $due_date;
     public $notes = '';
     public $items = [];
@@ -22,6 +27,8 @@ class CreateInvoicesComponent extends Component
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
         'due_date' => 'required|date',
+        'tax_rate' => 'nullable|numeric|min:0',
+        'discount' => 'nullable|numeric|min:0',
         'items' => 'required|array|min:1',
         'items.*.description' => 'required|string',
         'items.*.quantity' => 'required|numeric|min:0.01',
@@ -74,6 +81,62 @@ class CreateInvoicesComponent extends Component
         $this->items = array_values($this->items);
     }
 
+    public function openCustomerModal()
+    {
+        $this->showCustomerModal = true;
+        $this->resetCustomerModalFields();
+    }
+
+    public function closeCustomerModal()
+    {
+        $this->showCustomerModal = false;
+        $this->resetCustomerModalFields();
+    }
+
+    public function saveNewCustomer()
+    {
+        $this->validate([
+            'newCustomerName' => 'required|string|max:255',
+            'newCustomerPhone' => 'required|string|max:20',
+            'newCustomerEmail' => 'nullable|email|max:255',
+        ]);
+
+        $branchVendorId = Branch::where('id', session('current_branch_id'))->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+
+        if (! $vendorId) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Unable to determine vendor for this customer. Please select a branch and try again.',
+            ]);
+
+            return;
+        }
+
+        $customer = Customer::create([
+            'vendor_id' => $vendorId,
+            'name' => $this->newCustomerName,
+            'phone' => $this->newCustomerPhone,
+            'email' => $this->newCustomerEmail,
+        ]);
+
+        $this->customer_id = $customer->id;
+        $this->closeCustomerModal();
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Customer created successfully.',
+        ]);
+    }
+
+    protected function resetCustomerModalFields()
+    {
+        $this->newCustomerName = '';
+        $this->newCustomerPhone = '';
+        $this->newCustomerEmail = '';
+        $this->resetValidation(['newCustomerName', 'newCustomerPhone', 'newCustomerEmail']);
+    }
+
     public function getCustomersProperty()
     {
         return Customer::where('vendor_id', auth()->user()->vendor_id)
@@ -82,17 +145,26 @@ class CreateInvoicesComponent extends Component
 
     public function getSubtotalProperty()
     {
-        return collect($this->items)->sum(fn($i) => ($i['quantity'] ?? 0) * ($i['unit_price'] ?? 0));
+        return collect($this->items)->sum(fn($item) => $this->toMoney($item['quantity'] ?? 0) * $this->toMoney($item['unit_price'] ?? 0));
     }
 
     public function getTaxProperty()
     {
-        return $this->subtotal * ($this->tax_rate / 100);
+        return $this->subtotal * ($this->toMoney($this->tax_rate) / 100);
     }
 
     public function getTotalProperty()
     {
-        return $this->subtotal + $this->tax - $this->discount;
+        return $this->subtotal + $this->tax - $this->toMoney($this->discount);
+    }
+
+    protected function toMoney($value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+
+        return is_numeric($value) ? (float) $value : 0.0;
     }
 
     public function save()
@@ -106,13 +178,14 @@ class CreateInvoicesComponent extends Component
             'wash_order_id' => $this->wash_order_id ?: null,
             'created_by' => auth()->id(),
             'subtotal' => $this->subtotal,
-            'tax_rate' => $this->tax_rate,
+            'tax_rate' => $this->toMoney($this->tax_rate),
             'tax_amount' => $this->tax,
-            'discount' => $this->discount,
+            'discount_amount' => $this->toMoney($this->discount),
             'total' => $this->total,
             'balance_due' => $this->total,
+            'issue_date' => now()->toDateString(),
             'due_date' => $this->due_date,
-            'status' => 'pending',
+            'status' => 'sent',
             'notes' => $this->notes,
         ]);
 

@@ -13,12 +13,12 @@
                 Low Stock ({{ $stats['low_stock'] }})
             </a>
             @can('create_inventory')
-            <a href="{{ route('inventory.create') }}" class="btn btn-primary gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button type="button" wire:click="openCreateModal" class="btn btn-primary rounded-lg px-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 Add Item
-            </a>
+            </button>
             @endcan
         </div>
     </div>
@@ -82,6 +82,7 @@
             <div class="flex flex-row items-end gap-4 overflow-x-auto">
                 {{-- Search --}}
                 <div class="min-w-0 flex-1">
+                    <label class="block text-sm font-medium mb-2">Search</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -99,32 +100,44 @@
 
                 {{-- Filters --}}
                 <div class="flex flex-row flex-nowrap items-end gap-3 shrink-0">
-                    <select wire:model.live="itemType" class="select select-bordered w-40">
-                        <option value="">All Types</option>
-                        <option value="service_part">Service Parts</option>
-                        <option value="wash_supply">Wash Supplies</option>
-                    </select>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Type</label>
+                        <select wire:model.live="itemType" class="select select-bordered w-40">
+                            <option value="">All Types</option>
+                            <option value="service_part">Service Parts</option>
+                            <option value="wash_supply">Wash Supplies</option>
+                        </select>
+                    </div>
 
-                    <select wire:model.live="category" class="select select-bordered w-44">
-                        <option value="">All Categories</option>
-                        @foreach($this->categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->full_path }}</option>
-                        @endforeach
-                    </select>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Category</label>
+                        <select wire:model.live="category" class="select select-bordered w-44">
+                            <option value="">All Categories</option>
+                            @foreach($this->categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->full_path }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                    <select wire:model.live="stockStatus" class="select select-bordered w-36">
-                        <option value="">All Stock</option>
-                        <option value="low">Low Stock</option>
-                        <option value="out">Out of Stock</option>
-                        <option value="in_stock">In Stock</option>
-                    </select>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Stock</label>
+                        <select wire:model.live="stockStatus" class="select select-bordered w-36">
+                            <option value="">All Stock</option>
+                            <option value="low">Low Stock</option>
+                            <option value="out">Out of Stock</option>
+                            <option value="in_stock">In Stock</option>
+                        </select>
+                    </div>
 
-                    <select wire:model.live="condition" class="select select-bordered w-40">
-                        <option value="">All Conditions</option>
-                        <option value="new">New</option>
-                        <option value="used">Used</option>
-                        <option value="refurbished">Refurbished</option>
-                    </select>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Condition</label>
+                        <select wire:model.live="condition" class="select select-bordered w-40">
+                            <option value="">All Conditions</option>
+                            <option value="new">New</option>
+                            <option value="used">Used</option>
+                            <option value="refurbished">Refurbished</option>
+                        </select>
+                    </div>
 
                     @if($search || $itemType || $category || $stockStatus || $condition)
                         <button wire:click="clearFilters" class="btn btn-ghost gap-2">
@@ -406,11 +419,144 @@
                         <button wire:click="clearFilters" class="btn btn-primary">Clear Filters</button>
                     @else
                         @can('create_inventory')
-                            <a href="{{ route('inventory.create') }}" class="btn btn-primary">Add First Item</a>
+                            <button type="button" wire:click="openCreateModal" class="btn btn-primary rounded-lg px-5">Add First Item</button>
                         @endcan
                     @endif
                 </div>
             </div>
+        </div>
+    @endif
+
+    @if($showCreateModal)
+        <div class="modal modal-open" role="dialog">
+            <div class="modal-box app-modal-shell max-w-4xl">
+                <h3 class="font-bold text-lg mb-4">Add Inventory Item</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="form-control sm:col-span-2">
+                        <label class="block text-sm font-medium mb-2">Item Name *</label>
+                        <input type="text" wire:model="createName" class="input input-bordered" />
+                        @error('createName') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Item Type *</label>
+                        <select wire:model="createItemType" class="select select-bordered">
+                            <option value="service_part">Service Part</option>
+                            <option value="wash_supply">Wash Supply</option>
+                        </select>
+                        @error('createItemType') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Category *</label>
+                        <select wire:model="createCategoryId" class="select select-bordered">
+                            <option value="">Select category...</option>
+                            @foreach($this->createCategories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('createCategoryId') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">SKU</label>
+                        <input type="text" value="{{ $createSku ?: 'Select a category to generate SKU' }}" class="input input-bordered" readonly />
+                        <span class="label-text-alt text-base-content/60 mt-1">Generated automatically from the selected category.</span>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Barcode</label>
+                        <input type="text" wire:model="createBarcode" class="input input-bordered" />
+                        @error('createBarcode') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Supplier</label>
+                        <select wire:model="createSupplierId" class="select select-bordered">
+                            <option value="">Select supplier...</option>
+                            @foreach($this->suppliers as $supplier)
+                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('createSupplierId') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Brand</label>
+                        <input type="text" wire:model="createBrand" class="input input-bordered" />
+                        @error('createBrand') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Unit *</label>
+                        <select wire:model="createUnit" class="select select-bordered">
+                            <option value="pcs">Pieces</option>
+                            <option value="liters">Liters</option>
+                            <option value="kg">Kilograms</option>
+                            <option value="meters">Meters</option>
+                            <option value="sets">Sets</option>
+                        </select>
+                        @error('createUnit') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Condition *</label>
+                        <select wire:model="createCondition" class="select select-bordered">
+                            <option value="new">New</option>
+                            <option value="used">Used</option>
+                            <option value="refurbished">Refurbished</option>
+                            <option value="reconditioned">Reconditioned</option>
+                        </select>
+                        @error('createCondition') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Initial Quantity *</label>
+                        <input type="number" wire:model="createQuantity" class="input input-bordered" min="0" step="0.01" />
+                        @error('createQuantity') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Reorder Level *</label>
+                        <input type="number" wire:model="createReorderLevel" class="input input-bordered" min="0" step="0.01" />
+                        @error('createReorderLevel') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Cost Price (UGX) *</label>
+                        <input type="number" wire:model="createCostPrice" class="input input-bordered" min="0" step="0.01" />
+                        @error('createCostPrice') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Selling Price (UGX) *</label>
+                        <input type="number" wire:model="createSellingPrice" class="input input-bordered" min="0" step="0.01" />
+                        @error('createSellingPrice') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control">
+                        <label class="block text-sm font-medium mb-2">Storage Location</label>
+                        <input type="text" wire:model="createLocation" class="input input-bordered" />
+                        @error('createLocation') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control sm:col-span-2">
+                        <label class="block text-sm font-medium mb-2">Description</label>
+                        <textarea wire:model="createDescription" rows="3" class="textarea textarea-bordered"></textarea>
+                        @error('createDescription') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <div class="modal-action app-modal-actions">
+                    <button type="button" wire:click="closeCreateModal" class="btn btn-ghost">Cancel</button>
+                    <button type="button" wire:click="saveInventoryItem" class="btn btn-primary rounded-lg px-5" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="saveInventoryItem">Create Item</span>
+                        <span wire:loading wire:target="saveInventoryItem" class="loading loading-spinner loading-sm"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-backdrop app-modal-backdrop" wire:click="closeCreateModal"></div>
         </div>
     @endif
 </div>

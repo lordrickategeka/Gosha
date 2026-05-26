@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\NumberGeneratorHelper;
 use App\Traits\BelongsToVendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class InventoryCategory extends Model
 {
     use HasFactory, BelongsToVendor;
+
+    protected static function booted(): void
+    {
+        static::saving(function (InventoryCategory $category) {
+            if ($category->code || ! $category->vendor_id || ! $category->name || ! $category->type) {
+                return;
+            }
+
+            $category->code = NumberGeneratorHelper::generateInventoryCategoryCode(
+                $category->name,
+                $category->type,
+                $category->vendor_id,
+                $category->id,
+            );
+        });
+    }
 
     protected $fillable = [
        'vendor_id', 'parent_id', 'name', 'type',
@@ -37,6 +54,11 @@ class InventoryCategory extends Model
     public function children(): HasMany
     {
         return $this->hasMany(InventoryCategory::class, 'parent_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(InventoryItem::class, 'category_id');
     }
 
 

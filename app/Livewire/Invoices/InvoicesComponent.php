@@ -33,7 +33,7 @@ class InvoicesComponent extends Component
         $stats = [
             'total' => Invoice::sum('total'),
             'paid' => Invoice::where('status', 'paid')->sum('total'),
-            'pending' => Invoice::whereIn('status', ['pending', 'partial'])->sum('balance_due'),
+            'pending' => Invoice::whereIn('status', ['sent', 'partial'])->sum('balance_due'),
             'overdue' => Invoice::overdue()->sum('balance_due'),
         ];
 

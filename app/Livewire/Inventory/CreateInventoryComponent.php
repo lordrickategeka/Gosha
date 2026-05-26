@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Helpers\NumberGeneratorHelper;
+use App\Models\Branch;
 use App\Models\InventoryCategory;
 use App\Models\InventoryItem;
 use App\Models\Supplier;
@@ -52,7 +54,6 @@ class CreateInventoryComponent extends Component
         return [
             'name' => 'required|string|max:255',
             'item_type' => 'required|in:service_part,wash_supply',
-            'sku' => 'nullable|string|max:50|unique:inventory_items,sku',
             'barcode' => 'nullable|string|max:100',
             'category_id' => 'required|exists:inventory_categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
@@ -86,6 +87,7 @@ class CreateInventoryComponent extends Component
     {
         // Reset category when item type changes
         $this->category_id = '';
+        $this->sku = '';
 
         // Set default unit_of_measure based on type
         if ($this->item_type === 'wash_supply') {
@@ -94,6 +96,11 @@ class CreateInventoryComponent extends Component
         } else {
             $this->unit_of_measure = 'pcs';
         }
+    }
+
+    public function updatedCategoryId(): void
+    {
+        $this->syncSkuPreview();
     }
 
     public function getCategoriesProperty()
@@ -113,9 +120,52 @@ class CreateInventoryComponent extends Component
             ->get();
     }
 
+    protected function syncSkuPreview(): void
+    {
+        if (! $this->category_id) {
+            $this->sku = '';
+            return;
+        }
+
+        $category = InventoryCategory::find($this->category_id);
+        if (! $category) {
+            $this->sku = '';
+            return;
+        }
+
+        $vendorId = auth()->user()->vendor_id ?: (int) Branch::where('id', (int) session('current_branch_id'))->value('vendor_id');
+        if (! $vendorId) {
+            $this->sku = '';
+            return;
+        }
+
+        $categoryCode = $category->code ?: NumberGeneratorHelper::generateInventoryCategoryCode(
+            $category->name,
+            $category->type,
+            $vendorId,
+            $category->id,
+        );
+
+        $this->sku = NumberGeneratorHelper::generateInventorySku($categoryCode, $vendorId);
+    }
+
     public function save()
     {
         $this->validate();
+
+        $branchId = (int) session('current_branch_id');
+        if (!$branchId) {
+            session()->flash('error', 'Please select a branch before creating inventory items.');
+            return;
+        }
+
+        $branchVendorId = Branch::where('id', $branchId)->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+
+        if (!$vendorId) {
+            session()->flash('error', 'Unable to determine vendor for the selected branch.');
+            return;
+        }
 
         $imagePath = null;
         if ($this->image) {
@@ -123,14 +173,14 @@ class CreateInventoryComponent extends Component
         }
 
         $item = InventoryItem::create([
-            'vendor_id' => auth()->user()->vendor_id,
-            'branch_id' => session('current_branch_id') ?: null,
+            'vendor_id' => $vendorId,
+            'branch_id' => $branchId,
             'category_id' => $this->category_id,
             'supplier_id' => $this->supplier_id ?: null,
             'item_type' => $this->item_type,
             'name' => $this->name,
             'brand' => $this->brand ?: null,
-            'sku' => $this->sku ?: null,
+            'sku' => null,
             'barcode' => $this->barcode ?: null,
 
             // Service parts specific
@@ -164,7 +214,7 @@ class CreateInventoryComponent extends Component
         // Create initial stock movement if quantity > 0
         if ($this->quantity > 0) {
             $item->movements()->create([
-                'branch_id' => session('current_branch_id'),
+                'branch_id' => $branchId,
                 'movement_type' => 'purchase',
                 'quantity_change' => $this->quantity,
                 'quantity_after' => $this->quantity,

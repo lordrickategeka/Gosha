@@ -1,7 +1,10 @@
-<div class="card bg-base-100 shadow-sm">
+<div class="card bg-base-100 shadow-sm border border-base-300">
     <div class="card-body">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="card-title text-lg">Job Items</h2>
+            <div>
+                <h2 class="card-title text-lg">Job Items</h2>
+                <p class="text-xs text-base-content/60 mt-1">Capture labor and parts required before quotation and pricing.</p>
+            </div>
 
             {{-- Template Selector --}}
             @if($this->templates->isNotEmpty())
@@ -18,7 +21,7 @@
         @if(count($items) > 0)
             <div class="space-y-3 mb-4">
                 @foreach($items as $index => $item)
-                    <div class="border border-base-300 rounded-lg p-4 relative bg-base-50">
+                    <div class="border border-base-300 rounded-xl p-4 relative bg-base-100 shadow-sm">
 
                         {{-- Remove Button --}}
                         <button
@@ -192,7 +195,7 @@
         @enderror
 
         {{-- Add Item Buttons --}}
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             <button type="button" wire:click="addItem('labor')" class="btn btn-outline btn-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -217,12 +220,19 @@
     </div>
 </div>
 
-{{-- Navigation --}}
-<div class="flex justify-between mt-6">
-    <button type="button" wire:click="previousStep" class="btn btn-ghost">
-        ← Back
-    </button>
-    <button type="button" wire:click="nextStep" class="btn btn-primary">
-        Review & Submit →
-    </button>
+<div class="mt-5 border-t border-base-300 pt-4">
+    <div class="flex justify-between gap-2">
+        <button type="button" wire:click="previousStep" class="btn btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+        </button>
+        <button type="button" wire:click="nextStep" class="btn btn-primary">
+            Continue to Review
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
 </div>

@@ -18,7 +18,7 @@ class SalesReportService
         return [
             'total_invoiced' => (float) (clone $invoices)->sum('total'),
             'total_collected' => (float) (clone $payments)->sum('amount'),
-            'pending' => (float) (clone $invoices)->whereIn('status', ['pending', 'partial', 'overdue'])->sum('balance_due'),
+            'pending' => (float) (clone $invoices)->whereIn('status', ['sent', 'partial', 'overdue'])->sum('balance_due'),
             'invoice_count' => (int) (clone $invoices)->count(),
             'avg_invoice' => (float) ((clone $invoices)->avg('total') ?? 0),
         ];

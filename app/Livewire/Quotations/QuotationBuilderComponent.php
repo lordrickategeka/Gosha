@@ -6,6 +6,7 @@ use App\Models\InventoryCategory;
 use App\Models\InventoryItem;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
+use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\WorkOrder;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,7 @@ class QuotationBuilderComponent extends Component
 
     public function mount(WorkOrder $workOrder, ?Quotation $quotation = null): void
     {
-        $this->workOrder = $workOrder->load(['items', 'vehicle', 'customer', 'branch']);
+        $this->workOrder = $workOrder->load(['items', 'vehicle', 'customer', 'branch.vendor']);
         $this->quotation = $quotation?->load('items.inventoryItem', 'items.supplier');
 
         $this->loadSuppliers();
@@ -75,6 +76,11 @@ class QuotationBuilderComponent extends Component
                 ];
             }
         } else {
+            $vendorId = (int) ($this->workOrder->branch?->vendor_id ?: auth()->user()->vendor_id ?: 0);
+            $vendorDefaultVatRate = (float) ($this->workOrder->branch?->vendor?->getDefaultVatRate() ?? 0);
+            $settingsVatRate = (float) Setting::get('tax_rate', 0, $vendorId);
+            $this->vatRate = $vendorDefaultVatRate > 0 ? $vendorDefaultVatRate : $settingsVatRate;
+
             // Seed rows from work order items (description + type, zero prices)
             $inventoryItems = InventoryItem::whereIn(
                 'id',

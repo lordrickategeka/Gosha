@@ -111,6 +111,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'adjust_stock',
             'transfer_stock',
             'view_low_stock',
+            'view_cross_branch_inventory',
 
             // Suppliers
             'view_suppliers',
@@ -287,6 +288,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'adjust_stock',
             'transfer_stock',
             'view_low_stock',
+            'view_cross_branch_inventory',
             // Suppliers
             'view_suppliers',
             'create_suppliers',
@@ -383,6 +385,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_inventory',
             'adjust_stock',
             'view_low_stock',
+            'view_cross_branch_inventory',
             // Expenses
             'view_expenses',
             'create_expenses',
@@ -488,6 +491,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'adjust_stock',
             'transfer_stock',
             'view_low_stock',
+            'view_cross_branch_inventory',
             // Suppliers
             'view_suppliers',
             'create_suppliers',

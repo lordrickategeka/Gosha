@@ -34,7 +34,7 @@
 
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
-                <h2 class="card-title text-base">Quick Bill Capture</h2>
+                <h2 class="card-title text-base">Quick Vendor Bill Capture</h2>
                 <label class="form-control">
                     <span class="label-text text-xs">Supplier</span>
                     <select wire:model="newSupplierId" class="select select-bordered">
@@ -62,7 +62,46 @@
                 </label>
                 @error('newSupplierId') <span class="text-error text-xs">{{ $message }}</span> @enderror
                 @error('newBillTotal') <span class="text-error text-xs">{{ $message }}</span> @enderror
-                <button type="button" wire:click="createBill" class="btn btn-primary btn-sm mt-2">Create Bill</button>
+                <button type="button" wire:click="createBill" class="btn btn-primary btn-sm mt-2">Submit For Approval</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm mb-6">
+        <div class="card-body">
+            <h2 class="card-title text-base">Vendor Bills Pending Approval</h2>
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Bill</th>
+                            <th>Supplier</th>
+                            <th>Bill Date</th>
+                            <th class="text-right">Amount</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($this->pendingApprovalBills as $bill)
+                            <tr>
+                                <td>{{ $bill->bill_number }}</td>
+                                <td>{{ $bill->supplier?->name }}</td>
+                                <td>{{ $bill->bill_date?->format('d M Y') ?? 'N/A' }}</td>
+                                <td class="text-right">UGX {{ number_format($bill->balance_due) }}</td>
+                                <td>
+                                    <div class="flex gap-2 justify-end">
+                                        <button type="button" class="btn btn-xs btn-success" wire:click="approveBill({{ $bill->id }})">Approve</button>
+                                        <button type="button" class="btn btn-xs btn-ghost" wire:click="rejectBill({{ $bill->id }})">Reject</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-6 text-base-content/50">No vendor bills awaiting approval</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -128,7 +167,7 @@
 
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
-            <h2 class="card-title text-base">Open Bills and Payment Posting</h2>
+            <h2 class="card-title text-base">Approved Vendor Bills and Payment Posting</h2>
             <div class="overflow-x-auto mb-4">
                 <table class="table table-sm">
                     <thead>
@@ -178,6 +217,116 @@
                         <button type="button" wire:click="$set('paymentBillId', null)" class="btn btn-ghost btn-sm">Cancel</button>
                     </div>
                     @error('paymentAmount') <span class="text-error text-xs md:col-span-4">{{ $message }}</span> @enderror
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-base">Staff Payable Capture</h2>
+                <label class="form-control">
+                    <span class="label-text text-xs">Staff Member</span>
+                    <select wire:model="newStaffUserId" class="select select-bordered">
+                        <option value="">Select staff member</option>
+                        @foreach($this->staffUsers as $staff)
+                            <option value="{{ $staff->id }}">{{ $staff->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="form-control">
+                    <span class="label-text text-xs">Amount</span>
+                    <input type="number" min="0" step="0.01" wire:model="newStaffAmount" class="input input-bordered" placeholder="0.00" />
+                </label>
+                <label class="form-control">
+                    <span class="label-text text-xs">Description</span>
+                    <input type="text" wire:model="newStaffDescription" class="input input-bordered" placeholder="Payout note" />
+                </label>
+                @error('newStaffUserId') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                @error('newStaffAmount') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                <button type="button" wire:click="createStaffPayable" class="btn btn-primary btn-sm mt-2">Submit For Approval</button>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-base">Staff Payables Pending Approval</h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Staff</th>
+                                <th class="text-right">Amount</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($this->pendingStaffPayables as $payable)
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">{{ $payable->user?->name ?? 'Unknown' }}</div>
+                                        <div class="text-xs opacity-60">{{ $payable->notes ?: 'No note' }}</div>
+                                    </td>
+                                    <td class="text-right">UGX {{ number_format($payable->commission_amount) }}</td>
+                                    <td class="text-right">
+                                        <button type="button" class="btn btn-xs btn-success" wire:click="approveCommission({{ $payable->id }})">Approve</button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center py-6 text-base-content/50">No staff payables awaiting approval</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm mt-6">
+        <div class="card-body">
+            <h2 class="card-title text-base">Approved Staff Payables and Payment Posting</h2>
+            <div class="overflow-x-auto mb-4">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Staff</th>
+                            <th class="text-right">Approved Amount</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($this->approvedStaffPayables as $payable)
+                            <tr>
+                                <td>
+                                    <div class="font-medium">{{ $payable->user?->name ?? 'Unknown' }}</div>
+                                    <div class="text-xs opacity-60">{{ $payable->notes ?: 'No note' }}</div>
+                                </td>
+                                <td class="text-right">UGX {{ number_format($payable->commission_amount) }}</td>
+                                <td class="text-right">
+                                    <button type="button" class="btn btn-xs btn-outline" wire:click="startCommissionPayment({{ $payable->id }})">Post Payment</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center py-6 text-base-content/50">No approved staff payables</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($paymentCommissionId)
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border border-base-300 rounded-lg p-3">
+                    <input type="number" min="0" step="0.01" wire:model="staffPaymentAmount" class="input input-bordered input-sm" placeholder="Amount" />
+                    <input type="text" wire:model="staffPaymentReference" class="input input-bordered input-sm" placeholder="Reference" />
+                    <div class="flex gap-2">
+                        <button type="button" wire:click="recordCommissionPayment" class="btn btn-primary btn-sm">Confirm Payment</button>
+                        <button type="button" wire:click="$set('paymentCommissionId', null)" class="btn btn-ghost btn-sm">Cancel</button>
+                    </div>
+                    @error('staffPaymentAmount') <span class="text-error text-xs md:col-span-3">{{ $message }}</span> @enderror
                 </div>
             @endif
         </div>

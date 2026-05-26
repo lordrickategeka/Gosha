@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\NumberGeneratorHelper;
 use App\Traits\BelongsToVendor;
 use App\Traits\HasAuditLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class InventoryItem extends Model
 {
     use HasFactory, BelongsToVendor, HasAuditLog;
+
+    protected static function booted(): void
+    {
+        static::creating(function (InventoryItem $item) {
+            if ($item->sku || ! $item->category_id || ! $item->vendor_id) {
+                return;
+            }
+
+            $category = $item->relationLoaded('category')
+                ? $item->category
+                : InventoryCategory::find($item->category_id);
+
+            if (! $category) {
+                return;
+            }
+
+            $categoryCode = NumberGeneratorHelper::ensureInventoryCategoryCode($category);
+            $item->sku = NumberGeneratorHelper::generateInventorySku($categoryCode, $item->vendor_id);
+        });
+    }
 
     protected $fillable = [
         'vendor_id',

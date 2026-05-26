@@ -543,6 +543,23 @@
                             <span class="text-base-content/60">Created By</span>
                             <span>{{ $workOrder->createdBy?->name ?? 'System' }}</span>
                         </div>
+
+                        @if(!empty($workOrder->vehicle_items_left))
+                            <div class="pt-2">
+                                <span class="text-base-content/60 block mb-1">Items Left In Vehicle</span>
+                                <div class="space-y-1">
+                                    @foreach($workOrder->vehicle_items_left as $leftItem)
+                                        <div class="text-xs border border-base-300 rounded px-2 py-1">
+                                            <span class="font-medium">{{ $leftItem['item_name'] ?? 'Item' }}</span>
+                                            <span class="text-base-content/60">&middot; Qty {{ $leftItem['quantity'] ?? 1 }}</span>
+                                            @if(!empty($leftItem['reference']))
+                                                <span class="text-base-content/60">&middot; {{ $leftItem['reference'] }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

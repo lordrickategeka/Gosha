@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\WorkOrder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -34,6 +35,11 @@ class CreateWorkOrder extends Component
     public $customer_id = null;
     public $vehicle_id = null;
     public $customer_notes = '';
+    public array $vehicle_left_items = [];
+    public string $left_item_name = '';
+    public string $left_item_description = '';
+    public $left_item_quantity = 1;
+    public string $left_item_reference = '';
 
     // Customer search/list
     public $customerSearch = '';
@@ -73,6 +79,10 @@ class CreateWorkOrder extends Component
     public $items = [];
     public $selectedTemplate = null;
     public $itemSuggestions = []; // [index => ['my_branch' => [...], 'other_branches' => [...]]]
+    public bool $showItemModal = false;
+    public string $newItemType = 'labor';
+    public string $newItemDescription = '';
+    public $newItemQuantity = 1;
 
     // ═══════════════════════════════════════════════════════════════════════
     // LIFECYCLE
@@ -88,6 +98,10 @@ class CreateWorkOrder extends Component
 
         // Load initial customers
         $this->loadCustomers();
+
+        if (!$this->estimated_completion) {
+            $this->estimated_completion = now()->format('Y-m-d\\TH:i');
+        }
 
         Log::info('CreateWorkOrder component mounted', [
             'branch_id' => session('current_branch_id'),
@@ -157,11 +171,57 @@ class CreateWorkOrder extends Component
             'service_bay_id'         => 'nullable|integer|exists:service_bays,id',
             'assigned_technician_id' => 'nullable|integer|exists:users,id',
             'mileage_in'             => 'nullable|integer|min:0',
-            'estimated_completion'   => 'nullable|date',
+            'estimated_completion'   => 'nullable|date|after_or_equal:' . now()->subMinute()->format('Y-m-d H:i:s'),
+            'vehicle_left_items'                 => 'nullable|array',
+            'vehicle_left_items.*.item_name'     => 'required|string|max:255',
+            'vehicle_left_items.*.quantity'      => 'required|numeric|min:0.01',
+            'vehicle_left_items.*.description'   => 'nullable|string|max:1000',
+            'vehicle_left_items.*.reference'     => 'nullable|string|max:100',
         ], [
-            'type.required'     => 'Please select a job type.',
+            'type.required'     => 'Please select a service type.',
             'priority.required' => 'Please select a priority level.',
+            'estimated_completion.after_or_equal' => 'Estimated completion must be now or a future date/time.',
         ]);
+    }
+
+    public function addVehicleLeftItem(): void
+    {
+        $itemName = trim($this->left_item_name);
+        $reference = trim($this->left_item_reference);
+
+        if ($itemName === '' || (float) $this->left_item_quantity <= 0) {
+            return;
+        }
+
+        foreach ($this->vehicle_left_items as $existing) {
+            if (
+                strtolower((string) ($existing['item_name'] ?? '')) === strtolower($itemName)
+                && strtolower((string) ($existing['reference'] ?? '')) === strtolower($reference)
+            ) {
+                return;
+            }
+        }
+
+        $this->vehicle_left_items[] = [
+            'item_name' => $itemName,
+            'description' => trim($this->left_item_description),
+            'quantity' => (float) $this->left_item_quantity,
+            'reference' => $reference,
+        ];
+
+        $this->left_item_name = '';
+        $this->left_item_description = '';
+        $this->left_item_quantity = 1;
+        $this->left_item_reference = '';
+    }
+
+    public function removeVehicleLeftItem(int $index): void
+    {
+        if (!isset($this->vehicle_left_items[$index])) {
+            return;
+        }
+
+        array_splice($this->vehicle_left_items, $index, 1);
     }
 
     protected function validateStep3(): void
@@ -404,14 +464,48 @@ class CreateWorkOrder extends Component
 
     public function addItem($type = 'labor')
     {
+        $this->openItemModal($type);
+    }
+
+    public function openItemModal(string $type = 'labor'): void
+    {
+        $this->showItemModal = true;
+        $this->resetItemModalFields();
+        $this->newItemType = in_array($type, ['labor', 'part'], true) ? $type : 'labor';
+    }
+
+    public function closeItemModal(): void
+    {
+        $this->showItemModal = false;
+        $this->resetItemModalFields();
+    }
+
+    public function saveNewItem(): void
+    {
+        $validated = $this->validate([
+            'newItemType' => 'required|in:labor,part',
+            'newItemDescription' => 'required|string|max:255',
+            'newItemQuantity' => 'required|numeric|min:0.01',
+        ]);
+
         $this->items[] = [
-            'item_type'         => $type,
-            'description'       => '',
+            'item_type'         => $validated['newItemType'],
+            'description'       => trim($validated['newItemDescription']),
             'inventory_item_id' => null,
             'source_branch_id'  => null,
-            'quantity'          => 1,
+            'quantity'          => (float) $validated['newItemQuantity'],
             'unit_price'        => 0,
         ];
+
+        $this->closeItemModal();
+    }
+
+    protected function resetItemModalFields(): void
+    {
+        $this->newItemType = 'labor';
+        $this->newItemDescription = '';
+        $this->newItemQuantity = 1;
+        $this->resetValidation(['newItemType', 'newItemDescription', 'newItemQuantity']);
     }
 
     public function removeItem($index)
@@ -461,12 +555,10 @@ class CreateWorkOrder extends Component
 
     public function getInventoryPartsProperty()
     {
-        $branchId = session('current_branch_id');
+        $branchId = (int) session('current_branch_id');
+
         return InventoryItem::where('is_active', true)
-            ->where(function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId)
-                  ->orWhereNull('branch_id');
-            })
+            ->where('branch_id', $branchId)
             ->whereHas('category', fn($q) => $q->where('type', 'parts'))
             ->where('quantity', '>', 0)
             ->orderBy('name')
@@ -492,14 +584,15 @@ class CreateWorkOrder extends Component
         }
 
         $branchId = (int) session('current_branch_id');
-        $vendorId = auth()->user()->vendor_id;
+        $branchVendorId = Branch::where('id', $branchId)->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+        $canViewCrossBranchInventory = auth()->check()
+            ? Gate::forUser(auth()->user())->allows('view_cross_branch_inventory')
+            : false;
 
-        // Current branch inventory — includes items assigned to this branch AND vendor-wide items (branch_id null)
+        // Current branch inventory only
         $myBranch = InventoryItem::where('is_active', true)
-            ->where(function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId)
-                  ->orWhereNull('branch_id');
-            })
+            ->where('branch_id', $branchId)
             ->where(function ($q) use ($term) {
                 $q->where('name', 'like', "%{$term}%")
                   ->orWhere('sku', 'like', "%{$term}%");
@@ -518,30 +611,34 @@ class CreateWorkOrder extends Component
             ])
             ->toArray();
 
-        // Other branches of the same vendor with stock
-        $otherBranches = InventoryItem::where('vendor_id', $vendorId)
-            ->whereNotNull('branch_id')
-            ->where('branch_id', '!=', $branchId)
-            ->where('is_active', true)
-            ->where('quantity', '>', 0)
-            ->where(function ($q) use ($term) {
-                $q->where('name', 'like', "%{$term}%")
-                  ->orWhere('sku', 'like', "%{$term}%");
-            })
-            ->with('branch:id,name')
-            ->orderByDesc('quantity')
-            ->limit(5)
-            ->get()
-            ->map(fn($item) => [
-                'id'          => $item->id,
-                'name'        => $item->name,
-                'sku'         => $item->sku ?? '',
-                'quantity'    => (float) $item->quantity,
-                'unit'        => $item->unit,
-                'branch_id'   => $item->branch_id,
-                'branch_name' => $item->branch?->name ?? 'Other Branch',
-            ])
-            ->toArray();
+        $otherBranches = [];
+
+        // Other branches are visible only for users with explicit permission
+        if ($canViewCrossBranchInventory && $vendorId) {
+            $otherBranches = InventoryItem::where('vendor_id', $vendorId)
+                ->whereNotNull('branch_id')
+                ->where('branch_id', '!=', $branchId)
+                ->where('is_active', true)
+                ->where('quantity', '>', 0)
+                ->where(function ($q) use ($term) {
+                    $q->where('name', 'like', "%{$term}%")
+                      ->orWhere('sku', 'like', "%{$term}%");
+                })
+                ->with('branch:id,name')
+                ->orderByDesc('quantity')
+                ->limit(5)
+                ->get()
+                ->map(fn($item) => [
+                    'id'          => $item->id,
+                    'name'        => $item->name,
+                    'sku'         => $item->sku ?? '',
+                    'quantity'    => (float) $item->quantity,
+                    'unit'        => $item->unit,
+                    'branch_id'   => $item->branch_id,
+                    'branch_name' => $item->branch?->name ?? 'Other Branch',
+                ])
+                ->toArray();
+        }
 
         $this->itemSuggestions[$index] = [
             'my_branch'      => $myBranch,
@@ -552,7 +649,9 @@ class CreateWorkOrder extends Component
     public function selectInventoryItem(int $index, int $inventoryId): void
     {
         $item = InventoryItem::find($inventoryId);
-        if (!$item || !isset($this->items[$index])) {
+        $branchId = (int) session('current_branch_id');
+
+        if (!$item || !isset($this->items[$index]) || (int) $item->branch_id !== $branchId) {
             return;
         }
 
@@ -564,8 +663,27 @@ class CreateWorkOrder extends Component
 
     public function requestItemFromBranch(int $index, int $inventoryId, int $fromBranchId): void
     {
+        $canViewCrossBranchInventory = auth()->check()
+            ? Gate::forUser(auth()->user())->allows('view_cross_branch_inventory')
+            : false;
+
+        if (!$canViewCrossBranchInventory) {
+            return;
+        }
+
+        $branchId = (int) session('current_branch_id');
+        $branchVendorId = Branch::where('id', $branchId)->value('vendor_id');
+        $vendorId = $branchVendorId ?: auth()->user()->vendor_id;
+
         $item = InventoryItem::with('branch:id,name')->find($inventoryId);
-        if (!$item || !isset($this->items[$index])) {
+        if (
+            !$item
+            || !isset($this->items[$index])
+            || (int) $item->branch_id !== $fromBranchId
+            || (int) $item->branch_id === $branchId
+            || !$vendorId
+            || (int) $item->vendor_id !== (int) $vendorId
+        ) {
             return;
         }
 
@@ -645,6 +763,7 @@ class CreateWorkOrder extends Component
                 'is_combo' => $this->is_combo,
                 'mileage_in' => $this->mileage_in,
                 'customer_notes' => $this->customer_notes,
+                'vehicle_items_left' => !empty($this->vehicle_left_items) ? $this->vehicle_left_items : null,
                 'estimated_completion' => $this->estimated_completion,
                 'checked_in_at' => now(),
             ]);

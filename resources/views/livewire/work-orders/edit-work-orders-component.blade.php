@@ -40,17 +40,17 @@
                 </div>
             </div>
 
-            {{-- Job Details --}}
+            {{-- Service Details --}}
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body">
-                    <h2 class="card-title text-lg mb-4">Job Details</h2>
+                    <h2 class="card-title text-lg mb-4">Service Details</h2>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                        {{-- Job Type --}}
+                        {{-- Service Type --}}
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text font-medium">Job Type *</span>
+                                <span class="label-text font-medium">Service Type *</span>
                             </label>
                             <select wire:model="type" class="select select-bordered w-full">
                                 <option value="service">Service</option>
@@ -133,7 +133,7 @@
                         <div class="form-control sm:col-span-2">
                             <label class="label">
                                 <span class="label-text font-medium">Estimated Completion</span>
-                                <span class="label-text-alt text-base-content/50">Optional</span>
+                                <span class="label-text-alt text-base-content/50">Now or future</span>
                             </label>
                             <input type="datetime-local" wire:model="estimated_completion" class="input input-bordered w-full" />
                             @error('estimated_completion') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
@@ -151,6 +151,72 @@
                         </div>
 
                     </div>
+                </div>
+            </div>
+
+            {{-- Items Left In Vehicle --}}
+            <div class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-lg mb-4">Items Left In Vehicle</h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="form-control sm:col-span-2">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-medium">Item</span>
+                            </label>
+                            <input type="text" wire:model="left_item_name" class="input input-bordered input-sm" placeholder="e.g. Wheel spanner" />
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-medium">Quantity</span>
+                            </label>
+                            <input type="number" wire:model="left_item_quantity" min="0.01" step="0.01" class="input input-bordered input-sm" />
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-medium">Reference</span>
+                            </label>
+                            <input type="text" wire:model="left_item_reference" class="input input-bordered input-sm" placeholder="Optional" />
+                        </div>
+                        <div class="form-control sm:col-span-3">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-medium">Description</span>
+                            </label>
+                            <input type="text" wire:model="left_item_description" class="input input-bordered input-sm" placeholder="Optional notes" />
+                        </div>
+                        <div class="form-control sm:col-span-1 justify-end">
+                            <button type="button" wire:click="addVehicleLeftItem" class="btn btn-outline btn-sm mt-6">Add Item</button>
+                        </div>
+                    </div>
+
+                    @if(count($vehicle_left_items) > 0)
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Reference</th>
+                                        <th>Description</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($vehicle_left_items as $index => $leftItem)
+                                        <tr>
+                                            <td>{{ $leftItem['item_name'] }}</td>
+                                            <td>{{ $leftItem['quantity'] }}</td>
+                                            <td>{{ $leftItem['reference'] ?: '—' }}</td>
+                                            <td>{{ $leftItem['description'] ?: '—' }}</td>
+                                            <td class="text-right">
+                                                <button type="button" wire:click="removeVehicleLeftItem({{ $index }})" class="btn btn-ghost btn-xs text-error">Remove</button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
             </div>
 

@@ -41,7 +41,7 @@
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoices..." class="input input-bordered input-sm" />
                 <select wire:model.live="status" class="select select-bordered select-sm">
                     <option value="">All Status</option>
-                    <option value="pending">Pending</option>
+                    <option value="sent">Pending</option>
                     <option value="partial">Partially Paid</option>
                     <option value="paid">Paid</option>
                     <option value="cancelled">Cancelled</option>

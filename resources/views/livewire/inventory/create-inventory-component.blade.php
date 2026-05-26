@@ -22,8 +22,8 @@
                     </div>
                     <div class="form-control">
                         <label class="label"><span class="label-text font-medium">SKU</span></label>
-                        <input type="text" wire:model="sku" class="input input-bordered" />
-                        @error('sku') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                        <input type="text" value="{{ $sku ?: 'Select a category to generate SKU' }}" class="input input-bordered" readonly />
+                        <span class="label-text-alt text-base-content/60">Generated automatically from the selected category.</span>
                     </div>
                     <div class="form-control">
                         <label class="label"><span class="label-text font-medium">Category *</span></label>

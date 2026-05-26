@@ -9,11 +9,12 @@ class ServiceType extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vendor_id', 'name', 'description', 'is_active'
+        'name', 'price', 'estimated_duration'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'price' => 'decimal:2',
+        'estimated_duration' => 'integer',
     ];
 
     public function jobCards()

@@ -28,6 +28,11 @@ class EditWorkOrdersComponent extends Component
     // Notes
     public string $customer_notes = '';
     public string $technician_notes = '';
+    public array $vehicle_left_items = [];
+    public string $left_item_name = '';
+    public string $left_item_description = '';
+    public $left_item_quantity = 1;
+    public string $left_item_reference = '';
 
     // Items — each item: [id, item_type, description, inventory_item_id, quantity, unit_price, discount]
     public array $items = [];
@@ -48,9 +53,13 @@ class EditWorkOrdersComponent extends Component
         $this->mileage_in            = $workOrder->mileage_in;
         $this->mileage_out           = $workOrder->mileage_out;
         $this->estimated_completion  = $workOrder->estimated_completion?->format('Y-m-d\TH:i');
+        if (!$this->estimated_completion) {
+            $this->estimated_completion = now()->format('Y-m-d\TH:i');
+        }
         $this->is_combo              = (bool) $workOrder->is_combo;
         $this->customer_notes        = $workOrder->customer_notes ?? '';
         $this->technician_notes      = $workOrder->technician_notes ?? '';
+        $this->vehicle_left_items    = $workOrder->vehicle_items_left ?? [];
 
         $this->items = $workOrder->items->map(fn($item) => [
             'id'                => $item->id,
@@ -83,6 +92,46 @@ class EditWorkOrdersComponent extends Component
         }
 
         array_splice($this->items, $index, 1);
+    }
+
+    public function addVehicleLeftItem(): void
+    {
+        $itemName = trim($this->left_item_name);
+        $reference = trim($this->left_item_reference);
+
+        if ($itemName === '' || (float) $this->left_item_quantity <= 0) {
+            return;
+        }
+
+        foreach ($this->vehicle_left_items as $existing) {
+            if (
+                strtolower((string) ($existing['item_name'] ?? '')) === strtolower($itemName)
+                && strtolower((string) ($existing['reference'] ?? '')) === strtolower($reference)
+            ) {
+                return;
+            }
+        }
+
+        $this->vehicle_left_items[] = [
+            'item_name' => $itemName,
+            'description' => trim($this->left_item_description),
+            'quantity' => (float) $this->left_item_quantity,
+            'reference' => $reference,
+        ];
+
+        $this->left_item_name = '';
+        $this->left_item_description = '';
+        $this->left_item_quantity = 1;
+        $this->left_item_reference = '';
+    }
+
+    public function removeVehicleLeftItem(int $index): void
+    {
+        if (!isset($this->vehicle_left_items[$index])) {
+            return;
+        }
+
+        array_splice($this->vehicle_left_items, $index, 1);
     }
 
     // ─── Computed properties ─────────────────────────────────────────────────
@@ -119,9 +168,14 @@ class EditWorkOrdersComponent extends Component
             'assigned_technician_id'  => 'nullable|integer|exists:users,id',
             'mileage_in'              => 'nullable|integer|min:0',
             'mileage_out'             => 'nullable|integer|min:0',
-            'estimated_completion'    => 'nullable|date',
+            'estimated_completion'    => 'nullable|date|after_or_equal:' . now()->subMinute()->format('Y-m-d H:i:s'),
             'customer_notes'          => 'nullable|string|max:1000',
             'technician_notes'        => 'nullable|string|max:1000',
+            'vehicle_left_items'                 => 'nullable|array',
+            'vehicle_left_items.*.item_name'     => 'required|string|max:255',
+            'vehicle_left_items.*.quantity'      => 'required|numeric|min:0.01',
+            'vehicle_left_items.*.description'   => 'nullable|string|max:1000',
+            'vehicle_left_items.*.reference'     => 'nullable|string|max:100',
             'items'               => 'required|array|min:1',
             'items.*.item_type'   => 'required|in:labor,part',
             'items.*.description' => 'required|string|max:255',
@@ -129,6 +183,7 @@ class EditWorkOrdersComponent extends Component
         ], [
             'items.required' => 'Please add at least one item.',
             'items.min'      => 'Please add at least one item.',
+            'estimated_completion.after_or_equal' => 'Estimated completion must be now or a future date/time.',
         ]);
 
         try {
@@ -148,6 +203,7 @@ class EditWorkOrdersComponent extends Component
                 'is_combo'               => $this->is_combo,
                 'customer_notes'         => $this->customer_notes,
                 'technician_notes'       => $this->technician_notes,
+                'vehicle_items_left'     => !empty($this->vehicle_left_items) ? $this->vehicle_left_items : null,
             ]);
 
             // Update bay status if bay changed

@@ -1,4 +1,8 @@
 <div class="space-y-4">
+    <div class="rounded-xl border border-base-300 bg-base-100 px-4 py-3">
+        <p class="text-sm font-medium">Final Review</p>
+        <p class="text-xs text-base-content/60 mt-1">Confirm all captured details before creating the work order.</p>
+    </div>
     {{-- Customer & Vehicle Summary --}}
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
@@ -40,14 +44,14 @@
         </div>
     </div>
 
-    {{-- Job Details Summary --}}
+    {{-- Service Details Summary --}}
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
-            <h2 class="card-title text-lg mb-4">Job Details</h2>
+            <h2 class="card-title text-lg mb-4">Service Details</h2>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div>
-                    <p class="text-xs text-base-content/50 uppercase mb-1">Type</p>
+                    <p class="text-xs text-base-content/50 uppercase mb-1">Service Type</p>
                     <p class="font-medium capitalize">{{ $type }}</p>
                 </div>
 
@@ -162,8 +166,39 @@
         </div>
     </div>
 
+    {{-- Items Left In Vehicle Summary --}}
+    @if(count($vehicle_left_items) > 0)
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-lg mb-4">Items Left In Vehicle ({{ count($vehicle_left_items) }})</h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Reference</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($vehicle_left_items as $leftItem)
+                                <tr>
+                                    <td>{{ $leftItem['item_name'] }}</td>
+                                    <td>{{ $leftItem['quantity'] }}</td>
+                                    <td>{{ $leftItem['reference'] ?: '—' }}</td>
+                                    <td>{{ $leftItem['description'] ?: '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Submit Actions --}}
-    <div class="card bg-base-100 shadow-sm">
+    <div class="card bg-base-100 shadow-sm border border-base-300">
         <div class="card-body">
             <div class="flex items-center justify-between">
                 <div>
@@ -176,7 +211,10 @@
                         wire:click="previousStep"
                         class="btn btn-ghost"
                     >
-                        ← Back
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back
                     </button>
                     <button
                         type="button"

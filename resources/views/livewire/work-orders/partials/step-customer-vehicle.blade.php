@@ -1,6 +1,9 @@
-<div class="card bg-base-100 shadow-sm">
+<div class="card bg-base-100 shadow-sm border border-base-300">
     <div class="card-body">
-        <h2 class="card-title text-lg mb-4">Customer &amp; Vehicle</h2>
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <h2 class="card-title text-lg">Customer &amp; Vehicle</h2>
+            <p class="text-xs text-base-content/60">Choose or create a customer, then link the vehicle for this job.</p>
+        </div>
 
         <div class="space-y-6">
 
@@ -184,9 +187,13 @@
     </div>
 </div>
 
-{{-- Navigation --}}
-<div class="flex justify-end mt-6">
-    <button type="button" wire:click="nextStep" class="btn btn-primary">
-        Next: Job Details →
-    </button>
+<div class="mt-5 border-t border-base-300 pt-4">
+    <div class="flex justify-end">
+        <button type="button" wire:click="nextStep" class="btn btn-primary">
+            Continue to Service Details
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
 </div>
