@@ -97,6 +97,13 @@ class ShowQuotationComponent extends Component
             'rejection_reason' => $this->rejectionReason,
         ]);
         $this->quotation->refresh();
+
+        // Release any reservations held for the linked work order
+        if ($this->quotation->workOrder) {
+            $inventoryService = new \App\Services\InventoryService();
+            $inventoryService->releaseReservationsForWorkOrder($this->quotation->workOrder);
+        }
+
         $this->showRejectModal = false;
 
         session()->flash('success', 'Quotation rejected.');

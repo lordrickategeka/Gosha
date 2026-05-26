@@ -145,10 +145,17 @@ class InventoryMovement extends Model
             'purchase' => 'Purchase',
             'sale' => 'Sale',
             'adjustment' => 'Adjustment',
-            'transfer' => 'Transfer',
+            'transfer_in' => 'Transfer In',
+            'transfer_out' => 'Transfer Out',
             'consumption' => 'Consumption',
-            'return' => 'Return',
-            default => ucfirst($this->movement_type),
+            'work_order_use' => 'Work Order Use',
+            'wash_order_use' => 'Wash Order Use',
+            'wastage' => 'Wastage',
+            'return_from_customer' => 'Return From Customer',
+            'return_to_supplier' => 'Return To Supplier',
+            'reservation' => 'Reservation',
+            'reservation_release' => 'Reservation Release',
+            default => ucfirst(str_replace('_', ' ', $this->movement_type)),
         };
     }
 
@@ -156,10 +163,10 @@ class InventoryMovement extends Model
     {
         return match ($this->movement_type) {
             'purchase' => 'success',
-            'sale', 'consumption' => 'warning',
-            'adjustment' => 'info',
-            'transfer' => 'secondary',
-            'return' => 'error',
+            'sale', 'consumption', 'work_order_use', 'wash_order_use' => 'warning',
+            'adjustment', 'reservation' => 'info',
+            'transfer_in', 'transfer_out', 'reservation_release' => 'secondary',
+            'return_from_customer', 'return_to_supplier', 'wastage' => 'error',
             default => 'ghost',
         };
     }
@@ -172,12 +179,20 @@ class InventoryMovement extends Model
             'transfer_in',
             'return_from_customer',
             'adjustment_in'
-        ]);
+        ], true);
     }
 
     public function isStockOut(): bool
     {
-        return !$this->isStockIn();
+        return in_array($this->movement_type, [
+            'work_order_use',
+            'wash_order_use',
+            'sale',
+            'transfer_out',
+            'wastage',
+            'adjustment_out',
+            'return_to_supplier'
+        ], true);
     }
 
     //new scopes

@@ -464,7 +464,14 @@ class CreateWorkOrder extends Component
 
     public function addItem($type = 'labor')
     {
-        $this->openItemModal($type);
+        $this->items[] = [
+            'item_type'         => in_array($type, ['labor', 'part'], true) ? $type : 'labor',
+            'description'       => '',
+            'inventory_item_id' => null,
+            'source_branch_id'  => null,
+            'quantity'          => 1,
+            'unit_price'        => 0,
+        ];
     }
 
     public function openItemModal(string $type = 'labor'): void
@@ -774,8 +781,9 @@ class CreateWorkOrder extends Component
             ]);
 
             // Create work order items
+            $inventoryService = new \App\Services\InventoryService();
             foreach ($this->items as $item) {
-                $workOrder->items()->create([
+                $woItem = $workOrder->items()->create([
                     'item_type'          => $item['item_type'],
                     'description'        => $item['description'],
                     'inventory_item_id'  => $item['inventory_item_id'] ?? null,
@@ -785,7 +793,7 @@ class CreateWorkOrder extends Component
                     'total'              => $this->isJobcarder() ? 0 : (($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)),
                 ]);
 
-                // Log a pending transfer movement when item is requested from another branch
+                // If item is requested from another branch, log a pending transfer movement
                 if (!empty($item['inventory_item_id']) && !empty($item['source_branch_id'])) {
                     InventoryMovement::create([
                         'inventory_item_id' => $item['inventory_item_id'],
@@ -797,6 +805,26 @@ class CreateWorkOrder extends Component
                         'notes'             => "Transfer request from branch #{$item['source_branch_id']} – pending fulfillment",
                         'performed_by'      => auth()->id(),
                     ]);
+                }
+
+                // Reserve stock for linked inventory items (local branch only)
+                if (!empty($woItem->inventory_item_id) && empty($item['source_branch_id'])) {
+                    $inventoryItem = \App\Models\InventoryItem::find($woItem->inventory_item_id);
+                    if ($inventoryItem) {
+                        try {
+                            $inventoryService->reserveStock(
+                                $inventoryItem,
+                                (float) $woItem->quantity,
+                                \App\Models\WorkOrder::class,
+                                $workOrder->id,
+                                $branchId,
+                                "Reserved for Work Order #{$workOrder->order_number}"
+                            );
+                        } catch (\Throwable $e) {
+                            // If reservation fails, log and continue — transaction will roll back on exception
+                            throw $e;
+                        }
+                    }
                 }
             }
 

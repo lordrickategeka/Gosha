@@ -230,6 +230,98 @@ class InventoryService
     }
 
     /**
+     * Reserve stock for a movable (work order / wash order) without decrementing actual quantity.
+     */
+    public function reserveStock(
+        InventoryItem $inventoryItem,
+        float $quantity,
+        string $movableType,
+        int $movableId,
+        int $branchId,
+        ?string $notes = null
+    ): InventoryMovement {
+        // Ensure available stock
+        $available = $inventoryItem->quantity - ($inventoryItem->reserved_quantity ?? 0);
+        if ($quantity > $available) {
+            // Do not reserve beyond available; throw or return null behavior — we'll log and throw
+            throw new \InvalidArgumentException('Insufficient available stock to reserve.');
+        }
+
+        // Create reservation movement (does not change actual quantity)
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $inventoryItem->id,
+            'branch_id' => $branchId,
+            'movement_type' => 'reservation',
+            'quantity_change' => 0,
+            'quantity_after' => $inventoryItem->quantity,
+            'movable_type' => $movableType,
+            'movable_id' => $movableId,
+            'performed_by' => auth()->id(),
+            'notes' => ($notes ?? '') . " Reserved {$quantity}",
+            'movement_date' => now(),
+        ]);
+
+        // Increment reserved quantity
+        $inventoryItem->reserve($quantity);
+
+        return $movement;
+    }
+
+    /**
+     * Release a reservation previously held on an inventory item
+     */
+    public function releaseReservation(
+        InventoryItem $inventoryItem,
+        float $quantity,
+        string $movableType = null,
+        int $movableId = null,
+        int $branchId = null,
+        ?string $notes = null
+    ): InventoryMovement {
+        // Decrement reserved quantity (not below zero)
+        $inventoryItem->releaseReservation($quantity);
+
+        $movement = InventoryMovement::create([
+            'inventory_item_id' => $inventoryItem->id,
+            'branch_id' => $branchId ?? $inventoryItem->branch_id,
+            'movement_type' => 'reservation_release',
+            'quantity_change' => 0,
+            'quantity_after' => $inventoryItem->quantity,
+            'movable_type' => $movableType,
+            'movable_id' => $movableId,
+            'performed_by' => auth()->id(),
+            'notes' => ($notes ?? '') . " Released {$quantity}",
+            'movement_date' => now(),
+        ]);
+
+        return $movement;
+    }
+
+    /**
+     * Release all reservations for a given work order (used when quotation rejected/cancelled)
+     */
+    public function releaseReservationsForWorkOrder(\App\Models\WorkOrder $workOrder): void
+    {
+        foreach ($workOrder->items()->whereNotNull('inventory_item_id')->get() as $item) {
+            $inventoryItem = $item->inventoryItem;
+            if (! $inventoryItem) {
+                continue;
+            }
+
+            $quantity = $item->quantity ?? 0;
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            try {
+                $this->releaseReservation($inventoryItem, $quantity, \App\Models\WorkOrder::class, $workOrder->id, $workOrder->branch_id, "Release reservation due to quotation rejection/cancel");
+            } catch (\Throwable $e) {
+                logger()->error('Failed to release reservation', ['error' => $e->getMessage()]);
+            }
+        }
+    }
+
+    /**
      * Transfer stock between branches
      */
     public function transferStock(

@@ -51,6 +51,7 @@ class InventoryItem extends Model
         'unit',
         'unit_of_measure',
         'quantity',
+        'reserved_quantity',
         'reorder_level',
         'cost_price',
         'selling_price',
@@ -65,6 +66,7 @@ class InventoryItem extends Model
 
     protected $casts = [
         'quantity' => 'decimal:2',
+        'reserved_quantity' => 'decimal:2',
         'reorder_level' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
@@ -250,6 +252,11 @@ class InventoryItem extends Model
         return (($this->selling_price - $this->cost_price) / $this->cost_price) * 100;
     }
 
+    public function getAvailableAttribute(): float
+    {
+        return (float) ($this->quantity - ($this->reserved_quantity ?? 0));
+    }
+
     // Stock operations
     public function addStock(float $quantity, ?int $supplierId = null, ?float $unitCost = null, ?string $notes = null): InventoryMovement
     {
@@ -371,5 +378,17 @@ class InventoryItem extends Model
         $this->decrement('quantity', $quantity);
 
         return $movement;
+    }
+
+    // Reservation helpers
+    public function reserve(float $quantity): void
+    {
+        $this->increment('reserved_quantity', $quantity);
+    }
+
+    public function releaseReservation(float $quantity): void
+    {
+        $new = max(0, ($this->reserved_quantity ?? 0) - $quantity);
+        $this->update(['reserved_quantity' => $new]);
     }
 }

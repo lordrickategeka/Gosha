@@ -47,7 +47,7 @@
                             </div>
 
                             {{-- Description with live inventory search --}}
-                            <div class="form-control col-span-12 sm:col-span-7"
+                            <div class="form-control col-span-6 sm:col-span-7"
                                  x-data="{ open: false }"
                                  x-on:focusin="open = true"
                                  x-on:focusout="setTimeout(() => { open = false }, 200)">
