@@ -25,54 +25,54 @@ export default {
         themes: [
             {
                 garage: {
-                    "primary": "#2C72B3",
+                    "primary": "#8A5A44",
                     "primary-content": "#ffffff",
-                    "secondary": "#5BA3E0",
+                    "secondary": "#B08A74",
                     "secondary-content": "#ffffff",
-                    "accent": "#4A8FCC",
+                    "accent": "#8A5A44",
                     "accent-content": "#ffffff",
-                    "neutral": "#2B3440",
+                    "neutral": "#1A1814",
                     "neutral-content": "#ffffff",
                     "base-100": "#ffffff",
-                    "base-200": "#f3f4f6",
-                    "base-300": "#e5e7eb",
-                    "base-content": "#1f2937",
-                    "info": "#4A8FCC",
+                    "base-200": "#F7F4ED",
+                    "base-300": "#E0DAC9",
+                    "base-content": "#1A1814",
+                    "info": "#7A95BD",
                     "info-content": "#ffffff",
-                    "success": "#36D399",
+                    "success": "#4D8A69",
                     "success-content": "#ffffff",
-                    "warning": "#FBBD23",
-                    "warning-content": "#2B3440",
-                    "error": "#F87272",
+                    "warning": "#C28A2E",
+                    "warning-content": "#1A1814",
+                    "error": "#B65B52",
                     "error-content": "#ffffff",
-                    "primary-light": "#4A8FCC",
-                    "primary-dark": "#1E4F7F",
-                    "secondary-light": "#7DB9E8",
-                    "secondary-dark": "#2E5F8F",
+                    "primary-light": "#A6745B",
+                    "primary-dark": "#6E4635",
+                    "secondary-light": "#C6A691",
+                    "secondary-dark": "#8F6D58",
                 },
             },
             {
                 garageDark: {
-                    "primary": "#8da6ea",          // Light blue accent
-                    "primary-content": "#111111",
-                    "secondary": "#a4adb8",        // Muted steel
-                    "secondary-content": "#111111",
-                    "accent": "#d6a36c",           // Warm amber
-                    "accent-content": "#000000",
-                    "neutral": "#221f1a",          // Warm charcoal
-                    "neutral-content": "#f7f4ee",
-                    "base-100": "#201d19",         // Panel
-                    "base-200": "#171511",         // Canvas
-                    "base-300": "#36312a",         // Border
-                    "base-content": "#f3efe7",     // Text
-                    "info": "#7aa0ea",             // Info blue
-                    "info-content": "#000000",
-                    "success": "#79b18d",          // Muted green
-                    "success-content": "#000000",
-                    "warning": "#d6a36c",          // Warm amber
-                    "warning-content": "#000000",
-                    "error": "#df8b80",            // Soft red
-                    "error-content": "#000000",
+                    "primary": "#D49A7A",
+                    "primary-content": "#131210",
+                    "secondary": "#B08A74",
+                    "secondary-content": "#131210",
+                    "accent": "#D49A7A",
+                    "accent-content": "#131210",
+                    "neutral": "#1F1D1A",
+                    "neutral-content": "#F2EFE7",
+                    "base-100": "#1F1D1A",
+                    "base-200": "#131210",
+                    "base-300": "#2D2A25",
+                    "base-content": "#F2EFE7",
+                    "info": "#86A6D0",
+                    "info-content": "#131210",
+                    "success": "#7DAF8F",
+                    "success-content": "#131210",
+                    "warning": "#D3A255",
+                    "warning-content": "#131210",
+                    "error": "#D58A80",
+                    "error-content": "#131210",
                 },
             },
             "light",

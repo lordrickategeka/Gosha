@@ -23,6 +23,12 @@
         <div class="alert alert-error mb-6">{{ session('error') }}</div>
     @endif
 
+    <div class="alert alert-info mb-6">
+        <span>
+            Notice: If additional issues are discovered after work starts, a Debit Note Request may be sent for item-by-item approval before your invoice is updated.
+        </span>
+    </div>
+
     {{-- Header card --}}
     <div class="card bg-base-100 shadow-sm mb-6">
         <div class="card-body">

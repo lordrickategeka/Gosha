@@ -56,7 +56,7 @@
             @endcan
 
             @can('edit_work_orders')
-                <a href="{{ route('work-orders.edit', $workOrder) }}" class="btn btn-ghost btn-sm">Edit</a>
+                <a href="{{ route('work-orders.edit', $workOrder) }}" class="app-btn app-btn-ghost app-btn-sm">Edit</a>
             @endcan
         </div>
     </div>
@@ -134,28 +134,39 @@
             <!-- Tabs for Job Details and Quality Check -->
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body">
-                    <div role="tablist" class="tabs tabs-boxed bg-base-200 p-1 mb-6 w-fit">
+                    <div role="tablist" class="app-pill-tabs mb-6">
                         <button type="button"
                                 wire:click="$set('activeTab', 'job-items')"
-                                class="tab {{ $activeTab === 'job-items' ? 'tab-active' : '' }}">
+                                class="app-pill-tab {{ $activeTab === 'job-items' ? 'is-active' : '' }}">
                             Job Items
+                            <span class="app-pill-count">{{ $workOrder->items->count() }}</span>
+                        </button>
+
+                        <button type="button"
+                                wire:click="$set('activeTab', 'parts-intelligence')"
+                                class="app-pill-tab {{ $activeTab === 'parts-intelligence' ? 'is-active' : '' }}">
+                            Parts Intelligence
                         </button>
 
                         @if ($workOrder->status === 'quality_check')
                             @can('quality-check.view')
                                 <button type="button"
                                         wire:click="$set('activeTab', 'quality-checklist')"
-                                        class="tab {{ $activeTab === 'quality-checklist' ? 'tab-active' : '' }}">
+                                        class="app-pill-tab {{ $activeTab === 'quality-checklist' ? 'is-active' : '' }}">
                                     Quality Checklist
                                 </button>
                             @else
-                                <button type="button" class="tab tab-disabled cursor-not-allowed opacity-50" disabled
+                                <button type="button"
+                                    class="app-pill-tab cursor-not-allowed opacity-50"
+                                    disabled
                                     title="You do not have permission to access the quality checklist">
                                     Quality Checklist
                                 </button>
                             @endcan
                         @else
-                            <button type="button" class="tab tab-disabled cursor-not-allowed opacity-50" disabled
+                            <button type="button"
+                                class="app-pill-tab cursor-not-allowed opacity-50"
+                                disabled
                                 title="Quality checklist is available only when the work order is in Quality Check status">
                                 Quality Checklist
                             </button>
@@ -219,63 +230,69 @@
                                 </div>
                             @endif
 
-                    <div class="overflow-x-auto">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                    <th class="text-right">Qty</th>
-                                    <th class="text-right">Unit Price</th>
-                                    <th class="text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($workOrder->items as $item)
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <td>
-                                            <span
-                                                class="badge badge-{{ $item->item_type === 'labor' ? 'primary' : 'secondary' }} badge-sm">
-                                                {{ ucfirst($item->item_type) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {{ $item->description }}
-                                            {{-- Item images --}}
-                                            @if ($item->images->count())
-                                                <div class="flex gap-1 mt-1 flex-wrap">
-                                                    @foreach ($item->images as $img)
-                                                        <a href="{{ $img->url }}" target="_blank">
-                                                            <img src="{{ $img->url }}"
-                                                                class="w-12 h-12 rounded object-cover border border-base-300"
-                                                                alt="item image" />
-                                                        </a>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        </td>
-                                        <td class="text-right">{{ $item->quantity }}</td>
-                                        <td class="text-right">
-                                            @if ($item->unit_price > 0)
-                                                UGX {{ number_format($item->unit_price) }}
-                                            @else
-                                                <span class="badge badge-warning badge-sm">Unpriced</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-right font-medium">UGX
-                                            {{ number_format($item->total) }}</td>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="4" class="text-right font-bold">Subtotal:</td>
-                                    <td class="text-right font-bold text-lg">UGX
-                                        {{ number_format($workOrder->subtotal) }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tbody class="bg-white">
+                                    @foreach ($workOrder->items as $index => $item)
+                                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-blue-200 transition-colors duration-150">
+                                            <td class="px-4 py-2 whitespace-nowrap">
+                                                <span class="badge badge-{{ $item->item_type === 'labor' ? 'primary' : 'secondary' }} badge-sm">
+                                                    {{ ucfirst($item->item_type) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2">
+                                                <div class="text-xs text-gray-900">{{ $item->description }}</div>
+                                                @if ($item->images->count())
+                                                    <div class="flex gap-1 mt-1 flex-wrap">
+                                                        @foreach ($item->images as $img)
+                                                            <a href="{{ $img->url }}" target="_blank">
+                                                                <img src="{{ $img->url }}"
+                                                                    class="w-12 h-12 rounded object-cover border border-base-300"
+                                                                    alt="item image" />
+                                                            </a>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-right text-xs text-gray-900">{{ $item->quantity }}</td>
+                                            <td class="px-4 py-2 text-right text-xs text-gray-900">
+                                                @if ($item->unit_price > 0)
+                                                    UGX {{ number_format($item->unit_price) }}
+                                                @else
+                                                    <span class="badge badge-warning badge-sm">Unpriced</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-right text-xs font-medium text-gray-900">
+                                                UGX {{ number_format($item->total) }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-gray-50 border-t border-gray-200">
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-2 text-right text-xs font-bold text-gray-700">Subtotal:</td>
+                                        <td class="px-4 py-2 text-right text-sm font-bold text-gray-900">
+                                            UGX {{ number_format($workOrder->subtotal) }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
+                    @endif
+
+                    @if ($activeTab === 'parts-intelligence')
+                        <livewire:work-orders.parts-intelligence-panel :workOrder="$workOrder" :key="'parts-intelligence-'.$workOrder->id" />
                     @endif
 
                     @if ($activeTab === 'quality-checklist' && $workOrder->qualityCheck)
@@ -337,6 +354,77 @@
                                     </div>
                                 @endif
                             @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Debit Notes -->
+            <div class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="card-title text-lg">Debit Note Requests</h3>
+                        @if ($this->canCreateDebitNote)
+                            <button wire:click="openDebitNoteModal" class="btn btn-warning btn-sm">
+                                Create Debit Note Request
+                            </button>
+                        @else
+                            <button class="btn btn-warning btn-sm btn-disabled" disabled
+                                    title="Available when work is in progress, quality check, or ready">
+                                Create Debit Note Request
+                            </button>
+                        @endif
+                    </div>
+
+                    @if ($workOrder->debitNotes->isEmpty())
+                        <div class="alert">
+                            <span class="text-sm text-base-content/70">No debit note requests raised yet for this work order.</span>
+                        </div>
+                    @else
+                        <div class="overflow-x-auto">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Debit Note</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Total</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($workOrder->debitNotes as $debitNote)
+                                        <tr>
+                                            <td class="font-mono">{{ $debitNote->debit_note_number }}</td>
+                                            <td>
+                                                <span class="badge badge-{{ $debitNote->status_color }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $debitNote->status)) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $debitNote->created_at?->format('d M Y H:i') }}</td>
+                                            <td>UGX {{ number_format($debitNote->total) }}</td>
+                                            <td class="text-right">
+                                                <div class="flex justify-end gap-2">
+                                                    <a href="{{ $debitNote->approvalUrl() }}" target="_blank" class="btn btn-xs btn-outline">
+                                                        Open Public Review
+                                                    </a>
+                                                    <button type="button"
+                                                        class="btn btn-xs btn-ghost"
+                                                        onclick="navigator.clipboard.writeText('{{ $debitNote->approvalUrl() }}')">
+                                                        Copy Link
+                                                    </button>
+                                                    @if (in_array($debitNote->status, ['draft', 'rejected']))
+                                                        <button wire:click="resendDebitNoteRequest({{ $debitNote->id }})"
+                                                            class="btn btn-xs btn-warning">
+                                                            Resend
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     @endif
                 </div>
@@ -447,7 +535,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="card-title text-lg">Assignment</h3>
                         @can('assign_work_orders')
-                            <button wire:click="$set('showAssignModal', true)" class="btn btn-ghost btn-xs">Edit</button>
+                            <button wire:click="$set('showAssignModal', true)" class="app-btn app-btn-ghost app-btn-xs">Edit</button>
                         @endcan
                     </div>
 
@@ -485,6 +573,20 @@
 
                     @if ($workOrder->invoice)
                         <div class="space-y-2">
+                            @php
+                                $latestDebitNote = $workOrder->debitNotes->first();
+                            @endphp
+                            @if ($latestDebitNote && in_array($latestDebitNote->status, ['sent', 'partially_approved', 'approved']))
+                                <div class="alert alert-warning py-2 text-xs">
+                                    Debit note {{ $latestDebitNote->debit_note_number }} is
+                                    {{ str_replace('_', ' ', $latestDebitNote->status) }}.
+                                    Invoice may be updated after customer response.
+                                </div>
+                            @elseif($latestDebitNote && $latestDebitNote->status === 'applied')
+                                <div class="alert alert-success py-2 text-xs">
+                                    Latest debit note {{ $latestDebitNote->debit_note_number }} has been applied to billing.
+                                </div>
+                            @endif
                             <div class="flex justify-between">
                                 <span class="text-base-content/60">Invoice #</span>
                                 <a href="{{ route('invoices.show', $workOrder->invoice) }}"
@@ -566,17 +668,118 @@
         </div>
     </div>
 
+    <!-- Debit Note Modal -->
+    @if ($showDebitNoteModal)
+        <div class="modal modal-open">
+            <div class="modal-box max-w-5xl">
+                <h3 class="font-bold text-lg mb-4">Create Debit Note Request</h3>
+
+                <div class="alert alert-info mb-4 text-sm">
+                    Additional work discovered during ongoing work. Add the new items below, then submit to customer for review.
+                </div>
+
+                <div class="form-control mb-4">
+                    <label class="label"><span class="label-text">Notes (optional)</span></label>
+                    <textarea wire:model="debitNoteNotes" class="textarea textarea-bordered w-full"
+                              rows="2" placeholder="Explain why this additional work is required"></textarea>
+                    @error('debitNoteNotes') <span class="text-error text-xs mt-1">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="overflow-x-auto mb-3">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Discount</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($debitNoteItems as $index => $row)
+                                <tr>
+                                    <td>
+                                        <select wire:model="debitNoteItems.{{ $index }}.item_type"
+                                                class="select select-bordered select-sm w-full">
+                                            <option value="labor">Labor</option>
+                                            <option value="part">Part</option>
+                                        </select>
+                                        @error('debitNoteItems.'.$index.'.item_type') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            wire:model="debitNoteItems.{{ $index }}.description"
+                                            class="input input-bordered input-sm w-full"
+                                            placeholder="Describe additional work/item" />
+                                        @error('debitNoteItems.'.$index.'.description') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0.01"
+                                            wire:model="debitNoteItems.{{ $index }}.quantity"
+                                            class="input input-bordered input-sm w-24" />
+                                        @error('debitNoteItems.'.$index.'.quantity') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0"
+                                            wire:model="debitNoteItems.{{ $index }}.unit_price"
+                                            class="input input-bordered input-sm w-32" />
+                                        @error('debitNoteItems.'.$index.'.unit_price') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0"
+                                            wire:model="debitNoteItems.{{ $index }}.discount"
+                                            class="input input-bordered input-sm w-28" />
+                                        @error('debitNoteItems.'.$index.'.discount') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                                    </td>
+                                    <td class="text-sm font-medium">
+                                        UGX
+                                        {{ number_format((float)($row['quantity'] ?? 0) * (float)($row['unit_price'] ?? 0) - (float)($row['discount'] ?? 0), 2) }}
+                                    </td>
+                                    <td>
+                                        <button type="button" wire:click="removeDebitNoteItemRow({{ $index }})"
+                                                class="btn btn-ghost btn-xs">Remove</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @error('debitNoteItems') <div class="text-error text-xs mb-2">{{ $message }}</div> @enderror
+
+                <div class="flex justify-between items-center">
+                    <button type="button" wire:click="addDebitNoteItemRow" class="btn btn-outline btn-sm">
+                        + Add Line
+                    </button>
+
+                    <div class="flex gap-2">
+                        <button type="button" wire:click="closeDebitNoteModal" class="btn btn-ghost">
+                            Cancel
+                        </button>
+                        <button type="button" wire:click="createDebitNoteRequest" class="btn btn-warning">
+                            Send Debit Note Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-backdrop" wire:click="closeDebitNoteModal"></div>
+        </div>
+    @endif
+
     <!-- Assignment Modal -->
     @if ($showAssignModal)
         <div class="modal modal-open">
-            <div class="modal-box app-modal-shell">
+            <div class="modal-box app-modal-shell border border-[var(--cream-border)] rounded-xl">
                 <h3 class="font-bold text-lg mb-4">Update Assignment</h3>
 
                 <div class="form-control mb-4">
                     <label class="label">
                         <span class="label-text">Service Bay</span>
                     </label>
-                    <select wire:model="selectedBay" class="select select-bordered w-full">
+                    <select wire:model="selectedBay" class="app-select w-full">
                         <option value="">Not assigned</option>
                         @foreach ($this->availableBays as $bay)
                             <option value="{{ $bay->id }}">{{ $bay->name }} ({{ $bay->status }})</option>
@@ -588,7 +791,7 @@
                     <label class="label">
                         <span class="label-text">Technician</span>
                     </label>
-                    <select wire:model="selectedTechnician" class="select select-bordered w-full">
+                    <select wire:model="selectedTechnician" class="app-select w-full">
                         <option value="">Not assigned</option>
                         @foreach ($this->technicians as $tech)
                             <option value="{{ $tech->id }}">{{ $tech->name }}</option>
@@ -597,8 +800,8 @@
                 </div>
 
                 <div class="modal-action app-modal-actions">
-                    <button wire:click="$set('showAssignModal', false)" class="btn btn-ghost">Cancel</button>
-                    <button wire:click="assignBayAndTechnician" class="btn btn-primary">Save</button>
+                    <button wire:click="$set('showAssignModal', false)" class="app-btn app-btn-ghost">Cancel</button>
+                    <button wire:click="assignBayAndTechnician" class="app-btn app-btn-primary">Save</button>
                 </div>
             </div>
             <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showAssignModal', false)"></div>

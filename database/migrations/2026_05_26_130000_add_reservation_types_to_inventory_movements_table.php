@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement("ALTER TABLE `inventory_movements` MODIFY `movement_type` ENUM(
             'purchase',
             'transfer_in',
@@ -29,6 +33,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement("ALTER TABLE `inventory_movements` MODIFY `movement_type` ENUM(
             'purchase',
             'transfer_in',

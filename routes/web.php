@@ -286,3 +286,9 @@ Route::post('/q/{token}/approve', [\App\Http\Controllers\PublicQuotationControll
 Route::post('/q/{token}/reject', [\App\Http\Controllers\PublicQuotationController::class, 'reject'])
     ->name('quotations.public.reject');
 
+// ─── Public Debit Note Routes (no auth) ──────────────────────────────────────
+Route::get('/dn/{token}', [\App\Http\Controllers\PublicDebitNoteController::class, 'show'])
+    ->name('debit-notes.public');
+Route::post('/dn/{token}/submit', [\App\Http\Controllers\PublicDebitNoteController::class, 'submit'])
+    ->name('debit-notes.public.submit');
+

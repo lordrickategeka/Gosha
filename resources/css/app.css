@@ -15,9 +15,23 @@
 }
 
 @layer base {
+    :root {
+        --cream-bg: #F7F4ED;
+        --cream-bg-soft: #EFEBE0;
+        --cream-bg-card: #FFFFFF;
+        --cream-fg: #1A1814;
+        --cream-fg-muted: #6B6760;
+        --cream-border: #E0DAC9;
+        --cream-border-strong: #C9C2AE;
+        --cream-accent: #8A5A44;
+        --cream-accent-hover: #6E4635;
+    }
+
     body {
         @apply text-base-content antialiased;
         @apply bg-base-200;
+        font-family: "Geist", "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        letter-spacing: -0.005em;
     }
 }
 
@@ -25,31 +39,43 @@
 /* Custom styles */
 @layer components {
     .app-shell {
-        @apply min-h-screen bg-base-200 text-base-content;
+        @apply min-h-screen text-base-content overflow-x-hidden;
+        background: var(--cream-bg);
     }
 
     .app-content-wrap {
-        @apply mx-auto w-full max-w-[1600px];
+        @apply mx-auto w-full max-w-[1600px] min-w-0;
     }
 
     .app-main {
-        @apply flex-1 px-4 py-5 lg:px-6 lg:py-6 xl:px-8 xl:py-8;
+        @apply flex-1 px-4 py-5 lg:px-6 lg:py-6 xl:px-8 xl:py-8 min-w-0;
+    }
+
+    .app-page-header > div:first-child {
+        @apply min-w-0;
     }
 
     .app-topbar {
-        @apply sticky top-0 z-30 border-b border-gray-200 bg-base-100;
+        @apply sticky top-0 z-30 border-b;
+        border-color: var(--cream-border);
+        background: color-mix(in oklch, var(--cream-bg) 80%, transparent);
+        backdrop-filter: saturate(140%) blur(12px);
+        -webkit-backdrop-filter: saturate(140%) blur(12px);
     }
 
     .app-panel {
-        @apply rounded-lg border border-gray-200 bg-base-100 shadow-md;
+        @apply rounded-lg border bg-base-100 shadow-md;
+        border-color: var(--cream-border);
     }
 
     .app-panel-subtle {
-        @apply rounded-lg border border-gray-200 bg-base-100 shadow-sm;
+        @apply rounded-lg border bg-base-100 shadow-sm;
+        border-color: var(--cream-border);
     }
 
     .app-sidebar {
-        @apply border-r border-gray-200 bg-base-100;
+        @apply border-r bg-base-100;
+        border-color: var(--cream-border);
     }
 
     .app-sidebar .menu {
@@ -397,6 +423,124 @@
 
     .btn {
         @apply rounded-lg;
+    }
+
+    /* Unified semantic components (system-wide) */
+    .app-btn {
+        @apply btn rounded-lg;
+    }
+
+    .app-btn-primary {
+        @apply app-btn btn-primary;
+        color: #ffffff;
+        background-color: #3f46ff;
+        border-color: #3f46ff;
+        box-shadow: 0 10px 22px -10px rgba(63, 70, 255, 0.85), 0 4px 10px rgba(20, 18, 66, 0.18);
+        transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    }
+
+    .app-btn-primary:hover,
+    .app-btn-primary:focus-visible {
+        color: #ffffff;
+        background-color: #3640ef;
+        border-color: #3640ef;
+        box-shadow: 0 12px 24px -10px rgba(54, 64, 239, 0.9), 0 4px 12px rgba(20, 18, 66, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .app-btn-primary:active {
+        color: #ffffff;
+        background-color: #2e37d3;
+        border-color: #2e37d3;
+        box-shadow: 0 6px 14px -8px rgba(46, 55, 211, 0.75), 0 2px 6px rgba(20, 18, 66, 0.15);
+        transform: translateY(0);
+    }
+
+    .app-btn-secondary {
+        @apply app-btn btn-secondary;
+    }
+
+    .app-btn-ghost {
+        @apply app-btn btn-ghost;
+    }
+
+    .app-btn-outline {
+        @apply app-btn btn-outline;
+    }
+
+    .app-btn-sm {
+        @apply btn-sm;
+    }
+
+    .app-btn-xs {
+        @apply btn-xs;
+    }
+
+    .app-input {
+        @apply input input-bordered rounded-lg border border-gray-300 text-xs;
+    }
+
+    .app-select {
+        @apply select rounded-lg border border-gray-300 text-xs;
+    }
+
+    .app-textarea {
+        @apply textarea textarea-bordered rounded-lg border border-gray-300 text-xs;
+    }
+
+    .app-label {
+        @apply label;
+    }
+
+    .app-label-text {
+        @apply label-text text-xs font-medium text-gray-700;
+    }
+
+    .app-label-hint {
+        @apply label-text-alt text-xs text-base-content/60;
+    }
+
+    .app-card {
+        @apply card bg-base-100 rounded-lg border border-gray-200 shadow-md;
+    }
+
+    .app-card-body {
+        @apply card-body p-4;
+    }
+
+    .app-table {
+        @apply table;
+    }
+
+    .app-badge {
+        @apply badge;
+    }
+
+    .app-pill-tabs {
+        @apply inline-flex flex-wrap items-center gap-2;
+    }
+
+    .app-pill-tab {
+        @apply inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors duration-150;
+    }
+
+    .app-pill-tab:hover {
+        @apply border-gray-300 bg-gray-50;
+    }
+
+    .app-pill-tab.is-active {
+        @apply border-blue-200 bg-white text-blue-700;
+    }
+
+    .app-pill-count {
+        @apply inline-flex min-w-[22px] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold leading-none;
+        background: #f5f6f8;
+        color: #1f2937;
+    }
+
+    .app-pill-tab.is-active .app-pill-count {
+        background: #4338ca;
+        color: #ffffff;
     }
 
     .btn-primary:not(.btn-outline):not(.btn-ghost):not(.btn-link) {

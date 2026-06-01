@@ -125,7 +125,7 @@ class ExpenseCreate extends Component
                 'amount' => $this->amount,
                 'currency' => $this->currency,
                 'exchange_rate' => $this->exchange_rate,
-                'tax_percentage' => $this->tax_percentage ?: null,
+                'tax_percentage' => $this->tax_percentage !== '' ? $this->tax_percentage : 0,
                 'tax_inclusive' => $this->tax_inclusive,
                 'payment_method' => $this->payment_method,
                 'payment_reference' => $this->payment_reference,

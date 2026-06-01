@@ -111,11 +111,17 @@ return new class extends Migration
         });
 
         if (Schema::hasColumn('expenses', 'vendor_id')) {
-            DB::statement('update expenses e inner join branches b on e.branch_id = b.id set e.vendor_id = b.vendor_id where e.vendor_id is null');
+            if (DB::connection()->getDriverName() === 'sqlite') {
+                DB::statement('update expenses set vendor_id = (select vendor_id from branches where branches.id = expenses.branch_id) where vendor_id is null');
+            } else {
+                DB::statement('update expenses e inner join branches b on e.branch_id = b.id set e.vendor_id = b.vendor_id where e.vendor_id is null');
+            }
         }
 
         // Expand legacy status enum to support the current workflow states.
-        DB::statement("ALTER TABLE expenses MODIFY COLUMN status ENUM('draft','pending','pending_approval','approved','rejected','paid','cancelled') NOT NULL DEFAULT 'draft'");
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE expenses MODIFY COLUMN status ENUM('draft','pending','pending_approval','approved','rejected','paid','cancelled') NOT NULL DEFAULT 'draft'");
+        }
 
     }
 
@@ -126,6 +132,8 @@ return new class extends Migration
         }
 
         // Keep down migration conservative for production safety.
-        DB::statement("ALTER TABLE expenses MODIFY COLUMN status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'");
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE expenses MODIFY COLUMN status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved'");
+        }
     }
 };

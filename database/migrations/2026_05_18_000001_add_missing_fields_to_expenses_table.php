@@ -119,7 +119,11 @@ return new class extends Migration
                 $table->index(['vendor_id', 'branch_id']);
             });
 
-            DB::statement('update expenses e inner join branches b on e.branch_id = b.id set e.vendor_id = b.vendor_id where e.vendor_id is null');
+            if (DB::connection()->getDriverName() === 'sqlite') {
+                DB::statement('update expenses set vendor_id = (select vendor_id from branches where branches.id = expenses.branch_id) where vendor_id is null');
+            } else {
+                DB::statement('update expenses e inner join branches b on e.branch_id = b.id set e.vendor_id = b.vendor_id where e.vendor_id is null');
+            }
         }
     }
 

@@ -2,11 +2,13 @@
 
 namespace App\Livewire\WorkOrders;
 
+use App\Models\DebitNote;
 use App\Models\QualityCheckTemplate;
 use App\Models\Quotation;
 use App\Models\ServiceBay;
 use App\Models\User;
 use App\Models\WorkOrder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ShowWorkOrdersComponent extends Component
@@ -18,6 +20,10 @@ class ShowWorkOrdersComponent extends Component
     public $selectedTechnician = '';
     public $technicianNotes = '';
     public $activeTab = 'job-items';
+
+    public bool $showDebitNoteModal = false;
+    public string $debitNoteNotes = '';
+    public array $debitNoteItems = [];
 
     public function mount(WorkOrder $workOrder)
     {
@@ -50,7 +56,7 @@ class ShowWorkOrdersComponent extends Component
                 'customer_id' => $this->workOrder->customer_id,
                 'vendor_id' => $this->workOrder->vendor_id,
                 'branch_id' => $this->workOrder->branch_id,
-                'inspector_user_id' => auth()->id(),
+                'inspector_user_id' => auth()->user()?->getAuthIdentifier(),
                 'inspection_date' => now()->date(),
                 'status' => 'pending',
             ]);
@@ -191,6 +197,158 @@ class ShowWorkOrdersComponent extends Component
     public function getLatestQuotationProperty(): ?Quotation
     {
         return $this->workOrder->latestQuotation;
+    }
+
+    public function getCanCreateDebitNoteProperty(): bool
+    {
+        return in_array($this->workOrder->status, ['in_progress', 'quality_check', 'ready']);
+    }
+
+    public function openDebitNoteModal(): void
+    {
+        if (!$this->canCreateDebitNote) {
+            session()->flash('error', 'Debit note request can only be created when work is in progress, quality check, or ready.');
+            return;
+        }
+
+        $this->showDebitNoteModal = true;
+    }
+
+    public function closeDebitNoteModal(): void
+    {
+        $this->resetDebitNoteForm();
+    }
+
+    public function addDebitNoteItemRow(): void
+    {
+        $this->debitNoteItems[] = $this->emptyDebitNoteItemRow();
+    }
+
+    public function removeDebitNoteItemRow(int $index): void
+    {
+        if (count($this->debitNoteItems) <= 1) {
+            return;
+        }
+
+        unset($this->debitNoteItems[$index]);
+        $this->debitNoteItems = array_values($this->debitNoteItems);
+    }
+
+    public function createDebitNoteRequest(): void
+    {
+        if (!$this->canCreateDebitNote) {
+            session()->flash('error', 'Debit note request can only be created when work is in progress, quality check, or ready.');
+            return;
+        }
+
+        $validated = $this->validate([
+            'debitNoteNotes' => ['nullable', 'string', 'max:2000'],
+            'debitNoteItems' => ['required', 'array', 'min:1'],
+            'debitNoteItems.*.item_type' => ['required', 'in:labor,part'],
+            'debitNoteItems.*.description' => ['required', 'string', 'max:255'],
+            'debitNoteItems.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'debitNoteItems.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'debitNoteItems.*.discount' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            $debitNote = DebitNote::create([
+                'branch_id' => $this->workOrder->branch_id,
+                'work_order_id' => $this->workOrder->id,
+                'customer_id' => $this->workOrder->customer_id,
+                'invoice_id' => $this->workOrder->invoice?->id,
+                'quotation_id' => $this->latestQuotation?->id,
+                'status' => 'draft',
+                'notes' => $validated['debitNoteNotes'] ?? null,
+                'tax_rate' => 0,
+                'discount_amount' => 0,
+                'subtotal' => 0,
+                'tax_amount' => 0,
+                'total' => 0,
+            ]);
+
+            foreach ($validated['debitNoteItems'] as $index => $row) {
+                $quantity = (float) $row['quantity'];
+                $unitPrice = (float) $row['unit_price'];
+                $discount = (float) ($row['discount'] ?? 0);
+
+                $debitNote->items()->create([
+                    'item_type' => $row['item_type'],
+                    'description' => $row['description'],
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'discount' => $discount,
+                    'total' => ($quantity * $unitPrice) - $discount,
+                    'customer_decision' => 'pending',
+                    'sort_order' => $index + 1,
+                ]);
+            }
+
+            $debitNote->refresh();
+            $debitNote->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+            ]);
+        });
+
+        $this->workOrder = $this->workOrder->fresh([
+            'vehicle',
+            'customer',
+            'serviceBay',
+            'assignedTechnician',
+            'createdBy',
+            'items.inventoryItem',
+            'items.images',
+            'invoice.payments',
+            'washOrder',
+            'qualityCheck.inspector',
+            'qualityCheck.items',
+            'debitNotes.items',
+        ]);
+
+        $latestDebitNote = $this->workOrder->debitNotes->first();
+        $this->resetDebitNoteForm();
+
+        session()->flash(
+            'success',
+            'Debit note request created and sent. Customer review link: ' . ($latestDebitNote?->approvalUrl() ?? 'N/A')
+        );
+    }
+
+    public function resendDebitNoteRequest(int $debitNoteId): void
+    {
+        $debitNote = $this->workOrder->debitNotes()->whereKey($debitNoteId)->firstOrFail();
+
+        if (!in_array($debitNote->status, ['draft', 'rejected'])) {
+            session()->flash('error', 'Only draft or rejected debit notes can be resent.');
+            return;
+        }
+
+        $debitNote->update([
+            'status' => 'sent',
+            'sent_at' => now(),
+        ]);
+
+        $this->workOrder->refresh();
+        session()->flash('success', 'Debit note request resent. Link: ' . $debitNote->approvalUrl());
+    }
+
+    protected function resetDebitNoteForm(): void
+    {
+        $this->showDebitNoteModal = false;
+        $this->debitNoteNotes = '';
+        $this->debitNoteItems = [$this->emptyDebitNoteItemRow()];
+    }
+
+    protected function emptyDebitNoteItemRow(): array
+    {
+        return [
+            'item_type' => 'labor',
+            'description' => '',
+            'quantity' => 1,
+            'unit_price' => 0,
+            'discount' => 0,
+        ];
     }
 
     public function getGroupedQualityCheckItemsProperty()

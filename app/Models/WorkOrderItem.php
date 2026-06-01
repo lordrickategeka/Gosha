@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkOrderItem extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuid;
 
     protected $fillable = [
         'work_order_id',
@@ -66,6 +68,16 @@ class WorkOrderItem extends Model
         return $this->hasMany(WorkOrderItemImage::class);
     }
 
+    public function partSources(): HasMany
+    {
+        return $this->hasMany(WorkOrderPartSource::class);
+    }
+
+    public function installationHistory(): HasMany
+    {
+        return $this->hasMany(PartInstallationHistory::class);
+    }
+
     // Helpers
     public function isLabor(): bool
     {
@@ -93,7 +105,7 @@ class WorkOrderItem extends Model
             'total_cost' => $this->quantity * $this->inventoryItem->cost_price,
             'movable_type' => WorkOrder::class,
             'movable_id' => $this->work_order_id,
-            'performed_by' => auth()->id(),
+            'performed_by' => \Illuminate\Support\Facades\Auth::id(),
         ]);
 
         $this->inventoryItem->decrement('quantity', $this->quantity);

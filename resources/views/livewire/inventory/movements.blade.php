@@ -48,7 +48,7 @@
                 <tbody>
                     @forelse($movements as $movement)
                         <tr class="hover">
-                            <td>{{ $movement->created_at->format('d M Y H:i') }}</td>
+                            <td>{{ $movement->movement_date?->format('d M Y H:i') ?? $movement->created_at?->format('d M Y H:i') ?? '-' }}</td>
                             <td>
                                 @if($movement->inventoryItem)
                                     <a href="{{ route('inventory.show', $movement->inventoryItem) }}" class="link link-hover">
@@ -59,13 +59,14 @@
                                 @endif
                             </td>
                             <td><span class="badge badge-ghost badge-sm">{{ ucfirst($movement->movement_type) }}</span></td>
-                            <td class="text-right font-bold {{ $movement->quantity > 0 ? 'text-success' : 'text-error' }}">
-                                {{ $movement->quantity > 0 ? '+' : '' }}{{ $movement->quantity }}
+                            <td class="text-right font-bold {{ (($movement->quantity_change ?? 0) > 0) ? 'text-success' : 'text-error' }}">
+                                {{ (($movement->quantity_change ?? 0) > 0) ? '+' : '' }}{{ $movement->quantity_change ?? 0 }}
                             </td>
                             <td>
-                                @if($movement->reference_type === 'work_order' && $movement->reference())
+                                @php $ref = $movement->reference(); @endphp
+                                @if($ref && $movement->reference_type === 'work_order')
                                     <a href="{{ route('work-orders.show', $movement->reference_id) }}" class="link link-primary font-mono text-sm">
-                                        {{ $movement->reference()->order_number }}
+                                        {{ $ref->order_number }}
                                     </a>
                                 @else
                                     <span class="text-base-content/40">-</span>

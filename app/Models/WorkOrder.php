@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\BelongsToBranch;
 use App\Traits\GeneratesOrderNumber;
 use App\Traits\HasAuditLog;
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,10 +13,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\QualityCheck;
+use App\Models\DebitNote;
 
 class WorkOrder extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToBranch, HasAuditLog, GeneratesOrderNumber;
+    use HasFactory, SoftDeletes, BelongsToBranch, HasAuditLog, GeneratesOrderNumber, HasUuid;
 
     protected $orderNumberPrefix = 'WO';
 
@@ -84,6 +86,11 @@ class WorkOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(WorkOrderItem::class);
+    }
+
+    public function debitNotes(): HasMany
+    {
+        return $this->hasMany(DebitNote::class)->latest();
     }
 
     public function laborItems(): HasMany

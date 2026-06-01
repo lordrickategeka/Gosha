@@ -24,7 +24,7 @@
         <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
 
         <!-- Page Content -->
-        <div class="drawer-content flex flex-col">
+        <div class="drawer-content flex min-w-0 flex-col">
             <!-- Navbar -->
             @include('components.partials.navbar')
 
