@@ -15,7 +15,7 @@ class PublicDebitNoteController extends Controller
     {
         $debitNote = DebitNote::with([
             'items.inventoryItem',
-            'workOrder .vehicle',
+            'workOrder.vehicle',
             'workOrder.customer',
             'customer',
             'invoice.items',

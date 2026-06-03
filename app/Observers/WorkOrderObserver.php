@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+use App\Models\Commission;
+use App\Models\CommissionRule;
 use App\Models\QualityCheck;
 use App\Models\QualityCheckTemplate;
 use App\Models\WorkOrder;
@@ -60,6 +62,16 @@ class WorkOrderObserver
         if ($workOrder->wasChanged('status') && $workOrder->status === 'ready' && $workOrder->is_combo) {
             $this->createWashOrderForCombo($workOrder);
         }
+
+// ✅ NEW: Create commission when work order is delivered
+        if ($workOrder->wasChanged('status') && $workOrder->status === 'delivered') {
+            $this->createCommissionForTechnician($workOrder);
+        }
+
+        // ✅ FALLBACK: Also create commission when status changes to completed (if not delivered yet)
+        if ($workOrder->wasChanged('status') && $workOrder->status === 'completed') {
+            $this->createCommissionForTechnician($workOrder);
+        }
     }
 
     /**
@@ -106,6 +118,61 @@ class WorkOrderObserver
             logger()->error('Failed to create wash order for combo', [
                 'work_order_id' => $workOrder->id,
                 'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Create commission for assigned technician(s)
+     */
+    protected function createCommissionForTechnician(WorkOrder $workOrder): void
+    {
+        // Get technician from work order
+        $technician = $workOrder->assignedTechnician;
+
+        if (!$technician) {
+            return;
+        }
+
+        // Find active commission rule for this technician's role
+        $rule = CommissionRule::where('vendor_id', $workOrder->vendor_id)
+            ->where('role', 'technician')
+            ->where('is_active', true)
+            ->first();
+
+        if (!$rule) {
+            // Try to find a branch-specific rule
+            $rule = CommissionRule::where('branch_id', $workOrder->branch_id)
+                ->where('role', 'technician')
+                ->where('is_active', true)
+                ->first();
+        }
+
+        if (!$rule) {
+            logger()->warning('No active commission rule found for technician', [
+                'work_order_id' => $workOrder->id,
+                'technician_id' => $technician->id,
+            ]);
+            return;
+        }
+
+        // Avoid double-creating commissions
+        $alreadyExists = Commission::where('reference_type', 'work_order')
+            ->where('reference_id', $workOrder->id)
+            ->where('user_id', $technician->id)
+            ->exists();
+
+        if ($alreadyExists) {
+            return;
+        }
+
+        try {
+            Commission::createFromWorkOrder($workOrder, $technician, $rule);
+        } catch (\Exception $e) {
+            logger()->error('Failed to create commission for technician', [
+                'work_order_id' => $workOrder->id,
+                'technician_id' => $technician->id,
+                'error' => $e->getMessage(),
             ]);
         }
     }

@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToBranch;
 use App\Traits\BelongsToVendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CommissionRule extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToVendor;
+    use HasFactory, SoftDeletes, BelongsToBranch, BelongsToVendor;
 
     protected $fillable = [
         'vendor_id',
@@ -31,10 +33,15 @@ class CommissionRule extends Model
         'is_active' => 'boolean',
     ];
 
-    // Relationships
+// Relationships
     public function commissions(): HasMany
     {
         return $this->hasMany(Commission::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     // Scopes

@@ -138,9 +138,11 @@ Route::middleware(['auth'])->group(function () {
     //         ->middleware('can:create_expenses');
     // });
 
-    // // Commissions
+// // Commissions
     Route::prefix('commissions')->name('commissions.')->group(function () {
         Route::get('/', \App\Livewire\Commissions\CommissionsComponent::class)->name('index');
+        Route::get('/my', \App\Livewire\Commissions\MyCommissionsComponent::class)->name('my')
+            ->middleware('can:view_own_commissions');
     });
 
     // // Appointments
