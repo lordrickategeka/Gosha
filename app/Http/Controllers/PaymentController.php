@@ -1,9 +1,9 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
-use App\Models\Invoice;
-use App\Models\Receipt;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Models\Invoice;
+use App\Domains\Finance\Models\Receipt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

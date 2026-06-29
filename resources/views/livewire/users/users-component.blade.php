@@ -14,22 +14,28 @@
         @endcan
     </div>
 
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name or email..." class="input input-bordered input-sm" />
-                <select wire:model.live="role" class="select select-bordered select-sm">
-                    <option value="">All Roles</option>
-                    @foreach($roles as $r)
-                        <option value="{{ $r->name }}">{{ ucwords(str_replace('-', ' ', $r->name)) }}</option>
-                    @endforeach
-                </select>
-                <select wire:model.live="status" class="select select-bordered select-sm">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-            </div>
+    <!-- Filters (in table header) -->
+    <div class="card bg-base-100 shadow-sm mb-4">
+        <div class="flex flex-wrap items-center gap-2 p-4">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="input input-bordered input-sm w-44" />
+            <select wire:model.live="role" class="select select-bordered select-sm w-36">
+                <option value="">All Roles</option>
+                @foreach($roles as $r)
+                    <option value="{{ $r->name }}">{{ ucwords(str_replace('-', ' ', $r->name)) }}</option>
+                @endforeach
+            </select>
+            <select wire:model.live="status" class="select select-bordered select-sm w-32">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            @if($search || $role || $status)
+            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            @endif
         </div>
     </div>
 

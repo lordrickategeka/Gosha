@@ -2,7 +2,7 @@
     <div class="app-page-header">
         <div>
             <p class="app-kicker">Workshop operations</p>
-            <h1 class="app-title">Work Orders</h1>
+            <h4 class="app-title">Work Orders</h4>
             <p class="app-subtitle">Track active service jobs, filter operational load, and move vehicles cleanly through the workshop pipeline.</p>
         </div>
 
@@ -16,35 +16,29 @@
         @endcan
     </div>
 
-    <!-- Filters -->
-    <div class="app-filter-bar">
-        <div class="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+<!-- Work Orders Table -->
+    <div class="app-table-shell">
+        <div class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <p class="app-eyebrow">Refine the queue</p>
-                <h2 class="mt-1 text-lg font-semibold tracking-[-0.02em] text-base-content">Filters</h2>
+                <p class="app-eyebrow">Operational queue</p>
+                <h2 class="mt-1 text-xl font-semibold tracking-[-0.03em] text-base-content">Current work orders</h2>
             </div>
-            <button wire:click="clearFilters" class="btn rounded-lg border border-gray-200 bg-base-100 px-4 text-base-content shadow-none hover:bg-base-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Clear filters
-            </button>
-        </div>
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <!-- Table Filters -->
+            <div class="flex flex-wrap items-center gap-2">
                 <!-- Search -->
                 <div class="form-control">
                     <input
                         type="text"
                         wire:model.live.debounce.300ms="search"
                         placeholder="Search orders, vehicles, customers..."
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-48"
                     />
                 </div>
 
                 <!-- Status Filter -->
                 <div class="form-control">
-                    <select wire:model.live="status" class="select select-bordered select-sm w-full">
+                    <select wire:model.live="status" class="select select-bordered select-sm w-36">
                         <option value="">All Statuses</option>
                         <option value="open">Open</option>
                         <option value="in_progress">In Progress</option>
@@ -57,7 +51,7 @@
 
                 <!-- Type Filter -->
                 <div class="form-control">
-                    <select wire:model.live="type" class="select select-bordered select-sm w-full">
+                    <select wire:model.live="type" class="select select-bordered select-sm w-28">
                         <option value="">All Types</option>
                         <option value="service">Service</option>
                         <option value="repair">Repair</option>
@@ -71,53 +65,37 @@
 
                 <!-- Technician Filter -->
                 <div class="form-control">
-                    <select wire:model.live="technician" class="select select-bordered select-sm w-full">
-                        <option value="">All Technicians</option>
+                    <select wire:model.live="technician" class="select select-bordered select-sm w-36">
+                        <option value="">All Techs</option>
                         @foreach($this->technicians as $tech)
                             <option value="{{ $tech->id }}">{{ $tech->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
+                <!-- Clear Filters -->
+                @if($search || $status || $type || $technician)
+                <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                @endif
+
+                <!-- Per Page -->
                 <div class="form-control">
-                    <select wire:model.live="perPage" class="select select-bordered select-sm w-full">
-                        <option value="6">6 per page</option>
-                        <option value="10">10 per page</option>
-                        <option value="25">25 per page</option>
-                        <option value="50">50 per page</option>
-                        <option value="100">100 per page</option>
+                    <select wire:model.live="perPage" class="select select-bordered select-sm w-20">
+                        <option value="6">6</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
                     </select>
                 </div>
             </div>
         </div>
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <div class="app-stat-card">
-            <div class="app-stat-label">Open</div>
-            <div class="text-2xl font-semibold text-info mt-3">{{ $workOrders->where('status', 'open')->count() }}</div>
-        </div>
-        <div class="app-stat-card">
-            <div class="app-stat-label">In progress</div>
-            <div class="text-2xl font-semibold text-warning mt-3">{{ $workOrders->where('status', 'in_progress')->count() }}</div>
-        </div>
-        <div class="app-stat-card">
-            <div class="app-stat-label">Ready</div>
-            <div class="text-2xl font-semibold text-success mt-3">{{ $workOrders->where('status', 'ready')->count() }}</div>
-        </div>
-        <div class="app-stat-card">
-            <div class="app-stat-label">Created today</div>
-            <div class="text-2xl font-semibold mt-3">{{ $workOrders->where('created_at', '>=', today())->count() }}</div>
-        </div>
-    </div>
-
-    <!-- Work Orders Table -->
-    <div class="app-table-shell">
-        <div class="flex flex-col gap-3 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <p class="app-eyebrow">Operational queue</p>
-                <h2 class="mt-1 text-xl font-semibold tracking-[-0.03em] text-base-content">Current work orders</h2>
-            </div>
+        <div class="px-6 pb-3">
             <p class="text-sm text-gray-500">{{ $workOrders->total() }} total records</p>
         </div>
 

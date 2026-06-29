@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Quotation;
+use App\Domains\Finance\Models\Quotation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Gate;
 

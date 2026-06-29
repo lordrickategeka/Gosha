@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('supplier_parts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
+$table->foreignId('supplier_id')->constrained()->onDelete('cascade');
             $table->foreignId('part_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('part_oem_number_id')->nullable()->constrained('part_oem_numbers')->nullOnDelete();
-            $table->foreignId('currency_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('currency_id')->nullable()->unsigned()->nullable();
 
             $table->string('supplier_part_name', 255)->nullable();
             $table->string('supplier_part_number', 100)->nullable();

@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('work_order_part_sources', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('work_order_item_id')->constrained()->onDelete('cascade');
+$table->foreignId('work_order_item_id')->constrained()->onDelete('cascade');
             $table->foreignId('supplier_part_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('currency_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('currency_id')->nullable()->unsigned()->nullable();
 
             $table->string('source_name', 255)->nullable();
             $table->string('source_link', 2048)->nullable();

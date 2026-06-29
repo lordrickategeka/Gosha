@@ -171,12 +171,24 @@ class RolesAndPermissionsSeeder extends Seeder
             'approve_quotations',
             'delete_quotations',
 
-            // Quality Check
+// Quality Check
             'quality-check.create',
             'quality-check.view',
             'quality-check.update',
             'quality-check.download-pdf',
             'quality-check.upload-signed',
+
+// Marketplace - Supplier Listings
+            'view_listings',
+            'view_quotes',
+            'manage_quotes',
+            'view_purchase_orders',
+            'manage_purchase_orders',
+            'browse_marketplace',
+            'view_rfqs',
+            'manage_rfqs',
+            'award_quotes',
+            'receive_goods',
         ];
 
         // Create all permissions

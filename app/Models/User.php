@@ -13,6 +13,13 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Domains\Platform\Models\Vendor;
+use App\Domains\Organization\Models\Branch;
+use App\Domains\Operations\Models\WorkOrder;
+use App\Domains\Operations\Models\WashOrder;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Expenses\Models\Expense;
+use App\Domains\Commissions\Models\Commission;
 
 class User extends Authenticatable
 {

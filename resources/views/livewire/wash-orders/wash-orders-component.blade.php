@@ -58,11 +58,11 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach($this->washBays as $bay)
-                                <div class="p-4 rounded-lg border-2 {{ $bay->status instanceof App\Enums\WashBayStatus ? $bay->status->borderClass() : ($bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5')) }}">
+                                <div class="p-4 rounded-lg border-2 {{ $bay->status instanceof App\Domains\Operations\Enums\WashBayStatus ? $bay->status->borderClass() : ($bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5')) }}">
                                     <div class="flex items-center justify-between mb-2">
                                         <h3 class="font-bold">{{ $bay->name }}</h3>
-                                        <span class="badge badge-sm {{ $bay->status instanceof App\Enums\WashBayStatus ? $bay->status->badgeClass() : ($bay->status === 'available' ? 'badge-success' : ($bay->status === 'occupied' ? 'badge-warning' : 'badge-error')) }}">
-                                            {{ $bay->status instanceof App\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
+                                        <span class="badge badge-sm {{ $bay->status instanceof App\Domains\Operations\Enums\WashBayStatus ? $bay->status->badgeClass() : ($bay->status === 'available' ? 'badge-success' : ($bay->status === 'occupied' ? 'badge-warning' : 'badge-error')) }}">
+                                            {{ $bay->status instanceof App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
                                         </span>
                                     </div>
 
@@ -281,7 +281,7 @@
                                 <td>{{ $order->washBay?->name ?? '-' }}</td>
                                 <td>
                                     <span class="badge badge-{{ $order->status_color }} badge-sm">
-                                        {{ $order->status instanceof \App\Enums\WashOrderStatus ? $order->status->label() : ucfirst($order->status) }}
+                                        {{ $order->status instanceof \App\Domains\Operations\Enums\WashOrderStatus ? $order->status->label() : ucfirst($order->status) }}
                                     </span>
                                 </td>
                                 <td class="text-sm text-base-content/60">
@@ -336,7 +336,7 @@
                 <select wire:model="selectedBayId" class="select select-bordered">
                     <option value="">— Choose a bay —</option>
                     @foreach($this->availableBays as $bay)
-                        <option value="{{ $bay->id }}">{{ $bay->name }} ({{ ucfirst($bay->bay_type instanceof \App\Enums\WashBayType ? $bay->bay_type->label() : $bay->bay_type) }})</option>
+                        <option value="{{ $bay->id }}">{{ $bay->name }} ({{ ucfirst($bay->bay_type instanceof \App\Domains\Operations\Enums\WashBayType ? $bay->bay_type->label() : $bay->bay_type) }})</option>
                     @endforeach
                 </select>
                 @error('selectedBayId') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror

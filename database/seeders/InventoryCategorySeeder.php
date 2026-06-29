@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\InventoryCategory;
-use App\Models\Vendor;
+use App\Domains\Inventory\Models\InventoryCategory;
+use App\Domains\Platform\Models\Vendor;
 use Illuminate\Database\Seeder;
 
 class InventoryCategorySeeder extends Seeder

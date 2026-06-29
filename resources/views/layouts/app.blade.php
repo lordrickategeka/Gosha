@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="garage">
 <head>
     <meta charset="utf-8">
@@ -62,85 +62,141 @@
         </template>
     </div>
 
-    <script>
-        function globalToasts() {
-            return {
-                toasts: [],
-                nextId: 1,
+<script>
+    function globalToasts() {
+        return {
+            toasts: [],
+            nextId: 1,
 
-                init() {
-                    this.enqueueFromSession();
+            init() {
+                this.enqueueFromSession();
 
-                    document.addEventListener('livewire:init', () => {
-                        Livewire.on('notify', (payload) => {
-                            const data = this.normalizePayload(payload);
-                            if (!data.message) {
-                                return;
-                            }
-
-                            this.push(data.type || 'info', data.message);
-                        });
-                    });
-                },
-
-                enqueueFromSession() {
-                    const flashes = [
-                        { type: 'success', message: @json(session('success')) },
-                        { type: 'error', message: @json(session('error')) },
-                        { type: 'warning', message: @json(session('warning')) },
-                        { type: 'info', message: @json(session('info')) },
-                    ];
-
-                    flashes.forEach((flash) => {
-                        if (flash.message) {
-                            this.push(flash.type, flash.message);
+                document.addEventListener('livewire:init', () => {
+                    Livewire.on('notify', (payload) => {
+                        const data = this.normalizePayload(payload);
+                        if (!data.message) {
+                            return;
                         }
+
+                        this.push(data.type || 'info', data.message);
                     });
-                },
+                });
+            },
 
-                normalizePayload(payload) {
-                    if (Array.isArray(payload)) {
-                        const first = payload[0] ?? {};
-                        if (typeof first === 'string') {
-                            return { type: 'info', message: first };
-                        }
-                        return first;
+            enqueueFromSession() {
+                const flashes = [
+                    { type: 'success', message: @json(session('success')) },
+                    { type: 'error', message: @json(session('error')) },
+                    { type: 'warning', message: @json(session('warning')) },
+                    { type: 'info', message: @json(session('info')) },
+                ];
+
+                flashes.forEach((flash) => {
+                    if (flash.message) {
+                        this.push(flash.type, flash.message);
                     }
+                });
+            },
 
-                    if (payload && typeof payload === 'object' && Array.isArray(payload.detail)) {
-                        return payload.detail[0] ?? {};
+            normalizePayload(payload) {
+                if (Array.isArray(payload)) {
+                    const first = payload[0] ?? {};
+                    if (typeof first === 'string') {
+                        return { type: 'info', message: first };
                     }
+                    return first;
+                }
 
-                    return payload && typeof payload === 'object'
-                        ? payload
-                        : { type: 'info', message: String(payload ?? '') };
-                },
+                if (payload && typeof payload === 'object' && Array.isArray(payload.detail)) {
+                    return payload.detail[0] ?? {};
+                }
 
-                push(type, message) {
-                    const id = this.nextId++;
-                    this.toasts.push({ id, type, message });
-                    setTimeout(() => this.dismiss(id), 5000);
-                },
+                return payload && typeof payload === 'object'
+                    ? payload
+                    : { type: 'info', message: String(payload ?? '') };
+            },
 
-                dismiss(id) {
-                    this.toasts = this.toasts.filter((toast) => toast.id !== id);
-                },
+            push(type, message) {
+                const id = this.nextId++;
+                this.toasts.push({ id, type, message });
+                setTimeout(() => this.dismiss(id), 5000);
+            },
 
-                toastClass(type) {
-                    switch (type) {
-                        case 'success':
-                            return 'border-success/20 bg-base-100';
-                        case 'error':
-                            return 'border-error/20 bg-base-100';
-                        case 'warning':
-                            return 'border-warning/20 bg-base-100';
-                        default:
-                            return 'border-info/20 bg-base-100';
-                    }
-                },
-            };
+            dismiss(id) {
+                this.toasts = this.toasts.filter((toast) => toast.id !== id);
+            },
+
+            toastClass(type) {
+                switch (type) {
+                    case 'success':
+                        return 'border-success/20 bg-base-100';
+                    case 'error':
+                        return 'border-error/20 bg-base-100';
+                    case 'warning':
+                        return 'border-warning/20 bg-base-100';
+                    default:
+                        return 'border-info/20 bg-base-100';
+                }
+            },
+        };
+    }
+
+// Scroll sidebar to active menu item on page load and after navigation
+    function scrollSidebarToActive() {
+        console.log('scrollSidebarToActive called');
+
+        // Find the sidebar aside element with multiple possible selectors
+        const aside = document.querySelector('.app-sidebar')
+            || document.querySelector('.drawer-side aside');
+
+        if (!aside) {
+            console.log('No aside found');
+            return;
         }
-    </script>
+
+        console.log('aside found:', aside);
+
+        // Find the scrollable nav inside - with multiple possible classes
+        const nav = aside.querySelector('nav.overflow-y-auto')
+            || aside.querySelector('nav');
+
+        if (!nav) {
+            console.log('No nav found');
+            return;
+        }
+
+        console.log('nav found:', nav, 'scrollTop:', nav.scrollTop);
+
+        // Find any element with active class inside nav
+        const activeItem = nav.querySelector('.active');
+
+        if (!activeItem) {
+            console.log('No active item found');
+            return;
+        }
+
+        console.log('activeItem found:', activeItem);
+
+        // Get the position of the active item relative to nav
+        const linkTop = activeItem.offsetTop;
+        console.log('linkTop:', linkTop);
+
+        // Set scroll position with padding
+        nav.scrollTop = linkTop - 20;
+        console.log('Set scrollTop to:', linkTop - 20);
+    }
+
+    // Run on page load
+    window.addEventListener('DOMContentLoaded', scrollSidebarToActive);
+
+    // Run after Livewire navigation
+    window.addEventListener('livewire:navigated', scrollSidebarToActive);
+
+    // Run on setTimeout for fallback
+    setTimeout(scrollSidebarToActive, 100);
+    setTimeout(scrollSidebarToActive, 500);
+    setTimeout(scrollSidebarToActive, 1000);
+</script>
 
     @stack('scripts')
 </body>

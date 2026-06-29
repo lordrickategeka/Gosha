@@ -74,81 +74,68 @@
             <div class="stat-title text-xs">Out of Stock</div>
             <div class="stat-value text-2xl text-error">{{ number_format($stats['out_of_stock']) }}</div>
         </div>
-    </div>
+</div>
 
-    {{-- Filters --}}
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="flex flex-row items-end gap-4 overflow-x-auto">
-                {{-- Search --}}
-                <div class="min-w-0 flex-1">
-                    <label class="block text-sm font-medium mb-2">Search</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input
-                            type="text"
-                            wire:model.live.debounce.300ms="search"
-                            placeholder="Search by name, SKU, barcode, OEM number..."
-                            class="input input-bordered w-full pl-10"
-                        />
-                    </div>
-                </div>
-
-                {{-- Filters --}}
-                <div class="flex flex-row flex-nowrap items-end gap-3 shrink-0">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Type</label>
-                        <select wire:model.live="itemType" class="select select-bordered w-40">
-                            <option value="">All Types</option>
-                            <option value="service_part">Service Parts</option>
-                            <option value="wash_supply">Wash Supplies</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Category</label>
-                        <select wire:model.live="category" class="select select-bordered w-44">
-                            <option value="">All Categories</option>
-                            @foreach($this->categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->full_path }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Stock</label>
-                        <select wire:model.live="stockStatus" class="select select-bordered w-36">
-                            <option value="">All Stock</option>
-                            <option value="low">Low Stock</option>
-                            <option value="out">Out of Stock</option>
-                            <option value="in_stock">In Stock</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Condition</label>
-                        <select wire:model.live="condition" class="select select-bordered w-40">
-                            <option value="">All Conditions</option>
-                            <option value="new">New</option>
-                            <option value="used">Used</option>
-                            <option value="refurbished">Refurbished</option>
-                        </select>
-                    </div>
-
-                    @if($search || $itemType || $category || $stockStatus || $condition)
-                        <button wire:click="clearFilters" class="btn btn-ghost gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Clear
-                        </button>
-                    @endif
-                </div>
+    {{-- Filters (in table area) --}}
+    <div class="card bg-base-100 shadow-sm mb-4">
+        <div class="flex flex-wrap items-center gap-2 p-4">
+            <!-- Search -->
+            <div class="form-control">
+                <input
+                    type="text"
+                    wire:model.live.debounce.300ms="search"
+                    placeholder="Search by name, SKU, barcode..."
+                    class="input input-bordered input-sm w-44"
+                />
             </div>
+
+            <!-- Type Filter -->
+            <div class="form-control">
+                <select wire:model.live="itemType" class="select select-bordered select-sm w-36">
+                    <option value="">All Types</option>
+                    <option value="service_part">Service Parts</option>
+                    <option value="wash_supply">Wash Supplies</option>
+                </select>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="form-control">
+                <select wire:model.live="category" class="select select-bordered select-sm w-40">
+                    <option value="">All Categories</option>
+                    @foreach($this->categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->full_path }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Stock Filter -->
+            <div class="form-control">
+                <select wire:model.live="stockStatus" class="select select-bordered select-sm w-32">
+                    <option value="">All Stock</option>
+                    <option value="low">Low Stock</option>
+                    <option value="out">Out of Stock</option>
+                    <option value="in_stock">In Stock</option>
+                </select>
+            </div>
+
+            <!-- Condition Filter -->
+            <div class="form-control">
+                <select wire:model.live="condition" class="select select-bordered select-sm w-36">
+                    <option value="">All Conditions</option>
+                    <option value="new">New</option>
+                    <option value="used">Used</option>
+                    <option value="refurbished">Refurbished</option>
+                </select>
+            </div>
+
+            <!-- Clear Filters -->
+            @if($search || $itemType || $category || $stockStatus || $condition)
+            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            @endif
         </div>
     </div>
 

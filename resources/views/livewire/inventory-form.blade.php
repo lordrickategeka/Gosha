@@ -36,7 +36,7 @@
             <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier</label>
             <select id="supplier_id" wire:model="supplier_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                 <option value="">Select a supplier</option>
-                @foreach (App\Models\Supplier::all() as $supplier)
+                @foreach (App\Domains\Inventory\Models\Supplier::all() as $supplier)
                     <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                 @endforeach
             </select>

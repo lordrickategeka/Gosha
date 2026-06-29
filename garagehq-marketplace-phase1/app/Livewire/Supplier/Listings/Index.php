@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Livewire\Supplier\Listings;
+
+use App\Models\CatalogProduct;
+use App\Models\MarketplaceListing;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+class Index extends Component
+{
+    use WithPagination;
+
+    public string $search = '';
+
+    // Inline create/edit form state.
+    public bool $showForm = false;
+    public ?int $editingId = null;
+    public ?int $catalog_product_id = null;
+    public string $supplier_sku = '';
+    public $price = null;
+    public int $stock_qty = 0;
+    public int $min_order_qty = 1;
+    public int $lead_time_days = 0;
+    public string $condition = 'new';
+    public bool $is_active = true;
+
+    protected function rules(): array
+    {
+        return [
+            'catalog_product_id' => 'required|exists:catalog_products,id',
+            'supplier_sku' => 'nullable|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock_qty' => 'required|integer|min:0',
+            'min_order_qty' => 'required|integer|min:1',
+            'lead_time_days' => 'required|integer|min:0',
+            'condition' => 'required|in:new,used,refurbished',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    private function vendorId(): int
+    {
+        return session('current_vendor_id') ?? auth()->user()->vendor_id;
+    }
+
+    public function openCreate(): void
+    {
+        $this->reset(['editingId', 'catalog_product_id', 'supplier_sku', 'price', 'stock_qty', 'min_order_qty', 'lead_time_days', 'condition', 'is_active']);
+        $this->is_active = true;
+        $this->min_order_qty = 1;
+        $this->condition = 'new';
+        $this->showForm = true;
+    }
+
+    public function edit(int $id): void
+    {
+        $listing = MarketplaceListing::ownedBySupplier($this->vendorId())->findOrFail($id);
+        $this->editingId = $listing->id;
+        $this->catalog_product_id = $listing->catalog_product_id;
+        $this->supplier_sku = (string) $listing->supplier_sku;
+        $this->price = $listing->price;
+        $this->stock_qty = $listing->stock_qty;
+        $this->min_order_qty = $listing->min_order_qty;
+        $this->lead_time_days = $listing->lead_time_days;
+        $this->condition = $listing->condition;
+        $this->is_active = $listing->is_active;
+        $this->showForm = true;
+    }
+
+    public function save(): void
+    {
+        $this->authorize('manage_listings');
+        $data = $this->validate();
+        $data['supplier_vendor_id'] = $this->vendorId();
+        $data['currency'] = config('marketplace.default_currency', 'UGX');
+
+        if ($this->editingId) {
+            MarketplaceListing::ownedBySupplier($this->vendorId())
+                ->findOrFail($this->editingId)
+                ->update($data);
+        } else {
+            MarketplaceListing::create($data);
+        }
+
+        $this->showForm = false;
+        $this->dispatch('toast', message: 'Listing saved.');
+    }
+
+    public function toggle(int $id): void
+    {
+        $this->authorize('manage_listings');
+        $listing = MarketplaceListing::ownedBySupplier($this->vendorId())->findOrFail($id);
+        $listing->update(['is_active' => ! $listing->is_active]);
+    }
+
+    #[Computed]
+    public function products()
+    {
+        return CatalogProduct::active()->orderBy('name')->limit(200)->get();
+    }
+
+    public function render()
+    {
+        $listings = MarketplaceListing::ownedBySupplier($this->vendorId())
+            ->with('product')
+            ->when($this->search, fn ($q) => $q->whereHas('product', fn ($p) =>
+                $p->where('name', 'like', "%{$this->search}%")
+                  ->orWhere('part_number', 'like', "%{$this->search}%")))
+            ->latest()
+            ->paginate(15);
+
+        return view('livewire.supplier.listings.index', compact('listings'));
+    }
+}

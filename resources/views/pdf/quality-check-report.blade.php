@@ -153,7 +153,7 @@
 
     @foreach($itemsBySection as $section => $items)
         <div class="section-title">
-            {{ strtoupper(\App\Models\QualityCheckTemplate::SECTIONS[$section] ?? $section) }}
+            {{ strtoupper(\App\Domains\ServiceConfig\Models\QualityCheckTemplate::SECTIONS[$section] ?? $section) }}
         </div>
 
         <table class="checklist-table">

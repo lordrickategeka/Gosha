@@ -17,7 +17,7 @@
 <div class="drawer-side z-40">
     <label for="sidebar-drawer" class="drawer-overlay"></label>
     <aside class="app-sidebar w-72 min-h-screen flex flex-col">
-        <!-- Logo -->
+<!-- Logo -->
         <div class="border-b border-base-300/80 px-5 py-5">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
                 <div class="flex h-11 w-11 items-center justify-center rounded-2xl border border-base-300 bg-neutral text-neutral-content">
@@ -27,9 +27,11 @@
                 </div>
                 <div>
                     <span class="text-lg font-semibold tracking-[-0.03em]">GarageHQ</span>
+                    @auth
                     @if(auth()->user()->vendor)
                         <p class="mt-0.5 text-xs uppercase tracking-[0.14em] text-base-content/45">{{ auth()->user()->vendor->name }}</p>
                     @endif
+                    @endauth
                 </div>
             </a>
         </div>
@@ -233,6 +235,67 @@
                 </li>
                 @endcanany
 
+<!-- Marketplace Section -->
+                @canany(['browse_marketplace', 'view_quotes', 'view_listings', 'view_rfqs', 'view_purchase_orders'])
+                <li class="menu-title mt-4">
+                    <span>Marketplace</span>
+                </li>
+
+                <!-- Supplier Side -->
+                @canany(['view_quotes', 'view_listings', 'view_purchase_orders'])
+                <li>
+                    <details {{ request()->routeIs('supplier.*') ? 'open' : '' }}>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                            </svg>
+                            My Shop
+                        </summary>
+                        <ul>
+                            @can('view_quotes')
+                            <li><a href="{{ route('supplier.quotes.inbox') }}" class="{{ request()->routeIs('supplier.quotes.inbox') ? 'active' : '' }}">Quote Inbox</a></li>
+                            @endcan
+                            @can('view_listings')
+                            <li><a href="{{ route('supplier.listings.index') }}" class="{{ request()->routeIs('supplier.listings.*') ? 'active' : '' }}">Listings</a></li>
+                            @endcan
+                            @can('view_purchase_orders')
+                            <li><a href="{{ route('supplier.orders.index') }}" class="{{ request()->routeIs('supplier.orders.*') ? 'active' : '' }}">Orders</a></li>
+                            @endcan
+                        </ul>
+                    </details>
+                </li>
+                @endcanany
+
+                <!-- Buyer / Browse Side -->
+                @can('browse_marketplace')
+                <li>
+                    <details {{ request()->routeIs('marketplace.*') ? 'open' : '' }}>
+                        <summary class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="nav-chevron h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                            </svg>
+                            Browse
+                        </summary>
+                        <ul>
+                            <li><a href="{{ route('marketplace.browse') }}" class="{{ request()->routeIs('marketplace.browse') ? 'active' : '' }}">All Listings</a></li>
+                            @can('view_rfqs')
+                            <li><a href="{{ route('marketplace.rfqs.index') }}" class="{{ request()->routeIs('marketplace.rfqs.*') ? 'active' : '' }}">RFQs</a></li>
+                            @endcan
+                            @can('view_purchase_orders')
+                            <li><a href="{{ route('marketplace.purchase-orders.index') }}" class="{{ request()->routeIs('marketplace.purchase-orders.*') ? 'active' : '' }}">Purchase Orders</a></li>
+                            @endcan
+                        </ul>
+                    </details>
+                </li>
+                @endcan
+                @endcanany
+
                 <!-- Inventory Section -->
                 @can('view_inventory')
                 <li class="menu-title mt-4">
@@ -395,7 +458,8 @@
                 @endcan
                 @endcanany
 
-                <!-- Platform Admin Section -->
+<!-- Platform Admin Section -->
+                @auth
                 @if(auth()->user()->isPlatformUser())
                 <li class="menu-title mt-4">
                     <span>Platform</span>
@@ -428,6 +492,7 @@
                     </a>
                 </li>
                 @endif
+                @endauth
             </ul>
         </nav>
 

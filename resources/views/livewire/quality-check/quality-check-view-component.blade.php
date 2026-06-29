@@ -67,7 +67,7 @@
     @foreach($qualityCheck->getItemsBySection() as $section => $items)
         <div class="bg-base-100 rounded-lg shadow mb-6">
             <div class="bg-primary text-primary-content p-4 rounded-t-lg">
-                <h2 class="text-lg font-bold">{{ \App\Models\QualityCheckTemplate::SECTIONS[$section] ?? strtoupper($section) }}</h2>
+                <h2 class="text-lg font-bold">{{ \App\Domains\ServiceConfig\Models\QualityCheckTemplate::SECTIONS[$section] ?? strtoupper($section) }}</h2>
             </div>
 
             <div class="overflow-x-auto">

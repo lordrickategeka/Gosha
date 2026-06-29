@@ -14,18 +14,42 @@
         @endcan
     </div>
 
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name, phone, email..." class="input input-bordered w-full max-w-md" />
-        </div>
-    </div>
+<div class="card bg-base-100 shadow-sm">
+        <div class="flex flex-col gap-4 border-b border-base-200 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-lg font-semibold">Customers</h2>
+                <p class="text-sm text-base-content/60">{{ $customers->total() }} total records</p>
+            </div>
 
-    <div class="card bg-base-100 shadow-sm">
+            <!-- Table Filters -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Search -->
+                <div class="form-control">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Search by name, phone, email..."
+                        class="input input-bordered input-sm w-48"
+                    />
+                </div>
+
+                <!-- Clear Filter -->
+                @if($search)
+                <button wire:click="$set('search', '')" class="btn btn-xs btn-ghost" title="Clear search">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                @endif
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="table">
-                <thead>
+<thead>
                     <tr>
                         <th>Customer</th>
+                        <th>Branch</th>
                         <th>Contact</th>
                         <th>Vehicles</th>
                         <th>Orders</th>
@@ -37,7 +61,7 @@
                 <tbody>
                     @forelse($customers as $customer)
                         <tr class="hover">
-                            <td>
+<td>
                                 <div class="flex items-center gap-3">
                                     <div class="avatar placeholder">
                                         <div class="bg-neutral text-neutral-content rounded-full w-10">
@@ -51,6 +75,13 @@
                                         @endif
                                     </div>
                                 </div>
+                            </td>
+                            <td>
+                                @if($customer->branch)
+                                    <span class="badge badge-ghost">{{ $customer->branch->name }}</span>
+                                @else
+                                    <span class="text-base-content/50">-</span>
+                                @endif
                             </td>
                             <td>
                                 <p>{{ $customer->phone }}</p>
@@ -83,7 +114,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-base-content/50">No customers found</td>
+<td colspan="8" class="text-center py-8 text-base-content/50">No customers found</td>
                         </tr>
                     @endforelse
                 </tbody>

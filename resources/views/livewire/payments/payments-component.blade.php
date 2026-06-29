@@ -22,21 +22,26 @@
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search customer or reference..." class="input input-bordered input-sm" />
-                <select wire:model.live="method" class="select select-bordered select-sm">
-                    <option value="">All Methods</option>
-                    <option value="cash">Cash</option>
-                    <option value="mobile_money">Mobile Money</option>
-                    <option value="card">Card</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                </select>
-                <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm" />
-                <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm" />
-            </div>
+    <!-- Filters (in table header) -->
+    <div class="card bg-base-100 shadow-sm mb-4">
+        <div class="flex flex-wrap items-center gap-2 p-4">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="input input-bordered input-sm w-40" />
+            <select wire:model.live="method" class="select select-bordered select-sm w-36">
+                <option value="">All Methods</option>
+                <option value="cash">Cash</option>
+                <option value="mobile_money">Mobile Money</option>
+                <option value="card">Card</option>
+                <option value="bank_transfer">Bank Transfer</option>
+            </select>
+            <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm w-36" />
+            <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm w-36" />
+            @if($search || $method || $dateFrom || $dateTo)
+            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            @endif
         </div>
     </div>
 

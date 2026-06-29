@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\JobCardService;
+use App\Domains\Operations\Services\JobCardService;
 use Illuminate\Http\JsonResponse;
 
 class JobCardController extends Controller

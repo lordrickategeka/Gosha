@@ -4,7 +4,8 @@
             <h2 class="card-title text-2xl mb-2">Welcome back</h2>
             <p class="text-base-content/60 mb-6">Sign in to your account to continue</p>
 
-            <form wire:submit="login" class="space-y-4">
+            <form method="POST" action="{{ route('login') }}" wire:submit="login" class="space-y-4">
+                @csrf
                 <!-- Email -->
                 <div class="form-control">
                     <label class="label">
@@ -12,7 +13,9 @@
                     </label>
                     <input
                         type="email"
+                        name="email"
                         wire:model="email"
+                        value="{{ old('email') }}"
                         class="input input-bordered w-full @error('email') input-error @enderror"
                         placeholder="you@example.com"
                         autofocus
@@ -31,6 +34,7 @@
                     </label>
                     <input
                         type="password"
+                        name="password"
                         wire:model="password"
                         class="input input-bordered w-full @error('password') input-error @enderror"
                         placeholder="••••••••"
@@ -45,7 +49,7 @@
                 <!-- Remember & Forgot -->
                 <div class="flex items-center justify-between">
                     <label class="label cursor-pointer gap-2">
-                        <input type="checkbox" wire:model="remember" class="checkbox checkbox-sm checkbox-primary" />
+                        <input type="checkbox" name="remember" wire:model="remember" class="checkbox checkbox-sm checkbox-primary" />
                         <span class="label-text">Remember me</span>
                     </label>
                     <a href="#" class="link link-primary text-sm">Forgot password?</a>

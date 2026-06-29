@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Quotation;
+use App\Domains\Finance\Models\Quotation;
 use Illuminate\Http\Request;
 
 class PublicQuotationController extends Controller

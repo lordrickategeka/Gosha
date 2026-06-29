@@ -174,9 +174,9 @@
             <div class="space-y-4">
                 @foreach($this->washBays as $bay)
                     @php
-                        $statusValue = $bay->status instanceof \App\Enums\WashBayStatus ? $bay->status->value : $bay->status;
-                        $statusLabel = $bay->status instanceof \App\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status);
-                        $typeLabel   = $bay->bay_type instanceof \App\Enums\WashBayType   ? $bay->bay_type->label()   : ucfirst(str_replace('_', ' ', $bay->bay_type));
+                        $statusValue = $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->value : $bay->status;
+                        $statusLabel = $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status);
+                        $typeLabel   = $bay->bay_type instanceof \App\Domains\Operations\Enums\WashBayType   ? $bay->bay_type->label()   : ucfirst(str_replace('_', ' ', $bay->bay_type));
                     @endphp
                     <div class="app-panel border-l-4 {{ $statusValue === 'available' ? 'border-success' : ($statusValue === 'occupied' ? 'border-info' : 'border-error') }}">
                         <div class="p-4">

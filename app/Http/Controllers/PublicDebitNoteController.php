@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DebitNote;
-use App\Models\InventoryMovement;
-use App\Models\InvoiceItem;
-use App\Models\WorkOrderItem;
+use App\Domains\Finance\Models\DebitNote;
+use App\Domains\Inventory\Models\InventoryMovement;
+use App\Domains\Finance\Models\InvoiceItem;
+use App\Domains\Operations\Models\WorkOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

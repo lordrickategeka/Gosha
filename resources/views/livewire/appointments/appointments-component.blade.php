@@ -14,26 +14,31 @@
         @endcan
     </div>
 
-    <!-- Filters -->
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search customer..." class="input input-bordered input-sm" />
-                <input type="date" wire:model.live="date" class="input input-bordered input-sm" />
-                <select wire:model.live="status" class="select select-bordered select-sm">
-                    <option value="">All Status</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="checked_in">Checked In</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="no_show">No Show</option>
-                </select>
-                <div class="flex gap-2">
-                    <button wire:click="$set('date', '{{ now()->format('d-m-Y') }}')" class="btn btn-ghost btn-sm flex-1">Today</button>
-                    <button wire:click="$set('date', '{{ now()->addDay()->format('d-m-Y') }}')" class="btn btn-ghost btn-sm flex-1">Tomorrow</button>
-                </div>
+    <!-- Filters (in table header) -->
+    <div class="card bg-base-100 shadow-sm mb-4">
+        <div class="flex flex-wrap items-center gap-2 p-4">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="input input-bordered input-sm w-40" />
+            <input type="date" wire:model.live="date" class="input input-bordered input-sm w-36" />
+            <select wire:model.live="status" class="select select-bordered select-sm w-36">
+                <option value="">All Status</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="checked_in">Checked In</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="no_show">No Show</option>
+            </select>
+            <div class="flex gap-1">
+                <button wire:click="$set('date', '{{ now()->format('Y-m-d') }}')" class="btn btn-xs btn-ghost">Today</button>
+                <button wire:click="$set('date', '{{ now()->addDay()->format('Y-m-d') }}')" class="btn btn-xs btn-ghost">Tomorrow</button>
             </div>
+            @if($search || $date || $status)
+            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            @endif
         </div>
     </div>
 

@@ -11,11 +11,14 @@
         </div>
     </div>
 
-    <form wire:submit="save" class="max-w-2xl">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <!-- Owner -->
-                <div class="form-control mb-4">
+    <form wire:submit="save" class="max-w-4xl">
+        <!-- Owner Selection -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">Owner</h2>
+            </div>
+            <div class="p-6">
+                <div class="form-control max-w-lg">
                     <label class="label"><span class="label-text font-medium">Owner *</span></label>
                     <div class="relative">
                         <input type="text" wire:model.live.debounce.300ms="customerSearch" placeholder="Search customer..." class="input input-bordered w-full" autocomplete="off" />
@@ -29,68 +32,195 @@
                     </div>
                     @error('customer_id') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
                 </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Registration Number *</span></label>
-                        <input type="text" wire:model="registration_number" class="input input-bordered uppercase" placeholder="UAA 123B" />
-                        @error('registration_number') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Make</span></label>
-                        <input type="text" wire:model="make" class="input input-bordered" placeholder="Toyota" />
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Model</span></label>
-                        <input type="text" wire:model="model" class="input input-bordered" placeholder="Corolla" />
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Year</span></label>
-                        <input type="number" wire:model="year" class="input input-bordered" placeholder="2020" min="1900" max="2030" />
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Color</span></label>
-                        <input type="text" wire:model="color" class="input input-bordered" placeholder="Silver" />
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">VIN / Chassis</span></label>
-                        <input type="text" wire:model="vin" class="input input-bordered" />
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Fuel Type</span></label>
-                        <select wire:model="fuel_type" class="select select-bordered">
-                            <option value="petrol">Petrol</option>
-                            <option value="diesel">Diesel</option>
-                            <option value="electric">Electric</option>
-                            <option value="hybrid">Hybrid</option>
-                        </select>
-                    </div>
-
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Transmission</span></label>
-                        <select wire:model="transmission" class="select select-bordered">
-                            <option value="automatic">Automatic</option>
-                            <option value="manual">Manual</option>
-                        </select>
-                    </div>
-
-                    <div class="form-control sm:col-span-2">
-                        <label class="label"><span class="label-text font-medium">Notes</span></label>
-                        <textarea wire:model="notes" rows="2" class="textarea textarea-bordered" placeholder="Any notes about the vehicle..."></textarea>
-                    </div>
-                </div>
-
-                <div class="card-actions justify-end mt-6">
-                    <a href="{{ route('vehicles.index') }}" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Vehicle</button>
-                </div>
             </div>
+        </div>
+
+        <!-- Vehicle Information Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">Vehicle Information</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <tbody class="divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">Registration Number *</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="registration_number" class="input input-bordered uppercase" placeholder="UAA 123B" />
+                                @error('registration_number') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">Status</td>
+                            <td class="px-6 py-3">
+                                <select wire:model="status" class="select select-bordered">
+                                    <option value="active">Active</option>
+                                    <option value="in_shop">In Shop</option>
+                                    <option value="decommissioned">Decommissioned</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Make</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="make" class="input input-bordered" placeholder="Toyota" />
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Model</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="model" class="input input-bordered" placeholder="Hilux" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Year</td>
+                            <td class="px-6 py-3">
+                                <input type="number" wire:model="year" class="input input-bordered" placeholder="2024" min="1900" max="2035" />
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Color</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="color" class="input input-bordered" placeholder="Silver" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VIN & Engine Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">VIN & Engine</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <tbody class="divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">VIN</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="vin" class="input input-bordered uppercase" placeholder="1HGBH41JXMKN10986" maxlength="17" />
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">Engine Number</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="engine_number" class="input input-bordered uppercase" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Engine Code</td>
+                            <td class="px-6 py-3">
+                                <input type="text" wire:model="engine_code" class="input input-bordered uppercase" placeholder="2GD-FTV" />
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Displacement (L)</td>
+                            <td class="px-6 py-3">
+                                <input type="number" step="0.1" wire:model="engine_displacement" class="input input-bordered" placeholder="2.0" min="0" max="10" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Fuel Type</td>
+                            <td class="px-6 py-3">
+                                <select wire:model="fuel_type" class="select select-bordered">
+                                    <option value="gasoline">Gasoline</option>
+                                    <option value="diesel">Diesel</option>
+                                    <option value="electric">Electric</option>
+                                    <option value="hybrid">Hybrid</option>
+                                </select>
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Mileage</td>
+                            <td class="px-6 py-3">
+                                <input type="number" wire:model="mileage" class="input input-bordered" placeholder="0" min="0" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Transmission & Drivetrain Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">Transmission & Drivetrain</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <tbody class="divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">Transmission</td>
+                            <td class="px-6 py-3">
+                                <select wire:model="transmission_type" class="select select-bordered">
+                                    <option value="automatic">Automatic</option>
+                                    <option value="manual">Manual</option>
+                                </select>
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">Drivetrain</td>
+                            <td class="px-6 py-3">
+                                <select wire:model="drivetrain_type" class="select select-bordered">
+                                    <option value="">Select</option>
+                                    <option value="fwd">FWD</option>
+                                    <option value="rwd">RWD</option>
+                                    <option value="awd">AWD</option>
+                                    <option value="4wd">4WD</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Financial Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">Financial & Lifecycle</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <tbody class="divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">In-Service Date</td>
+                            <td class="px-6 py-3">
+                                <input type="date" wire:model="in_service_date" class="input input-bordered" />
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500 w-48">Acquisition Date</td>
+                            <td class="px-6 py-3">
+                                <input type="date" wire:model="acquisition_date" class="input input-bordered" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Acquisition Cost</td>
+                            <td class="px-6 py-3">
+                                <input type="number" step="0.01" wire:model="acquisition_cost" class="input input-bordered" placeholder="0.00" min="0" />
+                            </td>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Current Value</td>
+                            <td class="px-6 py-3">
+                                <input type="number" step="0.01" wire:model="current_value" class="input input-bordered" placeholder="0.00" min="0" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-3 text-sm font-medium text-gray-500">Ownership</td>
+                            <td class="px-6 py-3">
+                                <select wire:model="ownership_status" class="select select-bordered">
+                                    <option value="owned">Owned</option>
+                                    <option value="leased">Leased</option>
+                                    <option value="financed">Financed</option>
+                                    <option value="customer_owned">Customer Owned</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Additional Notes - Always Visible -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">Additional Notes</h2>
+            </div>
+            <div class="p-6">
+                <textarea wire:model="notes" rows="4" class="textarea textarea-bordered w-full" placeholder="Any notes about the vehicle..."></textarea>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3">
+            <a href="{{ route('vehicles.index') }}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Vehicle</button>
         </div>
     </form>
 </div>

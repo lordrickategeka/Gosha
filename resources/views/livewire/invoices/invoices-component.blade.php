@@ -14,7 +14,7 @@
         @endcan
     </div>
 
-    <!-- Stats -->
+<!-- Stats -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
             <div class="stat-title text-xs">Total Invoiced</div>
@@ -34,25 +34,57 @@
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoices..." class="input input-bordered input-sm" />
-                <select wire:model.live="status" class="select select-bordered select-sm">
-                    <option value="">All Status</option>
-                    <option value="sent">Pending</option>
-                    <option value="partial">Partially Paid</option>
-                    <option value="paid">Paid</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-                <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm" />
-                <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm" />
+<div class="card bg-base-100 shadow-sm">
+        <div class="flex flex-col gap-4 border-b border-base-200 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-lg font-semibold">Invoices</h2>
+                <p class="text-sm text-base-content/60">{{ $invoices->total() }} total records</p>
+            </div>
+
+            <!-- Table Filters -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Search -->
+                <div class="form-control">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Search invoices..."
+                        class="input input-bordered input-sm w-40"
+                    />
+                </div>
+
+                <!-- Status Filter -->
+                <div class="form-control">
+                    <select wire:model.live="status" class="select select-bordered select-sm w-32">
+                        <option value="">All Status</option>
+                        <option value="sent">Pending</option>
+                        <option value="partial">Partially Paid</option>
+                        <option value="paid">Paid</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Date From -->
+                <div class="form-control">
+                    <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm w-36" placeholder="From" />
+                </div>
+
+                <!-- Date To -->
+                <div class="form-control">
+                    <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm w-36" placeholder="To" />
+                </div>
+
+                <!-- Clear Filters -->
+                @if($search || $status || $dateFrom || $dateTo)
+                <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                @endif
             </div>
         </div>
-    </div>
 
-    <div class="card bg-base-100 shadow-sm">
         <div class="overflow-x-auto">
             <table class="table">
                 <thead>

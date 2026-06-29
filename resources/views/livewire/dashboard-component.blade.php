@@ -150,7 +150,7 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     @foreach($this->washBays->flatten() as $bay)
-                        <div class="app-mini-card {{ $bay->status === \App\Enums\WashBayStatus::Available ? 'border-success/35 bg-success/5' : ($bay->status === \App\Enums\WashBayStatus::Occupied ? 'border-warning/35 bg-warning/5' : 'border-error/35 bg-error/5') }}">
+                        <div class="app-mini-card {{ $bay->status === \App\Domains\Operations\Enums\WashBayStatus::Available ? 'border-success/35 bg-success/5' : ($bay->status === \App\Domains\Operations\Enums\WashBayStatus::Occupied ? 'border-warning/35 bg-warning/5' : 'border-error/35 bg-error/5') }}">
                             <p class="font-medium text-sm">{{ $bay->name }}</p>
                             @if($bay->currentWashOrder)
                                 <p class="text-xs text-base-content/60 truncate">{{ $bay->currentWashOrder->vehicle?->registration_number }}</p>

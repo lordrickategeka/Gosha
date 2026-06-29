@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\QualityCheckTemplate;
+use App\Domains\ServiceConfig\Models\QualityCheckTemplate;
 use Illuminate\Database\Seeder;
 
 class QualityCheckTemplateSeeder extends Seeder

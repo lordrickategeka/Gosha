@@ -1,16 +1,16 @@
 <?php
 
-use App\Livewire\Expenses\ExpenseList;
-use App\Livewire\Expenses\ExpenseCreate;
-use App\Livewire\Expenses\ExpenseEdit;
-use App\Livewire\Expenses\ExpenseView;
-use App\Livewire\Expenses\ExpenseApprovals;
-use App\Livewire\Expenses\Categories\ExpenseCategoryList;
-use App\Livewire\Expenses\Categories\ExpenseCategoryForm;
-use App\Livewire\Expenses\ApprovalChains\ApprovalChainList;
-use App\Livewire\Expenses\ApprovalChains\ApprovalChainBuilder;
-use App\Livewire\Expenses\ApprovalChains\ApprovalChainEdit;
-use App\Livewire\Expenses\Reports\ExpenseReports;
+use App\Domains\Expenses\Livewire\Expenses\ExpenseList;
+use App\Domains\Expenses\Livewire\Expenses\ExpenseCreate;
+use App\Domains\Expenses\Livewire\Expenses\ExpenseEdit;
+use App\Domains\Expenses\Livewire\Expenses\ExpenseView;
+use App\Domains\Expenses\Livewire\Expenses\ExpenseApprovals;
+use App\Domains\Expenses\Livewire\Expenses\Categories\ExpenseCategoryList;
+use App\Domains\Expenses\Livewire\Expenses\Categories\ExpenseCategoryForm;
+use App\Domains\Expenses\Livewire\Expenses\ApprovalChains\ApprovalChainList;
+use App\Domains\Expenses\Livewire\Expenses\ApprovalChains\ApprovalChainBuilder;
+use App\Domains\Expenses\Livewire\Expenses\ApprovalChains\ApprovalChainEdit;
+use App\Domains\Expenses\Livewire\Expenses\Reports\ExpenseReports;
 use Illuminate\Support\Facades\Route;
 
 /*

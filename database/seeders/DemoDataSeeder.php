@@ -2,30 +2,30 @@
 
 namespace Database\Seeders;
 
-use App\Models\Appointment;
-use App\Models\Branch;
-use App\Models\Commission;
-use App\Models\CommissionRule;
-use App\Models\Customer;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\InventoryCategory;
-use App\Models\InventoryItem;
-use App\Models\Invoice;
-use App\Models\Payment;
-use App\Models\ServiceBay;
-use App\Models\ServiceTemplate;
-use App\Models\Setting;
-use App\Models\Supplier;
+use App\Domains\Operations\Models\Appointment;
+use App\Domains\Organization\Models\Branch;
+use App\Domains\Commissions\Models\Commission;
+use App\Domains\Commissions\Models\CommissionRule;
+use App\Domains\CRM\Models\Customer;
+use App\Domains\Expenses\Models\Expense;
+use App\Domains\Expenses\Models\ExpenseCategory;
+use App\Domains\Inventory\Models\InventoryCategory;
+use App\Domains\Inventory\Models\InventoryItem;
+use App\Domains\Finance\Models\Invoice;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Operations\Models\ServiceBay;
+use App\Domains\ServiceConfig\Models\ServiceTemplate;
+use App\Domains\Organization\Models\Setting;
+use App\Domains\Inventory\Models\Supplier;
 use App\Models\User;
-use App\Models\Vehicle;
-use App\Models\Vendor;
-use App\Models\VendorBillingConfig;
-use App\Models\VehicleCategory;
-use App\Models\WashBay;
-use App\Models\WashOrder;
-use App\Models\WashPackage;
-use App\Models\WorkOrder;
+use App\Domains\Vehicles\Models\Vehicle;
+use App\Domains\Platform\Models\Vendor;
+use App\Domains\Platform\Models\VendorBillingConfig;
+use App\Domains\Vehicles\Models\VehicleCategory;
+use App\Domains\Operations\Models\WashBay;
+use App\Domains\Operations\Models\WashOrder;
+use App\Domains\ServiceConfig\Models\WashPackage;
+use App\Domains\Operations\Models\WorkOrder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -81,8 +81,10 @@ class DemoDataSeeder extends Seeder
             $mainSystemBranch->id => ['is_primary' => true],
         ]);
 
-        // Skip rest of seeding if vendor already had data
-        if (!$vendor->wasRecentlyCreated) {
+// Skip rest of seeding if vendor already had data
+        // But allow re-seeding vehicles if needed (check vehicles table)
+        $existingVehicles = Vehicle::count();
+        if (!$vendor->wasRecentlyCreated && $existingVehicles > 0) {
             $this->command->info('DemoDataSeeder: data already exists, skipping.');
             return;
         }
@@ -346,20 +348,22 @@ class DemoDataSeeder extends Seeder
             $createdCustomers[] = Customer::create(array_merge($customerData, ['vendor_id' => $vendor->id]));
         }
 
-        // ========================================
+// ========================================
         // VEHICLES
         // ========================================
+        // Note: fuel_type values must match the updated enum in migration 2026_06_24_215200:
+        // 'petrol' -> 'gasoline', 'diesel' -> 'diesel', 'electric' -> 'bev', 'hybrid' -> 'hev'
         $vehicles = [
-            ['customer_id' => $createdCustomers[0]->id, 'registration_number' => 'UAA 123A', 'make' => 'Toyota', 'model' => 'Corolla', 'year' => 2019, 'color' => 'Silver', 'fuel_type' => 'petrol', 'mileage' => 45000],
+            ['customer_id' => $createdCustomers[0]->id, 'registration_number' => 'UAA 123A', 'make' => 'Toyota', 'model' => 'Corolla', 'year' => 2019, 'color' => 'Silver', 'fuel_type' => 'gasoline', 'mileage' => 45000],
             ['customer_id' => $createdCustomers[0]->id, 'registration_number' => 'UAB 456B', 'make' => 'Toyota', 'model' => 'Hilux', 'year' => 2020, 'color' => 'White', 'fuel_type' => 'diesel', 'mileage' => 32000],
-            ['customer_id' => $createdCustomers[1]->id, 'registration_number' => 'UAC 789C', 'make' => 'Honda', 'model' => 'CR-V', 'year' => 2018, 'color' => 'Black', 'fuel_type' => 'petrol', 'mileage' => 58000],
-            ['customer_id' => $createdCustomers[2]->id, 'registration_number' => 'UAD 012D', 'make' => 'Nissan', 'model' => 'X-Trail', 'year' => 2021, 'color' => 'Blue', 'fuel_type' => 'petrol', 'mileage' => 25000],
+            ['customer_id' => $createdCustomers[1]->id, 'registration_number' => 'UAC 789C', 'make' => 'Honda', 'model' => 'CR-V', 'year' => 2018, 'color' => 'Black', 'fuel_type' => 'gasoline', 'mileage' => 58000],
+            ['customer_id' => $createdCustomers[2]->id, 'registration_number' => 'UAD 012D', 'make' => 'Nissan', 'model' => 'X-Trail', 'year' => 2021, 'color' => 'Blue', 'fuel_type' => 'gasoline', 'mileage' => 25000],
             ['customer_id' => $createdCustomers[3]->id, 'registration_number' => 'UAE 345E', 'make' => 'Isuzu', 'model' => 'FRR', 'year' => 2017, 'color' => 'White', 'fuel_type' => 'diesel', 'mileage' => 120000],
             ['customer_id' => $createdCustomers[3]->id, 'registration_number' => 'UAF 678F', 'make' => 'Isuzu', 'model' => 'FRR', 'year' => 2018, 'color' => 'White', 'fuel_type' => 'diesel', 'mileage' => 95000],
             ['customer_id' => $createdCustomers[4]->id, 'registration_number' => 'UAG 901G', 'make' => 'Toyota', 'model' => 'Hiace', 'year' => 2019, 'color' => 'Silver', 'fuel_type' => 'diesel', 'mileage' => 78000],
-            ['customer_id' => $createdCustomers[5]->id, 'registration_number' => 'UAH 234H', 'make' => 'Suzuki', 'model' => 'Swift', 'year' => 2020, 'color' => 'Red', 'fuel_type' => 'petrol', 'mileage' => 28000],
-            ['customer_id' => $createdCustomers[6]->id, 'registration_number' => 'UAI 567I', 'make' => 'Subaru', 'model' => 'Forester', 'year' => 2017, 'color' => 'Green', 'fuel_type' => 'petrol', 'mileage' => 72000],
-            ['customer_id' => $createdCustomers[7]->id, 'registration_number' => 'UAJ 890J', 'make' => 'Mercedes', 'model' => 'C200', 'year' => 2016, 'color' => 'Black', 'fuel_type' => 'petrol', 'mileage' => 85000],
+            ['customer_id' => $createdCustomers[5]->id, 'registration_number' => 'UAH 234H', 'make' => 'Suzuki', 'model' => 'Swift', 'year' => 2020, 'color' => 'Red', 'fuel_type' => 'gasoline', 'mileage' => 28000],
+            ['customer_id' => $createdCustomers[6]->id, 'registration_number' => 'UAI 567I', 'make' => 'Subaru', 'model' => 'Forester', 'year' => 2017, 'color' => 'Green', 'fuel_type' => 'gasoline', 'mileage' => 72000],
+            ['customer_id' => $createdCustomers[7]->id, 'registration_number' => 'UAJ 890J', 'make' => 'Mercedes', 'model' => 'C200', 'year' => 2016, 'color' => 'Black', 'fuel_type' => 'gasoline', 'mileage' => 85000],
         ];
 
         $createdVehicles = [];
