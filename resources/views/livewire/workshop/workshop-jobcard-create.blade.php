@@ -33,7 +33,7 @@
                                     <option value="{{ $st->id }}">{{ $st->name }}</option>
                                 @endforeach
                             </select>
-                            <button wire:click.prevent="addSelectedServiceType" class="mt-2 w-full px-2 py-1 bg-blue-600 text-white text-xs rounded">Add</button>
+                            <button wire:click.prevent="addSelectedServiceType" class="mt-2 w-full px-2 py-1 bg-primary text-primary-content text-xs rounded">Add</button>
                         </div>
                     </div>
 

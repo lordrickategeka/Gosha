@@ -26,7 +26,7 @@
                     <td class="border border-gray-300 px-4 py-2">{{ $item->quantity }}</td>
                     <td class="border border-gray-300 px-4 py-2">
                         <button wire:click="deleteItem({{ $item->id }})" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
-                        <a href="{{ route('inventory.edit', $item->id) }}" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</a>
+                        <a href="{{ route('inventory.edit', $item->id) }}" class="bg-primary text-primary-content px-2 py-1 rounded">Edit</a>
                     </td>
                 </tr>
             @endforeach

@@ -20,7 +20,7 @@
                                 <td class="border px-4 py-2">{{ $jobcard->jobcard->id ?? 'N/A' }}</td>
                                 <td class="border px-4 py-2">{{ $jobcard->notes }}</td>
                                 <td class="border px-4 py-2">
-                                    <a href="{{ route('workshop-jobcards.show', $jobcard->id) }}" class="text-blue-600">View</a>
+                                    <a href="{{ route('workshop-jobcards.show', $jobcard->id) }}" class="text-primary">View</a>
                                 </td>
                             </tr>
                         @endforeach

@@ -17,7 +17,7 @@ $maxWidthClass = [
 ][$maxWidth];
 
 $overlayClass = $overlayType === 'import'
-  ? 'fixed inset-0 bg-blue-100 opacity-30 transition-opacity'
+  ? 'fixed inset-0 bg-primary/10 opacity-30 transition-opacity'
   : 'fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity';
 @endphp
 

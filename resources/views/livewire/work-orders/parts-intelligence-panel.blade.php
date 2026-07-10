@@ -29,7 +29,7 @@
                 </thead>
                 <tbody class="bg-white">
                     @forelse($this->partItems as $index => $item)
-                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-blue-200 transition-colors duration-150">
+                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-base-200 transition-colors duration-150">
                             <td class="px-4 py-2 whitespace-nowrap">
                                 <div class="text-xs text-gray-900">{{ $index + 1 }}</div>
                             </td>
@@ -80,13 +80,13 @@
                                                 </thead>
                                                 <tbody class="bg-white">
                                                     @foreach($item->partSources as $sIndex => $source)
-                                                        <tr class="{{ $sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-blue-200 transition-colors duration-150">
+                                                        <tr class="{{ $sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-base-200 transition-colors duration-150">
                                                             <td class="px-4 py-2">
                                                                 <div class="text-xs text-gray-900">
                                                                     {{ $source->supplier?->name ?? ($source->source_name ?? 'Manual Source') }}
                                                                 </div>
                                                                 @if($source->is_recommended)
-                                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mt-1">
+                                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary mt-1">
                                                                         Recommended
                                                                     </span>
                                                                 @endif
@@ -110,7 +110,7 @@
 
                                     @if(isset($recommendations[$item->id]['recommended']) && $recommendations[$item->id]['recommended'])
                                         @php $r = $recommendations[$item->id]['recommended']; @endphp
-                                        <div class="mt-3 p-3 rounded-lg border border-blue-200 bg-blue-50">
+                                        <div class="mt-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
                                             <p class="text-xs text-gray-700">
                                                 <span class="font-semibold text-gray-900">Recommendation:</span>
                                                 {{ $r['is_local'] ? 'Local Source' : 'Import Source' }}
@@ -156,7 +156,7 @@
                     <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="text-xs font-medium text-gray-700">Supplier</label>
-                            <select wire:model="sourceSupplierId" class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select wire:model="sourceSupplierId" class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                                 <option value="">Select supplier (optional)</option>
                                 @foreach($this->suppliers as $supplier)
                                     <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
@@ -168,7 +168,7 @@
                         <div>
                             <label class="text-xs font-medium text-gray-700">Source Name</label>
                             <input type="text" wire:model="sourceName"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                                    placeholder="PartSouq / 7zap / Local Supplier" />
                             @error('sourceName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
@@ -176,7 +176,7 @@
                         <div class="md:col-span-2">
                             <label class="text-xs font-medium text-gray-700">Source Link</label>
                             <input type="url" wire:model="sourceLink"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                                    placeholder="https://..." />
                             @error('sourceLink') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
@@ -184,56 +184,56 @@
                         <div>
                             <label class="text-xs font-medium text-gray-700">Part Number</label>
                             <input type="text" wire:model="sourcePartNumber"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourcePartNumber') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Supplier Price</label>
                             <input type="number" step="0.01" wire:model="sourceSupplierPrice"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceSupplierPrice') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Shipping</label>
                             <input type="number" step="0.01" wire:model="sourceShippingCost"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceShippingCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Duty</label>
                             <input type="number" step="0.01" wire:model="sourceDutyCost"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceDutyCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Clearing</label>
                             <input type="number" step="0.01" wire:model="sourceClearingCost"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceClearingCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Margin Amount</label>
                             <input type="number" step="0.01" wire:model="sourceMarginAmount"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceMarginAmount') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Margin %</label>
                             <input type="number" step="0.01" wire:model="sourceMarginPercent"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceMarginPercent') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-700">Availability</label>
                             <input type="text" wire:model="sourceAvailability"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                                    placeholder="in_stock / preorder" />
                             @error('sourceAvailability') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
@@ -241,7 +241,7 @@
                         <div>
                             <label class="text-xs font-medium text-gray-700">Lead Time (days)</label>
                             <input type="number" wire:model="sourceLeadTimeDays"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceLeadTimeDays') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
@@ -255,14 +255,14 @@
                         <div class="md:col-span-2">
                             <label class="text-xs font-medium text-gray-700">Warranty</label>
                             <input type="text" wire:model="sourceWarrantyText"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
                             @error('sourceWarrantyText') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="text-xs font-medium text-gray-700">Notes</label>
                             <textarea rows="3" wire:model="sourceNotes"
-                                      class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                      class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"></textarea>
                             @error('sourceNotes') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                     </div>

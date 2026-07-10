@@ -48,7 +48,7 @@
                                     @endforeach
                                 </div>
                             @else
-                                <span class="inline-block px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">0</span>
+                                <span class="inline-block px-3 py-1 text-xs bg-primary/10 text-primary rounded-full">0</span>
                             @endif
                             @if($customer->vehicleItems && count($customer->vehicleItems))
                                 <div class="mt-1">
@@ -77,7 +77,7 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 space-x-2 text-gray-600">
-                            <button wire:click="edit({{ $customer->id }})" class="hover:text-blue-600" title="Edit">
+                            <button wire:click="edit({{ $customer->id }})" class="hover:text-primary" title="Edit">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3zm0 0v3h3" /></svg>
                             </button>
                             <button wire:click="confirmDelete({{ $customer->id }})" class="hover:text-red-600" title="Delete">

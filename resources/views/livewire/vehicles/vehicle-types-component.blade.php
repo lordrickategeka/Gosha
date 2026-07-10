@@ -40,7 +40,7 @@
                 <label for="is_active" class="text-gray-700">Active</label>
             </div>
             <div class="flex space-x-2">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <button type="submit" class="app-btn-primary">
                     {{ $editMode ? 'Update' : 'Add' }} Vehicle Type
                 </button>
                 @if ($editMode)
@@ -83,7 +83,7 @@
                             @endif
                         </td>
                         <td class="px-2 py-2 space-x-2 text-gray-600">
-                            <button wire:click="edit({{ $type->id }})" class="hover:text-blue-600" title="Edit">
+                            <button wire:click="edit({{ $type->id }})" class="hover:text-primary" title="Edit">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="inline h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3zm0 0v3h3" /></svg>
                             </button>
                             <button wire:click="confirmDelete({{ $type->id }})" class="hover:text-red-600" title="Delete">

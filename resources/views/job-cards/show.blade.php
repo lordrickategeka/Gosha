@@ -13,7 +13,7 @@
                 <div class="flex space-x-2">
                     @if($jobCard->status !== 'collected')
                         <button onclick="updateStatus({{ $jobCard->id }}, '{{ $jobCard->status }}')"
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                class="app-btn-primary">
                             Update Status
                         </button>
                     @endif
@@ -62,7 +62,7 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                         {{ $jobCard->status === 'completed' ? 'bg-green-100 text-green-800' :
                                            ($jobCard->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                                           ($jobCard->status === 'collected' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
+                                           ($jobCard->status === 'collected' ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-800')) }}">
                                         {{ ucfirst(str_replace('_', ' ', $jobCard->status)) }}
                                     </span>
                                 </dd>
@@ -140,8 +140,8 @@
                                             <div class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></div>
                                             <div class="relative flex space-x-3">
                                                 <div>
-                                                    <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
-                                                        <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <span class="h-8 w-8 rounded-full bg-primary flex items-center justify-center ring-8 ring-white">
+                                                        <svg class="h-5 w-5 text-primary-content" fill="currentColor" viewBox="0 0 20 20">
                                                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                         </svg>
                                                     </span>
@@ -302,7 +302,7 @@
                 @csrf
                 @method('PATCH')
                 <div class="mt-4">
-                    <select id="newStatus" name="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <select id="newStatus" name="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring-primary">
                         <option value="pending" {{ $jobCard->status === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="in_progress" {{ $jobCard->status === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="completed" {{ $jobCard->status === 'completed' ? 'selected' : '' }}>Completed</option>
@@ -310,7 +310,7 @@
                     </select>
                 </div>
                 <div class="items-center px-4 py-3">
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700">
+                    <button type="submit" class="app-btn-primary w-full">
                         Update Status
                     </button>
                     <button type="button" onclick="closeModal()" class="mt-3 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700">

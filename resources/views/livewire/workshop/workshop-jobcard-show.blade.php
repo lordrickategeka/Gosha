@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="mt-4 flex items-center space-x-2">
-                    <button wire:click.prevent="updateAll" class="px-4 py-2 bg-blue-600 text-white rounded-md">Save Changes</button>
+                    <button wire:click.prevent="updateAll" class="app-btn-primary">Save Changes</button>
                     <a href="{{ route('work-orders.index') }}" class="px-4 py-2 border rounded-md text-sm">Back</a>
                 </div>
             </div>

@@ -15,63 +15,47 @@
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="app-stat-card">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="app-stat-label">Work orders</p>
-                    <p class="app-stat-value">{{ $this->stats['work_orders'] }}</p>
-                    <p class="app-stat-meta"><span class="font-semibold text-success">{{ $this->stats['completed_work_orders'] }}</span> completed in this window</p>
-                </div>
-                <div class="app-stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                </div>
-            </div>
+            <p class="app-stat-label">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Work orders
+            </p>
+            <p class="app-stat-value">{{ $this->stats['work_orders'] }}</p>
+            <p class="app-stat-meta"><span class="font-semibold text-success">{{ $this->stats['completed_work_orders'] }}</span> completed in this window</p>
         </div>
 
         <div class="app-stat-card">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="app-stat-label">Wash orders</p>
-                    <p class="app-stat-value">{{ $this->stats['wash_orders'] }}</p>
-                    <p class="app-stat-meta"><span class="font-semibold text-success">{{ $this->stats['completed_wash_orders'] }}</span> completed in this window</p>
-                </div>
-                <div class="app-stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                </div>
-            </div>
+            <p class="app-stat-label">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+                Wash orders
+            </p>
+            <p class="app-stat-value">{{ $this->stats['wash_orders'] }}</p>
+            <p class="app-stat-meta"><span class="font-semibold text-success">{{ $this->stats['completed_wash_orders'] }}</span> completed in this window</p>
         </div>
 
         <div class="app-stat-card">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="app-stat-label">Revenue collected</p>
-                    <p class="app-stat-value">UGX {{ number_format($this->stats['revenue']) }}</p>
-                    <p class="app-stat-meta">Confirmed payments received</p>
-                </div>
-                <div class="app-stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
+            <p class="app-stat-label">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Revenue collected
+            </p>
+            <p class="app-stat-value">UGX {{ number_format($this->stats['revenue']) }}</p>
+            <p class="app-stat-meta">Confirmed payments received</p>
         </div>
 
         <div class="app-stat-card">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="app-stat-label">Net profit</p>
-                    <p class="app-stat-value {{ $this->stats['profit'] >= 0 ? 'text-success' : 'text-error' }}">UGX {{ number_format($this->stats['profit']) }}</p>
-                    <p class="app-stat-meta">After UGX {{ number_format($this->stats['expenses']) }} in approved expenses</p>
-                </div>
-                <div class="app-stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                </div>
-            </div>
+            <p class="app-stat-label">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Net profit
+            </p>
+            <p class="app-stat-value {{ $this->stats['profit'] >= 0 ? 'text-success' : 'text-error' }}">UGX {{ number_format($this->stats['profit']) }}</p>
+            <p class="app-stat-meta">After UGX {{ number_format($this->stats['expenses']) }} in approved expenses</p>
         </div>
     </div>
 
@@ -83,7 +67,10 @@
                 <div class="mb-5 flex items-start justify-between gap-4">
                     <div>
                         <p class="app-eyebrow">Live floor state</p>
-                        <h2 class="mt-2 text-xl font-semibold tracking-[-0.03em] text-base-content">Service bays</h2>
+                        <div class="mt-2 flex items-center gap-2.5">
+                            <h2 class="text-xl font-semibold tracking-[-0.03em] text-base-content">Service bays</h2>
+                            <span class="live-dot"><span class="live-dot__pulse"></span>live</span>
+                        </div>
                     </div>
                     <div class="app-stat-icon h-11 w-11">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,7 +115,10 @@
                 <div class="mb-5 flex items-start justify-between gap-4">
                     <div>
                         <p class="app-eyebrow">Queue health</p>
-                        <h2 class="mt-2 text-xl font-semibold tracking-[-0.03em] text-base-content">Wash bays</h2>
+                        <div class="mt-2 flex items-center gap-2.5">
+                            <h2 class="text-xl font-semibold tracking-[-0.03em] text-base-content">Wash bays</h2>
+                            <span class="live-dot"><span class="live-dot__pulse"></span>live</span>
+                        </div>
                     </div>
                     <div class="app-stat-icon h-11 w-11">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -187,7 +177,10 @@
             <div class="flex items-center justify-between border-b border-gray-200 px-6 py-5">
                 <div>
                     <p class="app-eyebrow">Workshop activity</p>
-                    <h2 class="mt-2 text-xl font-semibold tracking-[-0.03em] text-base-content">Active work orders</h2>
+                    <div class="mt-2 flex items-center gap-2.5">
+                        <h2 class="text-xl font-semibold tracking-[-0.03em] text-base-content">Active work orders</h2>
+                        <span class="live-dot"><span class="live-dot__pulse"></span>live</span>
+                    </div>
                 </div>
                 <a href="{{ route('work-orders.index') }}" class="btn rounded-lg border border-gray-200 bg-base-100 px-4 shadow-none hover:bg-base-200">View All</a>
             </div>

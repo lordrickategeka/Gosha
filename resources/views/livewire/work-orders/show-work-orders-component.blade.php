@@ -244,7 +244,7 @@
                                 </thead>
                                 <tbody class="bg-white">
                                     @foreach ($workOrder->items as $index => $item)
-                                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-blue-200 transition-colors duration-150">
+                                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-base-200 transition-colors duration-150">
                                             <td class="px-4 py-2 whitespace-nowrap">
                                                 <span class="badge badge-{{ $item->item_type === 'labor' ? 'primary' : 'secondary' }} badge-sm">
                                                     {{ ucfirst($item->item_type) }}

@@ -44,7 +44,7 @@
         </div>
 
         <div class="flex justify-end">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">{{ $inventoryItem ? 'Update' : 'Create' }}</button>
+            <button type="submit" class="app-btn-primary">{{ $inventoryItem ? 'Update' : 'Create' }}</button>
         </div>
     </form>
 </div>
