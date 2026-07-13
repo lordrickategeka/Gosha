@@ -21,6 +21,12 @@
                 <!-- Customer & Vehicle Card -->
                 <livewire:customer-vehicle-selector
                     :key="'customer-selector'" />
+                @error('customer_id')
+                    <p class="text-error text-sm -mt-3">{{ $message }}</p>
+                @enderror
+                @error('vehicle_id')
+                    <p class="text-error text-sm -mt-3">{{ $message }}</p>
+                @enderror
 
                 <!-- Wash Items Card -->
                 <div class="card bg-base-100 shadow-sm">

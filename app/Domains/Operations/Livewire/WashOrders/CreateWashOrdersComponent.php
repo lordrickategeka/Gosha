@@ -36,7 +36,7 @@ class CreateWashOrdersComponent extends Component
     protected $rules = [
         'customer_id' => 'required|exists:customers,id',
         'vehicle_id' => 'required|exists:vehicles,id',
-        'wash_type' => 'required|in:basic,full,premium,interior,exterior,engine,detailing',
+        'wash_type' => 'required|in:basic,standard,premium,interior,exterior,engine,full_detail,custom',
     ];
 
     public function updatedWashPackageId()
