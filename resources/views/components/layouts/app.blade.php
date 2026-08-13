@@ -13,31 +13,26 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/garagehq.css', 'resources/js/app.js'])
 
     <!-- Livewire Styles -->
     @livewireStyles
 </head>
 
-<body class="app-shell">
-    <div class="drawer lg:drawer-open">
-        <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
-
-        <!-- Page Content -->
-        <div class="drawer-content flex min-w-0 flex-col">
-            <!-- Navbar -->
-            @include('components.partials.navbar')
-
-            <!-- Main Content -->
-            <main class="app-main">
-                <div class="app-content-wrap">
-                    {{ $slot }}
-                </div>
-            </main>
-        </div>
-
+<body>
+    <div class="gh-app" x-data="{ sidebarOpen: false }">
         <!-- Sidebar -->
         @include('components.partials.sidebar')
+
+        <main>
+            <!-- Topbar -->
+            @include('components.partials.navbar')
+
+            {{ $slot }}
+        </main>
+
+        <div class="gh-sidebar-overlay" :class="{ 'is-open': sidebarOpen }" @click="sidebarOpen = false"></div>
+    </div>
     </div>
 
     <!-- Livewire Scripts -->

@@ -48,6 +48,9 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', DashboardComponent::class)->name('dashboard');
 
+    // Modules launcher
+    Route::get('/modules', \App\Domains\Organization\Livewire\Navigation\ModulesLauncherComponent::class)->name('modules.index');
+
     // Branch switching
     Route::get('/branch/{branch}/switch', function (\App\Domains\Organization\Models\Branch $branch) {
         if (!auth()->user()->canAccessBranch($branch)) {

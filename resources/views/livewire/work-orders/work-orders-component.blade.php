@@ -1,193 +1,130 @@
-<div class="space-y-6">
-    <div class="app-page-header">
+<div class="gh-page">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap;">
         <div>
-            <p class="app-kicker">Workshop operations</p>
-            <h4 class="app-title">Work Orders</h4>
-            <p class="app-subtitle">Track active service jobs, filter operational load, and move vehicles cleanly through the workshop pipeline.</p>
+            <div class="gh-eyebrow">Workshop operations</div>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-top:4px;">Work Orders</div>
+            <p class="gh-muted" style="font-size:12.5px; max-width:560px; margin:6px 0 0;">Track active service jobs, filter operational load, and move vehicles cleanly through the workshop pipeline.</p>
         </div>
 
         @can('create_work_orders')
-        <a href="{{ route('work-orders.create') }}" class="btn btn-primary rounded-lg px-5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            New Work Order
-        </a>
+            <a href="{{ route('work-orders.create') }}" class="gh-btn gh-btn--primary">+ Check in vehicle</a>
         @endcan
     </div>
 
-<!-- Work Orders Table -->
-    <div class="app-table-shell">
-        <div class="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <p class="app-eyebrow">Operational queue</p>
-                <h2 class="mt-1 text-xl font-semibold tracking-[-0.03em] text-base-content">Current work orders</h2>
-            </div>
-
-            <!-- Table Filters -->
-            <div class="flex flex-wrap items-center gap-2">
-                <!-- Search -->
-                <div class="form-control">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Search orders, vehicles, customers..."
-                        class="input input-bordered input-sm w-48"
-                    />
-                </div>
-
-                <!-- Status Filter -->
-                <div class="form-control">
-                    <select wire:model.live="status" class="select select-bordered select-sm w-36">
-                        <option value="">All Statuses</option>
-                        <option value="open">Open</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="quality_check">Quality Check</option>
-                        <option value="ready">Ready</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-
-                <!-- Type Filter -->
-                <div class="form-control">
-                    <select wire:model.live="type" class="select select-bordered select-sm w-28">
-                        <option value="">All Types</option>
-                        <option value="service">Service</option>
-                        <option value="repair">Repair</option>
-                        <option value="diagnostics">Diagnostics</option>
-                        <option value="bodywork">Bodywork</option>
-                        <option value="electrical">Electrical</option>
-                        <option value="ac">A/C</option>
-                        <option value="tyres">Tyres</option>
-                    </select>
-                </div>
-
-                <!-- Technician Filter -->
-                <div class="form-control">
-                    <select wire:model.live="technician" class="select select-bordered select-sm w-36">
-                        <option value="">All Techs</option>
-                        @foreach($this->technicians as $tech)
-                            <option value="{{ $tech->id }}">{{ $tech->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Clear Filters -->
-                @if($search || $status || $type || $technician)
-                <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                @endif
-
-                <!-- Per Page -->
-                <div class="form-control">
-                    <select wire:model.live="perPage" class="select select-bordered select-sm w-20">
-                        <option value="6">6</option>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
-            </div>
+    <div class="gh-table-toolbar">
+        <div class="gh-table-toolbar__filters">
+            <button wire:click="$set('status', '')" class="gh-chip {{ $status === '' ? 'is-active' : '' }}">All open</button>
+            <button wire:click="$set('status', 'in_progress')" class="gh-chip {{ $status === 'in_progress' ? 'is-active' : '' }}">In progress</button>
+            <button wire:click="$set('status', 'quoted')" class="gh-chip {{ $status === 'quoted' ? 'is-active' : '' }}">Awaiting OK</button>
+            <button wire:click="$set('status', 'quality_check')" class="gh-chip {{ $status === 'quality_check' ? 'is-active' : '' }}">QC</button>
+            <button wire:click="$set('status', 'ready')" class="gh-chip {{ $status === 'ready' ? 'is-active' : '' }}">Ready</button>
         </div>
 
-        <div class="px-6 pb-3">
-            <p class="text-sm text-gray-500">{{ $workOrders->total() }} total records</p>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <label class="gh-search" style="width:190px;">
+                ⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Plate, customer, WO no.">
+            </label>
+            <select wire:model.live="type" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All types</option>
+                <option value="service">Service</option>
+                <option value="repair">Repair</option>
+                <option value="diagnostics">Diagnostics</option>
+                <option value="bodywork">Bodywork</option>
+                <option value="electrical">Electrical</option>
+                <option value="ac">A/C</option>
+                <option value="tyres">Tyres</option>
+            </select>
+            <select wire:model.live="technician" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All techs</option>
+                @foreach($this->technicians as $tech)
+                    <option value="{{ $tech->id }}">{{ $tech->name }}</option>
+                @endforeach
+            </select>
+            @if($search || $status || $type || $technician)
+                <button wire:click="clearFilters" class="gh-btn gh-btn--sm">Clear</button>
+            @endif
+            <span class="gh-hint">Show</span>
+            <select wire:model.live="perPage" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="6">6</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
         </div>
+    </div>
 
-        <div class="overflow-x-auto">
-            <table class="table">
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Order No.</th>
+                        <th class="is-index">#</th>
+                        <th>WO</th>
                         <th>Vehicle</th>
                         <th>Customer</th>
                         <th>Type</th>
-                        <th>Bay</th>
                         <th>Technician</th>
+                        <th>Bay</th>
                         <th>Status</th>
-                        <th>Created</th>
+                        <th style="text-align:right;">Total</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($workOrders as $iteration => $order)
-                        <tr class="hover">
-                            <td>{{ $iteration + 1 }}</td>
-                            <td>
-                                <a href="{{ route('work-orders.show', $order) }}" class="font-mono text-sm font-medium text-primary hover:underline">
-                                    {{ $order->order_number }}
-                                </a>
+                        @php
+                            $badgeTone = match ($order->status_color) {
+                                'accent' => 'primary',
+                                'secondary' => 'info',
+                                'ghost' => '',
+                                default => $order->status_color,
+                            };
+                        @endphp
+                        <tr data-href="{{ route('work-orders.show', $order) }}">
+                            <td class="is-index">{{ $workOrders->firstItem() + $iteration }}</td>
+                            <td class="is-ref">
+                                <a href="{{ route('work-orders.show', $order) }}">{{ $order->order_number }}</a>
                                 @if($order->is_combo)
-                                    <span class="badge border-0 bg-accent/15 text-accent badge-xs ml-1">COMBO</span>
+                                    <span class="gh-badge gh-badge--primary" style="margin-left:4px;">COMBO</span>
                                 @endif
                             </td>
                             <td>
-                                <div class="font-medium">{{ $order->vehicle?->registration_number ?? 'N/A' }}</div>
-                                <div class="text-xs text-base-content/60">{{ trim(($order->vehicle?->make ?? '') . ' ' . ($order->vehicle?->model ?? '')) ?: '-' }}</div>
+                                <div class="gh-cell-stack">
+                                    <b>{{ $order->vehicle?->registration_number ?? 'N/A' }}</b>
+                                    <span>{{ trim(($order->vehicle?->make ?? '').' '.($order->vehicle?->model ?? '')) ?: '—' }}</span>
+                                </div>
                             </td>
                             <td>
-                                <div>{{ $order->customer?->name ?? 'Walk-in / Unknown' }}</div>
-                                <div class="text-xs text-base-content/60">{{ $order->customer?->phone ?? '-' }}</div>
+                                <div class="gh-cell-stack">
+                                    <b>{{ $order->customer?->name ?? 'Walk-in' }}</b>
+                                    <span>{{ $order->customer?->phone ?? '—' }}</span>
+                                </div>
                             </td>
+                            <td><span class="gh-badge">{{ ucfirst($order->type) }}</span></td>
+                            <td>{{ $order->assignedTechnician?->name ?? '—' }}</td>
+                            <td>{{ $order->serviceBay?->name ?? '—' }}</td>
                             <td>
-                                <span class="badge border-0 bg-base-200 text-base-content/70 badge-sm">{{ ucfirst($order->type) }}</span>
-                            </td>
-                            <td>
-                                @if($order->serviceBay)
-                                    <span class="text-sm">{{ $order->serviceBay->name }}</span>
-                                @else
-                                    <span class="text-base-content/40">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($order->assignedTechnician)
-                                    <div class="flex items-center gap-2">
-                                        <div class="avatar placeholder">
-                                            <div class="bg-neutral text-neutral-content rounded-full w-6">
-                                                <span class="text-xs">{{ substr($order->assignedTechnician->name, 0, 1) }}</span>
-                                            </div>
-                                        </div>
-                                        <span class="text-sm">{{ $order->assignedTechnician->name }}</span>
-                                    </div>
-                                @else
-                                    <span class="text-base-content/40">Unassigned</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge badge-{{ $order->status_color }} badge-sm">
-                                    {{ str_replace('_', ' ', ucfirst($order->status)) }}
-                                </span>
+                                <span class="gh-badge {{ $badgeTone ? 'gh-badge--'.$badgeTone : '' }}">{{ str_replace('_', ' ', ucfirst($order->status)) }}</span>
                                 @if($order->priority === 'urgent')
-                                    <span class="badge badge-error badge-xs ml-1">URGENT</span>
+                                    <span class="gh-badge gh-badge--error" style="margin-left:4px;">URGENT</span>
                                 @endif
                             </td>
-                            <td class="text-sm text-base-content/60">
-                                {{ $order->created_at->format('d M H:i') }}
-                            </td>
-                            <td>
+                            <td class="is-num">UGX {{ number_format($order->subtotal) }}</td>
+                            <td onclick="event.stopPropagation()">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                        </svg>
-                                    </label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu mt-2 w-48 rounded-lg border border-gray-200 bg-base-100 p-2 shadow-lg">
-                                        <li><a href="{{ route('work-orders.show', $order) }}">View Details</a></li>
+                                    <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                    <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-48 gh-card p-2 shadow-xl">
+                                        <li><a href="{{ route('work-orders.show', $order) }}">View details</a></li>
                                         @can('edit_work_orders')
                                             <li><a href="{{ route('work-orders.edit', $order) }}">Edit</a></li>
                                         @endcan
                                         @can('change_work_order_status')
                                             @if($order->canStart())
-                                                <li><button wire:click="startWorkOrder({{ $order->id }})">Start Work</button></li>
+                                                <li><button wire:click="startWorkOrder({{ $order->id }})">Start work</button></li>
                                             @endif
                                             @if($order->canComplete())
-                                                <li><button wire:click="markReady({{ $order->id }})">Mark Ready</button></li>
+                                                <li><button wire:click="markReady({{ $order->id }})">Mark ready</button></li>
                                             @endif
                                             @if($order->canDeliver())
                                                 <li><button wire:click="deliver({{ $order->id }})">Deliver</button></li>
@@ -195,7 +132,7 @@
                                         @endcan
                                         @can('view_invoices')
                                             @if($order->invoice)
-                                                <li><a href="{{ route('invoices.show', $order->invoice) }}">View Invoice</a></li>
+                                                <li><a href="{{ route('invoices.show', $order->invoice) }}">View invoice</a></li>
                                             @endif
                                         @endcan
                                     </ul>
@@ -204,14 +141,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-8">
-                                <div class="app-empty-state">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                                <p>No work orders found</p>
-                                </div>
-                            </td>
+                            <td colspan="10" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No work orders found</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -219,8 +149,13 @@
         </div>
 
         @if($workOrders->hasPages())
-            <div class="border-t border-gray-200 px-6 py-4">
-                {{ $workOrders->links() }}
+            <div class="gh-pagination">
+                <span class="gh-hint">Showing {{ $workOrders->firstItem() }}–{{ $workOrders->lastItem() }} of {{ $workOrders->total() }} work orders</span>
+                <div>{{ $workOrders->links() }}</div>
+            </div>
+        @else
+            <div class="gh-pagination">
+                <span class="gh-hint">{{ $workOrders->total() }} work order{{ $workOrders->total() === 1 ? '' : 's' }}</span>
             </div>
         @endif
     </div>

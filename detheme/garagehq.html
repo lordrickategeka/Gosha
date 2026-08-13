@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GarageHQ — reference markup</title>
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800" rel="stylesheet">
+<link rel="stylesheet" href="garagehq.css">
+</head>
+<body>
+
+<div class="gh-app">
+
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside class="gh-sidebar">
+    <div class="gh-sidebar__brand">
+      <div class="gh-sidebar__mark">G</div>
+      <div>
+        <div class="gh-sidebar__name">GarageHQ</div>
+        <div class="gh-sidebar__tenant">Autocare Garage</div>
+      </div>
+    </div>
+
+    <nav class="gh-sidebar__nav">
+      <button class="gh-nav-item gh-nav-item--all" data-goto="modules">
+        <span class="gh-nav-item__label"><i data-icon="modules" data-icon-size="17"></i> All modules</span>
+        <span class="gh-nav-item__count">8</span>
+      </button>
+
+      <div class="gh-module-chip">
+        <div class="gh-module-chip__icon"><i data-icon="workOrders"></i></div>
+        <div>
+          <div class="gh-eyebrow">Module</div>
+          <div style="font-size:12.5px; font-weight:700;">Work Orders</div>
+        </div>
+      </div>
+
+      <button class="gh-nav-item" data-goto="module">
+        <span class="gh-nav-item__label"><i data-icon="dashboard"></i> Module dashboard</span>
+      </button>
+      <button class="gh-nav-item is-active" data-goto="jobs">
+        <span class="gh-nav-item__label"><i data-icon="workOrders"></i> All work orders</span>
+        <span class="gh-nav-item__count">7</span>
+      </button>
+      <button class="gh-nav-item" data-goto="intake">
+        <span class="gh-nav-item__label"><i data-icon="checkIn"></i> Check-in</span>
+      </button>
+      <button class="gh-nav-item is-planned">
+        <span class="gh-nav-item__label"><i data-icon="calendar"></i> Appointments</span>
+      </button>
+      <button class="gh-nav-item is-planned">
+        <span class="gh-nav-item__label"><i data-icon="bayStatus"></i> Bay status</span>
+      </button>
+    </nav>
+
+    <div class="gh-sidebar__foot">
+      <div class="gh-sidebar__mark" style="width:33px; height:33px; border-radius:50%; font-size:12px;">JO</div>
+      <div>
+        <div style="font-size:12.5px; font-weight:600;">John Okello</div>
+        <div style="font-size:11px; color:var(--gh-ink-subtle);">Vendor owner</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================ MAIN ============================ -->
+  <main>
+    <header class="gh-topbar">
+      <div>
+        <div class="gh-eyebrow">Work Orders</div>
+        <div class="gh-topbar__title">Work orders</div>
+      </div>
+      <div class="gh-topbar__actions">
+        <label class="gh-search">⌕ <input type="search" placeholder="Plate, customer, WO no."></label>
+        <button class="gh-btn">Main Branch — Kampala ▾</button>
+        <button class="gh-btn gh-btn--primary" data-goto="intake">+ Check in vehicle</button>
+      </div>
+    </header>
+
+    <!-- ---------------------- MODULES LAUNCHER ---------------------- -->
+    <section data-screen="modules">
+      <div class="gh-page">
+        <p class="gh-muted" style="font-size:13px; max-width:600px; margin:0;">
+          Every part of the garage is its own module with its own dashboard. Open one to work inside it — the sidebar follows the module you are in.
+        </p>
+
+        <div class="gh-grid-4">
+          <article class="gh-module-card" data-goto="module">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon"><i data-icon="workOrders" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--error">2 at risk</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Work Orders</div>
+              <div class="gh-module-card__blurb">Repairs from check-in to release — bays, technicians, job cards.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">Open</span><b>7</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Promised today</span><b>6</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Awaiting approval</span><b style="color:var(--gh-warning);">3</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card" data-goto="wash">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon gh-module-card__icon--info"><i data-icon="washBay" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--warning">2 waiting</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Wash Bay</div>
+              <div class="gh-module-card__blurb">Wash and detailing queue, packages, combo hand-off from service.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">In queue</span><b>2</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Washing</span><b>2</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Ready</span><b style="color:var(--gh-success);">1</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card" data-goto="stock">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon gh-module-card__icon--neutral"><i data-icon="stock" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--error">4 reorder</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Inventory</div>
+              <div class="gh-module-card__blurb">Parts, stores, suppliers and what each job consumed.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">SKUs</span><b>412</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Below reorder</span><b style="color:var(--gh-error);">4</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Stock value</span><b>UGX 62.4M</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card" data-goto="invoices">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon gh-module-card__icon--success"><i data-icon="expenses" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--error">1 overdue</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Finance</div>
+              <div class="gh-module-card__blurb">Quotations, invoices, payments, expenses and commissions.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">Collected today</span><b>UGX 5.9M</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Unpaid</span><b>3</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Overdue</span><b style="color:var(--gh-error);">1</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card" data-goto="intake">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon"><i data-icon="customers" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--warning">3 due back</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Customers</div>
+              <div class="gh-module-card__blurb">Customers, their vehicles, service history and balances.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">Customers</span><b>1,284</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Vehicles</span><b>1,663</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">With balance</span><b style="color:var(--gh-error);">11</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon gh-module-card__icon--info"><i data-icon="staff" data-icon-size="19"></i></div>
+              <span class="gh-badge">1 off duty</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">HR &amp; Staff</div>
+              <div class="gh-module-card__blurb">Staff, roles, attendance, technician performance and payroll.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">Staff</span><b>18</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">On shift</span><b>14</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Roles</span><b>5</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon gh-module-card__icon--neutral"><i data-icon="reports" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--success">Weekly ready</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Reports</div>
+              <div class="gh-module-card__blurb">Revenue, profitability, bay utilisation and branch comparison.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">Saved reports</span><b>12</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Scheduled</span><b>3</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Branches</span><b>2</b></div>
+            </div>
+          </article>
+
+          <article class="gh-module-card">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div class="gh-module-card__icon gh-module-card__icon--neutral"><i data-icon="settings" data-icon-size="19"></i></div>
+              <span class="gh-badge gh-badge--success">Configured</span>
+            </div>
+            <div>
+              <div class="gh-module-card__name">Settings</div>
+              <div class="gh-module-card__blurb">Branches, service catalogue, templates, packages and platform config.</div>
+            </div>
+            <div class="gh-module-card__stats">
+              <div class="gh-module-card__stat"><span class="gh-muted">Branches</span><b>2</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Service types</span><b>46</b></div>
+              <div class="gh-module-card__stat"><span class="gh-muted">Templates</span><b>9</b></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- MODULE DASHBOARD ---------------------- -->
+    <section data-screen="module">
+      <div class="gh-page">
+        <div class="gh-card" style="padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+          <div style="display:flex; align-items:center; gap:15px;">
+            <div class="gh-module-card__icon" style="width:44px; height:44px;"><i data-icon="workOrders" data-icon-size="23"></i></div>
+            <div>
+              <div style="font-size:17px; font-weight:700; letter-spacing:-0.01em;">Work Orders module</div>
+              <div class="gh-muted" style="font-size:12px;">Repairs from check-in to release — bays, technicians, job cards.</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="gh-btn" data-goto="modules">Switch module</button>
+            <button class="gh-btn gh-btn--primary" data-goto="jobs">Open work orders</button>
+          </div>
+        </div>
+
+        <div class="gh-grid-4">
+          <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Open work orders</span>
+            <span class="gh-stat__value">7</span>
+            <span class="gh-stat__sub">across 5 service bays</span>
+          </div>
+          <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Promised today</span>
+            <span class="gh-stat__value gh-stat__value--neg">6</span>
+            <span class="gh-stat__sub">2 at risk of slipping</span>
+          </div>
+          <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Awaiting approval</span>
+            <span class="gh-stat__value">3</span>
+            <span class="gh-stat__sub">UGX 7.9M quoted</span>
+          </div>
+          <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Avg. turnaround</span>
+            <span class="gh-stat__value">1.4 d</span>
+            <span class="gh-stat__sub">target 1.5 d</span>
+          </div>
+        </div>
+
+        <div class="gh-split">
+          <div class="gh-card gh-card--pad gh-stack" style="gap:14px;">
+            <div class="gh-card__title">Needs a decision today</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding-bottom:12px; border-bottom:1px solid var(--gh-hairline-row);">
+              <div class="gh-cell-stack"><b>WO-1040 · Mazda CX-5</b><span>Quote UGX 3.51M waiting on Halima Nabirye</span></div>
+              <span class="gh-badge gh-badge--warning">Awaiting OK</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding-bottom:12px; border-bottom:1px solid var(--gh-hairline-row);">
+              <div class="gh-cell-stack"><b>WO-1041 · Nissan X-Trail</b><span>Promised 12:00 — still in QC</span></div>
+              <span class="gh-badge gh-badge--error">Late</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
+              <div class="gh-cell-stack"><b>WO-1039 · Subaru Forester</b><span>Head gasket blocked on parts order</span></div>
+              <span class="gh-badge gh-badge--warning">Parts</span>
+            </div>
+          </div>
+
+          <div class="gh-card gh-card--pad gh-stack" style="gap:11px;">
+            <div class="gh-card__title">Screens in this module</div>
+            <button class="gh-btn gh-btn--block" data-goto="jobs" style="justify-content:space-between;">Work order list <span style="color:var(--gh-success);">Designed</span></button>
+            <button class="gh-btn gh-btn--block" data-goto="job" style="justify-content:space-between;">Work order detail <span style="color:var(--gh-success);">Designed</span></button>
+            <button class="gh-btn gh-btn--block" data-goto="intake" style="justify-content:space-between;">Vehicle check-in <span style="color:var(--gh-success);">Designed</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- WORK ORDER LIST ---------------------- -->
+    <section data-screen="jobs" class="is-active">
+      <div class="gh-page">
+        <div class="gh-table-toolbar">
+          <div class="gh-table-toolbar__filters" data-filter-group="status" data-filter-target="#jobs-table">
+            <button class="gh-chip is-active" data-filter="*">All open</button>
+            <button class="gh-chip" data-filter="In progress">In progress</button>
+            <button class="gh-chip" data-filter="Awaiting OK">Awaiting OK</button>
+            <button class="gh-chip" data-filter="Parts">Parts</button>
+            <button class="gh-chip" data-filter="QC">QC</button>
+            <button class="gh-chip" data-filter="Ready">Ready</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="gh-btn gh-btn--sm">Export</button>
+            <span class="gh-hint">Show</span>
+            <select class="gh-select" style="padding:6px 10px; font-size:12px;">
+              <option>10</option><option>25</option><option>50</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="gh-card gh-card--flush">
+          <table class="gh-table" id="jobs-table">
+            <thead>
+              <tr>
+                <th class="is-index">#</th><th>WO</th><th>Vehicle</th><th>Customer</th>
+                <th>Service</th><th>Technician</th><th>Bay</th><th>Status</th><th style="text-align:right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-href="#job" data-filter-value="In progress">
+                <td class="is-index">1</td><td class="is-ref">WO-1042</td>
+                <td><div class="gh-cell-stack"><b>Toyota Prado 2018</b><span>UAH 234H</span></div></td>
+                <td>Amina Nakato</td><td>Brake overhaul</td><td>Peter Ssemakula</td><td>Bay 2</td>
+                <td><span class="gh-badge gh-badge--primary">In progress</span></td>
+                <td class="is-num">UGX 2,460,000</td>
+              </tr>
+              <tr data-href="#job" data-filter-value="QC">
+                <td class="is-index">2</td><td class="is-ref">WO-1041</td>
+                <td><div class="gh-cell-stack"><b>Nissan X-Trail 2016</b><span>UAA 123A</span></div></td>
+                <td>Brian Kigozi</td><td>Major service</td><td>Grace Atim</td><td>Bay 1</td>
+                <td><span class="gh-badge gh-badge--info">QC</span></td>
+                <td class="is-num">UGX 1,480,000</td>
+              </tr>
+              <tr data-href="#job" data-filter-value="Awaiting OK">
+                <td class="is-index">3</td><td class="is-ref">WO-1040</td>
+                <td><div class="gh-cell-stack"><b>Mazda CX-5 2019</b><span>UBD 553B</span></div></td>
+                <td>Halima Nabirye</td><td>Suspension knock</td><td>Peter Ssemakula</td><td>—</td>
+                <td><span class="gh-badge gh-badge--warning">Awaiting OK</span></td>
+                <td class="is-num">UGX 3,510,000</td>
+              </tr>
+              <tr data-href="#job" data-filter-value="Parts">
+                <td class="is-index">4</td><td class="is-ref">WO-1039</td>
+                <td><div class="gh-cell-stack"><b>Subaru Forester 2015</b><span>UAP 210M</span></div></td>
+                <td>Denis Mugisha</td><td>Head gasket</td><td>Samuel Okot</td><td>Bay 4</td>
+                <td><span class="gh-badge gh-badge--warning">Parts</span></td>
+                <td class="is-num">UGX 5,540,000</td>
+              </tr>
+              <tr data-href="#job" data-filter-value="Ready">
+                <td class="is-index">5</td><td class="is-ref">WO-1036</td>
+                <td><div class="gh-cell-stack"><b>Isuzu D-Max 2020</b><span>UAD 012D</span></div></td>
+                <td>Kilimo Fresh Ltd</td><td>Fleet inspection</td><td>Peter Ssemakula</td><td>—</td>
+                <td><span class="gh-badge gh-badge--success">Ready</span></td>
+                <td class="is-num">UGX 860,000</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="gh-pagination">
+            <span class="gh-hint">Showing 5 of 8 work orders</span>
+            <div class="gh-pagination__pages">
+              <button class="gh-pagination__page" disabled>Prev</button>
+              <button class="gh-pagination__page is-active">1</button>
+              <button class="gh-pagination__page">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- WORK ORDER DETAIL ---------------------- -->
+    <section data-screen="job">
+      <div class="gh-page">
+        <button class="gh-btn gh-btn--sm" data-goto="jobs" style="width:fit-content;">← Work orders</button>
+
+        <div class="gh-card gh-card--pad gh-stack" style="gap:18px;">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:18px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Toyota Prado 2018</span>
+                <span class="gh-plate">UAH 234H</span>
+                <span class="gh-badge gh-badge--primary" id="wo-status">In progress</span>
+              </div>
+              <div class="gh-muted" style="font-size:12px; margin-top:6px;">Brake overhaul · 148,320 km · checked in 08:12 today</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="gh-btn">Print job card</button>
+              <button class="gh-btn" data-goto="invoices">Create invoice</button>
+              <button class="gh-btn gh-btn--primary"
+                      data-advance-status data-status="In progress"
+                      data-status-target="#wo-status" data-track-target="#wo-track">Move to QC</button>
+            </div>
+          </div>
+
+          <div class="gh-track" id="wo-track">
+            <div class="gh-track__step is-done"><div class="gh-track__bar"></div><span class="gh-track__label">Checked in</span><span class="gh-track__time">08:12</span></div>
+            <div class="gh-track__step is-done"><div class="gh-track__bar"></div><span class="gh-track__label">Diagnosis</span><span class="gh-track__time">08:40</span></div>
+            <div class="gh-track__step is-done"><div class="gh-track__bar"></div><span class="gh-track__label">Awaiting OK</span><span class="gh-track__time">09:05</span></div>
+            <div class="gh-track__step is-current"><div class="gh-track__bar"></div><span class="gh-track__label">In progress</span><span class="gh-track__time">10:20</span></div>
+            <div class="gh-track__step"><div class="gh-track__bar"></div><span class="gh-track__label">QC</span><span class="gh-track__time">—</span></div>
+            <div class="gh-track__step"><div class="gh-track__bar"></div><span class="gh-track__label">Ready</span><span class="gh-track__time">—</span></div>
+          </div>
+        </div>
+
+        <div class="gh-split">
+          <div class="gh-stack">
+            <div class="gh-card gh-card--flush">
+              <div class="gh-card__head">
+                <span class="gh-card__title">Job lines</span>
+                <button class="gh-btn gh-btn--sm">+ Add line</button>
+              </div>
+              <table class="gh-table">
+                <thead>
+                  <tr><th class="is-index">#</th><th>Description</th><th>Type</th>
+                      <th style="text-align:right;">Unit</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Amount</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td class="is-index">1</td><td>Front brake pads — OEM</td><td><span class="gh-badge gh-badge--info">Part</span></td><td style="text-align:right;">UGX 320,000</td><td style="text-align:right;">1</td><td class="is-num">UGX 320,000</td></tr>
+                  <tr><td class="is-index">2</td><td>Rear brake discs (pair)</td><td><span class="gh-badge gh-badge--info">Part</span></td><td style="text-align:right;">UGX 540,000</td><td style="text-align:right;">2</td><td class="is-num">UGX 1,080,000</td></tr>
+                  <tr><td class="is-index">3</td><td>Brake fluid DOT 4</td><td><span class="gh-badge gh-badge--info">Part</span></td><td style="text-align:right;">UGX 65,000</td><td style="text-align:right;">1</td><td class="is-num">UGX 65,000</td></tr>
+                  <tr><td class="is-index">4</td><td>Brake system strip &amp; inspect</td><td><span class="gh-badge">Labour</span></td><td style="text-align:right;">UGX 120,000</td><td style="text-align:right;">2</td><td class="is-num">UGX 240,000</td></tr>
+                  <tr><td class="is-index">5</td><td>Disc &amp; pad replacement + bleed</td><td><span class="gh-badge">Labour</span></td><td style="text-align:right;">UGX 150,000</td><td style="text-align:right;">3</td><td class="is-num">UGX 450,000</td></tr>
+                </tbody>
+              </table>
+              <div style="display:flex; justify-content:flex-end; gap:30px; padding:15px 18px; background:var(--gh-surface-header);">
+                <div style="text-align:right; font-size:12px; color:var(--gh-ink-muted); display:flex; flex-direction:column; gap:7px;">
+                  <span>Parts</span><span>Labour</span><span>VAT 18%</span><span style="color:var(--gh-ink); font-weight:700;">Total</span>
+                </div>
+                <div style="text-align:right; font-size:12px; font-weight:600; display:flex; flex-direction:column; gap:7px;">
+                  <span>UGX 1,465,000</span><span>UGX 690,000</span><span>UGX 387,900</span>
+                  <span style="font-size:15px; font-weight:800;">UGX 2,542,900</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="gh-card gh-card--pad gh-stack" style="gap:14px;">
+              <div class="gh-card__title">Activity</div>
+              <div class="gh-timeline">
+                <div class="gh-timeline__row">
+                  <span class="gh-timeline__time">10:20</span>
+                  <div class="gh-timeline__body"><span class="gh-timeline__what">Moved to In progress</span><span class="gh-timeline__who">Peter Ssemakula</span></div>
+                </div>
+                <div class="gh-timeline__row">
+                  <span class="gh-timeline__time">09:05</span>
+                  <div class="gh-timeline__body"><span class="gh-timeline__what">Estimate approved by customer over SMS</span><span class="gh-timeline__who">Amina Nakato</span></div>
+                </div>
+                <div class="gh-timeline__row">
+                  <span class="gh-timeline__time">08:12</span>
+                  <div class="gh-timeline__body"><span class="gh-timeline__what">Vehicle checked in, job card printed</span><span class="gh-timeline__who">Mary Achen · front desk</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="gh-stack">
+            <div class="gh-card gh-card--pad gh-stack" style="gap:13px;">
+              <div class="gh-card__title">Customer</div>
+              <div style="display:flex; align-items:center; gap:11px;">
+                <div class="gh-module-card__icon" style="width:36px; height:36px; border-radius:50%; font-size:12px; font-weight:700;">AN</div>
+                <div class="gh-cell-stack"><b>Amina Nakato</b><span>+256 772 145 900</span></div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="gh-btn gh-btn--block">Call</button>
+                <button class="gh-btn gh-btn--block">SMS update</button>
+              </div>
+              <div style="border-top:1px solid var(--gh-hairline); padding-top:12px; display:flex; flex-direction:column; gap:9px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Visits</span><b>7</b></div>
+                <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Lifetime value</span><b>UGX 14,280,000</b></div>
+                <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Outstanding</span><b style="color:var(--gh-error);">UGX 420,000</b></div>
+              </div>
+            </div>
+
+            <div class="gh-note">
+              <span class="gh-note__title">Technician note</span>
+              <span class="gh-note__body">Rear discs are below minimum thickness — replace, don't skim. Photos on line 3. Needs customer approval before ordering parts.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- CHECK-IN ---------------------- -->
+    <section data-screen="intake">
+      <div class="gh-page">
+        <div class="gh-card gh-card--pad gh-stack" style="gap:20px;">
+          <div class="gh-steps">
+            <div class="gh-steps__item is-done"><span class="gh-steps__num">1</span><span style="font-size:12.5px; font-weight:700;">Vehicle</span><span class="gh-steps__rule"></span></div>
+            <div class="gh-steps__item is-active"><span class="gh-steps__num">2</span><span style="font-size:12.5px; font-weight:700;">Service</span><span class="gh-steps__rule"></span></div>
+            <div class="gh-steps__item"><span class="gh-steps__num">3</span><span style="font-size:12.5px; font-weight:700; color:var(--gh-ink-faint);">Handover</span></div>
+          </div>
+
+          <div class="gh-grid-2">
+            <label class="gh-field">
+              <span class="gh-label">Number plate</span>
+              <input class="gh-input" value="UAH 234H">
+              <span class="gh-hint gh-hint--ok">Matched: Toyota Prado 2018 · Amina Nakato</span>
+            </label>
+            <label class="gh-field">
+              <span class="gh-label">Odometer (km)</span>
+              <input class="gh-input" value="148,320">
+            </label>
+          </div>
+
+          <div class="gh-field">
+            <span class="gh-label">Service requested</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="gh-chip gh-chip--round is-active">Brake service</button>
+              <button class="gh-chip gh-chip--round">Major service</button>
+              <button class="gh-chip gh-chip--round is-active">Diagnostics</button>
+              <button class="gh-chip gh-chip--round">AC regas</button>
+              <button class="gh-chip gh-chip--round">Suspension</button>
+              <button class="gh-chip gh-chip--round">Wash &amp; detail</button>
+            </div>
+          </div>
+
+          <div class="gh-field">
+            <span class="gh-label">Walk-around check</span>
+            <div class="gh-grid-4">
+              <div class="gh-check is-checked"><span class="gh-check__box">✓</span> Fuel level</div>
+              <div class="gh-check is-checked"><span class="gh-check__box">✓</span> Spare tyre</div>
+              <div class="gh-check"><span class="gh-check__box"></span> Tools</div>
+              <div class="gh-check"><span class="gh-check__box"></span> Body scratches</div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--gh-hairline); padding-top:16px;">
+            <span class="gh-hint">A job card is printed and an SMS is sent to the customer on check-in.</span>
+            <div style="display:flex; gap:8px;">
+              <button class="gh-btn">Save draft</button>
+              <button class="gh-btn gh-btn--primary" data-goto="jobs">Create work order</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- WASH BOARD ---------------------- -->
+    <section data-screen="wash">
+      <div class="gh-page">
+        <span class="gh-hint">Click a card to move it to the next stage.</span>
+        <div class="gh-board">
+          <div class="gh-board__col gh-board__col--waiting" data-stage="Waiting">
+            <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Waiting</span><span class="gh-board__count">2</span></div>
+            <div class="gh-board__card gh-board__card--waiting" data-plate="UAH 234H">
+              <div style="display:flex; justify-content:space-between; align-items:center;"><b>UAH 234H</b><span class="gh-badge gh-badge--primary">Standard</span></div>
+              <span style="font-size:12px;">Toyota Prado</span>
+              <div class="gh-board__meta"><span>Queue pos. 1</span><span>0m</span></div>
+            </div>
+            <div class="gh-board__card gh-board__card--waiting" data-plate="UAD 012D">
+              <div style="display:flex; justify-content:space-between; align-items:center;"><b>UAD 012D</b><span class="gh-badge gh-badge--primary">Premium</span></div>
+              <span style="font-size:12px;">Isuzu D-Max</span>
+              <div class="gh-board__meta"><span>Queue pos. 2</span><span>4m</span></div>
+            </div>
+          </div>
+
+          <div class="gh-board__col gh-board__col--active" data-stage="Washing">
+            <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Washing</span><span class="gh-board__count">2</span></div>
+            <div class="gh-board__card gh-board__card--active" data-plate="UBD 553B">
+              <div style="display:flex; justify-content:space-between; align-items:center;"><b>UBD 553B</b><span class="gh-badge gh-badge--primary">Interior</span></div>
+              <span style="font-size:12px;">Mazda CX-5</span>
+              <div class="gh-board__meta"><span>John Kato</span><span>11m</span></div>
+            </div>
+            <div class="gh-board__card gh-board__card--active" data-plate="UAP 210M">
+              <div style="display:flex; justify-content:space-between; align-items:center;"><b>UAP 210M</b><span class="gh-badge gh-badge--primary">Standard</span></div>
+              <span style="font-size:12px;">Subaru Forester</span>
+              <div class="gh-board__meta"><span>Alice Wanyana</span><span>6m</span></div>
+            </div>
+          </div>
+
+          <div class="gh-board__col gh-board__col--qc" data-stage="Drying & QC">
+            <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Drying &amp; QC</span><span class="gh-board__count">1</span></div>
+            <div class="gh-board__card gh-board__card--qc" data-plate="UAS 704L">
+              <div style="display:flex; justify-content:space-between; align-items:center;"><b>UAS 704L</b><span class="gh-badge gh-badge--primary">Engine bay</span></div>
+              <span style="font-size:12px;">Toyota Hiace</span>
+              <div class="gh-board__meta"><span>John Kato</span><span>18m</span></div>
+            </div>
+          </div>
+
+          <div class="gh-board__col gh-board__col--done" data-stage="Ready to release">
+            <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Ready to release</span><span class="gh-board__count">1</span></div>
+            <div class="gh-board__card gh-board__card--done" data-plate="UAE 119D">
+              <div style="display:flex; justify-content:space-between; align-items:center;"><b>UAE 119D</b><span class="gh-badge gh-badge--primary">Standard</span></div>
+              <span style="font-size:12px;">VW Golf</span>
+              <div class="gh-board__meta"><span>Cashier desk</span><span>2m</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- INVOICES ---------------------- -->
+    <section data-screen="invoices">
+      <div class="gh-page">
+        <div class="gh-split">
+          <div class="gh-card gh-card--flush">
+            <table class="gh-table">
+              <thead>
+                <tr><th class="is-index">#</th><th>Invoice</th><th>Customer</th><th>Issued</th><th>Status</th><th style="text-align:right;">Amount</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="is-index">1</td><td class="is-ref">INV-2291</td>
+                  <td><div class="gh-cell-stack"><b>Kilimo Fresh Ltd</b><span>UAD 012D</span></div></td>
+                  <td>12 Aug 2026</td><td><span class="gh-badge" data-invoice-status="INV-2291">Unpaid</span></td><td class="is-num">UGX 860,000</td></tr>
+                <tr><td class="is-index">2</td><td class="is-ref">INV-2290</td>
+                  <td><div class="gh-cell-stack"><b>Sarah Kabuye</b><span>UAF 442F</span></div></td>
+                  <td>12 Aug 2026</td><td><span class="gh-badge gh-badge--success">Paid</span></td><td class="is-num">UGX 1,330,000</td></tr>
+                <tr><td class="is-index">3</td><td class="is-ref">INV-2289</td>
+                  <td><div class="gh-cell-stack"><b>Kololo Logistics</b><span>UAS 704L</span></div></td>
+                  <td>11 Aug 2026</td><td><span class="gh-badge gh-badge--warning">Part paid</span></td><td class="is-num">UGX 2,700,000</td></tr>
+                <tr><td class="is-index">4</td><td class="is-ref">INV-2287</td>
+                  <td><div class="gh-cell-stack"><b>Denis Mugisha</b><span>UAP 210M</span></div></td>
+                  <td>10 Aug 2026</td><td><span class="gh-badge gh-badge--error">Overdue</span></td><td class="is-num">UGX 420,000</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="gh-card gh-card--pad gh-stack" style="gap:16px;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+              <div>
+                <div style="font-size:16px; font-weight:800;">INV-2291</div>
+                <div class="gh-muted" style="font-size:12px;">Kilimo Fresh Ltd · UAD 012D</div>
+              </div>
+              <span class="gh-badge">Unpaid</span>
+            </div>
+            <div style="border-top:1px solid var(--gh-hairline); border-bottom:1px solid var(--gh-hairline); padding:14px 0; display:flex; flex-direction:column; gap:10px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Work order</span><b style="color:var(--gh-primary);">WO-1036</b></div>
+              <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Subtotal</span><b>UGX 728,814</b></div>
+              <div style="display:flex; justify-content:space-between;"><span class="gh-muted">VAT 18%</span><b>UGX 131,186</b></div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline;"><b>Total due</b><span style="font-size:20px; font-weight:800; letter-spacing:-0.02em;">UGX 860,000</span></div>
+            </div>
+            <div class="gh-field">
+              <span class="gh-eyebrow">Record payment</span>
+              <div class="gh-grid-3">
+                <button class="gh-btn" data-pay="mobile-money" data-invoice="INV-2291">Mobile money</button>
+                <button class="gh-btn" data-pay="card" data-invoice="INV-2291">Card</button>
+                <button class="gh-btn" data-pay="cash" data-invoice="INV-2291">Cash</button>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="gh-btn gh-btn--block">Send to customer</button>
+              <button class="gh-btn gh-btn--dark gh-btn--block">Print receipt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------- INVENTORY ---------------------- -->
+    <section data-screen="stock">
+      <div class="gh-page">
+        <div class="gh-grid-4">
+          <div class="gh-card gh-stat"><span class="gh-stat__label">Stock value</span><span class="gh-stat__value">UGX 62.4M</span><span class="gh-stat__sub">412 SKUs across 2 stores</span></div>
+          <div class="gh-card gh-stat"><span class="gh-stat__label">Below reorder</span><span class="gh-stat__value gh-stat__value--neg">4</span><span class="gh-stat__sub">2 block active work orders</span></div>
+          <div class="gh-card gh-stat"><span class="gh-stat__label">On order</span><span class="gh-stat__value">7</span><span class="gh-stat__sub">next delivery Thu 14 Aug</span></div>
+          <div class="gh-card gh-stat"><span class="gh-stat__label">Used this month</span><span class="gh-stat__value">UGX 18.9M</span><span class="gh-stat__sub">issued to 63 work orders</span></div>
+        </div>
+
+        <div class="gh-card gh-card--flush">
+          <table class="gh-table">
+            <thead>
+              <tr><th class="is-index">#</th><th>Part</th><th>Category</th><th>Store</th>
+                  <th style="text-align:right;">On hand</th><th style="text-align:right;">Reorder</th>
+                  <th style="text-align:right;">Unit cost</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="is-index">1</td><td><div class="gh-cell-stack"><b>Brake pads — Toyota front</b><span>BP-TOY-F01</span></div></td><td>Braking</td><td>Main</td><td class="is-num" style="color:var(--gh-error);">2</td><td style="text-align:right;">8</td><td style="text-align:right;">UGX 320,000</td><td><span class="gh-badge gh-badge--error">Reorder</span></td></tr>
+              <tr><td class="is-index">2</td><td><div class="gh-cell-stack"><b>Engine oil 5W-30 (4L)</b><span>OIL-530-4</span></div></td><td>Lubricants</td><td>Main</td><td class="is-num" style="color:var(--gh-error);">3</td><td style="text-align:right;">12</td><td style="text-align:right;">UGX 98,000</td><td><span class="gh-badge gh-badge--error">Reorder</span></td></tr>
+              <tr><td class="is-index">3</td><td><div class="gh-cell-stack"><b>Oil filter — Nissan</b><span>FLT-NIS-02</span></div></td><td>Filters</td><td>Main</td><td class="is-num">5</td><td style="text-align:right;">10</td><td style="text-align:right;">UGX 42,000</td><td><span class="gh-badge gh-badge--warning">Low</span></td></tr>
+              <tr><td class="is-index">4</td><td><div class="gh-cell-stack"><b>Brake discs — Mazda rear</b><span>BD-MAZ-R1</span></div></td><td>Braking</td><td>Main</td><td class="is-num">14</td><td style="text-align:right;">6</td><td style="text-align:right;">UGX 540,000</td><td><span class="gh-badge gh-badge--success">In stock</span></td></tr>
+              <tr><td class="is-index">5</td><td><div class="gh-cell-stack"><b>Clutch kit — Hiace</b><span>CLK-HIA-03</span></div></td><td>Transmission</td><td>Main</td><td class="is-num">9</td><td style="text-align:right;">4</td><td style="text-align:right;">UGX 1,180,000</td><td><span class="gh-badge gh-badge--success">In stock</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="garagehq.js" defer></script>
+</body>
+</html>

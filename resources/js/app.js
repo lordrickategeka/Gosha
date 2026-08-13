@@ -77,6 +77,14 @@ document.addEventListener('click', (e) => {
     });
 });
 
+// Clickable table rows: <tr data-href="/work-orders/1042"> (ported from detheme/garagehq.js)
+document.addEventListener('click', (e) => {
+    const row = e.target.closest('[data-href]');
+    if (!row) return;
+    if (e.target.closest('button, a, input, select')) return;
+    window.location.href = row.getAttribute('data-href');
+});
+
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     // Ctrl/Cmd + K for search

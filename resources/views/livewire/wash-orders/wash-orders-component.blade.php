@@ -1,300 +1,189 @@
-<div class="space-y-6">
-    <div class="app-page-header">
+<div class="gh-page">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap;">
         <div>
-            <p class="app-kicker">Wash operations</p>
-            <h1 class="app-title">Wash Bay</h1>
-            <p class="app-subtitle">Manage live wash queue activity, assign bays, and complete orders quickly.</p>
+            <div class="gh-eyebrow">Wash operations</div>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-top:4px;">Wash Bay</div>
+            <p class="gh-muted" style="font-size:12.5px; max-width:560px; margin:6px 0 0;">Manage live wash queue activity, assign bays, and complete orders quickly.</p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <div class="app-segmented">
-                <button wire:click="$set('view', 'queue')" class="app-segment-button {{ $view === 'queue' ? 'is-active' : '' }}">
-                    Queue View
-                </button>
-                <button wire:click="$set('view', 'list')" class="app-segment-button {{ $view === 'list' ? 'is-active' : '' }}">
-                    List View
-                </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="gh-segmented">
+                <button wire:click="$set('view', 'queue')" class="{{ $view === 'queue' ? 'is-active' : '' }}">Queue view</button>
+                <button wire:click="$set('view', 'list')" class="{{ $view === 'list' ? 'is-active' : '' }}">List view</button>
             </div>
-
             @can('create_wash_orders')
-            <a href="{{ route('wash-orders.create') }}" class="btn btn-primary rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                New Wash
-            </a>
+                <a href="{{ route('wash-orders.create') }}" class="gh-btn gh-btn--primary">+ New wash</a>
             @endcan
         </div>
     </div>
 
-    <!-- Stats Bar -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="app-stat-card">
-            <p class="app-stat-label">Queued Today</p>
-            <p class="text-2xl font-semibold text-info mt-3">{{ $this->statsTodayQueued }}</p>
+    <div class="gh-grid-4">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Queued today</span>
+            <span class="gh-stat__value">{{ $this->statsTodayQueued }}</span>
         </div>
-        <div class="app-stat-card">
-            <p class="app-stat-label">In Progress</p>
-            <p class="text-2xl font-semibold text-warning mt-3">{{ $this->statsInProgress }}</p>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">In progress</span>
+            <span class="gh-stat__value">{{ $this->statsInProgress }}</span>
         </div>
-        <div class="app-stat-card">
-            <p class="app-stat-label">Completed Today</p>
-            <p class="text-2xl font-semibold text-success mt-3">{{ $this->statsCompletedToday }}</p>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Completed today</span>
+            <span class="gh-stat__value" style="color:var(--gh-success);">{{ $this->statsCompletedToday }}</span>
         </div>
-        <div class="app-stat-card">
-            <p class="app-stat-label">Bays Available</p>
-            <p class="text-2xl font-semibold text-primary mt-3">{{ $this->statsAvailableBays }}</p>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Bays available</span>
+            <span class="gh-stat__value">{{ $this->statsAvailableBays }}</span>
         </div>
     </div>
 
     @if($view === 'queue')
-        <!-- Queue View -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Wash Bays Status -->
-            <div class="lg:col-span-2">
-                <div class="app-panel mb-6">
-                    <div class="p-6">
-                        <h2 class="card-title text-lg mb-4">Wash Bays</h2>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($this->washBays as $bay)
-                                <div class="p-4 rounded-lg border-2 {{ $bay->status instanceof App\Domains\Operations\Enums\WashBayStatus ? $bay->status->borderClass() : ($bay->status === 'available' ? 'border-success bg-success/5' : ($bay->status === 'occupied' ? 'border-warning bg-warning/5' : 'border-error bg-error/5')) }}">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="font-bold">{{ $bay->name }}</h3>
-                                        <span class="badge badge-sm {{ $bay->status instanceof App\Domains\Operations\Enums\WashBayStatus ? $bay->status->badgeClass() : ($bay->status === 'available' ? 'badge-success' : ($bay->status === 'occupied' ? 'badge-warning' : 'badge-error')) }}">
-                                            {{ $bay->status instanceof App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
-                                        </span>
-                                    </div>
-
-                                    @if($bay->currentWashOrder)
-                                        <div class="text-sm">
-                                            <p class="font-medium">{{ $bay->currentWashOrder->vehicle->registration_number }}</p>
-                                            <p class="text-base-content/60">{{ ucfirst($bay->currentWashOrder->wash_type) }}</p>
-                                            @if($bay->currentWashOrder->started_at)
-                                                <p class="text-xs text-base-content/50 mt-1">
-                                                    Started {{ $bay->currentWashOrder->started_at->diffForHumans() }}
-                                                </p>
-                                            @endif
-
-                                            <button
-                                                wire:click="completeWash({{ $bay->currentWashOrder->id }})"
-                                                class="btn btn-success btn-xs mt-2 w-full"
-                                            >
-                                                Complete
-                                            </button>
-                                        </div>
-                                    @else
-                                        <p class="text-sm text-base-content/50">Ready for next vehicle</p>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
+        <span class="gh-hint">Wash bays</span>
+        <div class="gh-grid-3">
+            @foreach($this->washBays as $bay)
+                @php
+                    $tone = $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->value : $bay->status;
+                @endphp
+                <div class="gh-bay {{ $tone === 'occupied' ? 'is-occupied' : ($tone === 'maintenance' ? 'is-maintenance' : '') }}">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <span class="gh-bay__name">{{ $bay->name }}</span>
+                        <span class="gh-badge {{ $tone === 'available' ? 'gh-badge--success' : ($tone === 'occupied' ? 'gh-badge--warning' : 'gh-badge--error') }}">
+                            {{ $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
+                        </span>
                     </div>
+                    @if($bay->currentWashOrder)
+                        <span class="gh-muted" style="font-size:11px;">{{ $bay->currentWashOrder->vehicle->registration_number }} · {{ ucfirst($bay->currentWashOrder->wash_type) }}</span>
+                        <button wire:click="completeWash({{ $bay->currentWashOrder->id }})" class="gh-btn gh-btn--sm gh-btn--block" style="margin-top:6px;">Complete</button>
+                    @else
+                        <span class="gh-bay__state">Ready for next vehicle</span>
+                    @endif
                 </div>
+            @endforeach
+        </div>
 
-                <!-- In Progress -->
-                @if($this->inProgress->count() > 0)
-                    <div class="app-panel mb-6">
-                        <div class="p-6">
-                            <h2 class="card-title text-lg mb-4">
-                                <span class="w-3 h-3 bg-warning rounded-full animate-pulse"></span>
-                                In Progress ({{ $this->inProgress->count() }})
-                            </h2>
-
-                            <div class="space-y-3">
-                                @foreach($this->inProgress as $order)
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <div class="flex items-center gap-3">
-                                            <div>
-                                                <p class="font-bold">{{ $order->vehicle->registration_number }}</p>
-                                                <p class="text-sm text-base-content/60">
-                                                    {{ ucfirst($order->wash_type) }} • {{ $order->washBay?->name ?? 'No bay' }}
-                                                </p>
-                                                @if($order->assignedAttendant)
-                                                    <p class="text-xs text-base-content/50 mt-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                        {{ $order->assignedAttendant->name }}
-                                                    </p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm text-base-content/60">
-                                                {{ $order->started_at?->diffForHumans() }}
-                                            </span>
-                                            <button wire:click="completeWash({{ $order->id }})" class="btn btn-success btn-sm">
-                                                Complete
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
+        <span class="gh-hint">Click Assign &amp; start to move a vehicle into a bay. Click Complete to release it.</span>
+        <div class="gh-board" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="gh-board__col gh-board__col--waiting">
+                <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Waiting</span><span class="gh-board__count">{{ $this->queue->count() }}</span></div>
+                @forelse($this->queue as $order)
+                    <div class="gh-board__card gh-board__card--waiting">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b>{{ $order->vehicle->registration_number }}</b>
+                            @if($order->priority === 'priority')
+                                <span class="gh-badge gh-badge--warning">PRIORITY</span>
+                            @endif
+                        </div>
+                        <span style="font-size:12px;">{{ $order->customer->name }}</span>
+                        <div class="gh-board__meta"><span>{{ ucfirst($order->wash_type) }} · {{ $order->source_badge }}</span><span>Queue pos. {{ $order->queue_position }}</span></div>
+                        <div style="display:flex; gap:6px; margin-top:4px;">
+                            @if($this->availableBays->isNotEmpty())
+                                <button wire:click="openAssignBayModal({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary" style="flex:1;">Assign &amp; start</button>
+                            @else
+                                <button class="gh-btn gh-btn--sm" style="flex:1;" disabled>No bay available</button>
+                            @endif
+                            @if($order->priority !== 'priority')
+                                <button wire:click="prioritize({{ $order->id }})" class="gh-btn gh-btn--sm" title="Prioritize">↑</button>
+                            @endif
+                            <button wire:click="cancel({{ $order->id }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);" title="Cancel">✕</button>
                         </div>
                     </div>
-                @endif
+                @empty
+                    <span class="gh-muted" style="font-size:12px;">Queue is empty</span>
+                @endforelse
             </div>
 
-            <!-- Queue -->
-            <div>
-                <div class="app-panel">
-                    <div class="p-6">
-                        <h2 class="card-title text-lg mb-4">
-                            Queue ({{ $this->queue->count() }})
-                        </h2>
-
-                        @if($this->queue->count() > 0)
-                            <div class="space-y-2">
-                                @foreach($this->queue as $order)
-                                    <div class="p-3 border border-gray-200 rounded-lg {{ $order->priority === 'priority' ? 'border-warning bg-yellow-50' : '' }}">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="flex items-center gap-2">
-                                                <span class="badge badge-outline badge-sm">{{ $order->queue_position }}</span>
-                                                <span class="font-bold">{{ $order->vehicle->registration_number }}</span>
-                                            </div>
-                                            @if($order->priority === 'priority')
-                                                <span class="badge badge-accent badge-xs">PRIORITY</span>
-                                            @endif
-                                        </div>
-
-                                        <div class="text-sm text-base-content/60 mb-2">
-                                            <p>{{ $order->customer->name }}</p>
-                                            <p>{{ ucfirst($order->wash_type) }} • {{ $order->source_badge }}</p>
-                                        </div>
-
-                                        <div class="flex gap-1">
-                                            @if($this->availableBays->isNotEmpty())
-                                                <button
-                                                    wire:click="openAssignBayModal({{ $order->id }})"
-                                                    class="btn btn-primary btn-xs flex-1"
-                                                >
-                                                    Assign & Start
-                                                </button>
-                                            @else
-                                                <button class="btn btn-disabled btn-xs flex-1" disabled>
-                                                    No bay available
-                                                </button>
-                                            @endif
-
-                                            @if($order->priority !== 'priority')
-                                                <button wire:click="prioritize({{ $order->id }})" class="btn btn-ghost btn-xs" title="Prioritize">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                                    </svg>
-                                                </button>
-                                            @endif
-
-                                            <button wire:click="cancel({{ $order->id }})" class="btn btn-ghost btn-xs text-error" title="Cancel">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-8 text-base-content/50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p>Queue is empty</p>
-                            </div>
-                        @endif
+            <div class="gh-board__col gh-board__col--active">
+                <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Washing</span><span class="gh-board__count">{{ $this->inProgress->count() }}</span></div>
+                @forelse($this->inProgress as $order)
+                    <div class="gh-board__card gh-board__card--active">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b>{{ $order->vehicle->registration_number }}</b>
+                        </div>
+                        <span style="font-size:12px;">{{ ucfirst($order->wash_type) }} · {{ $order->washBay?->name ?? 'No bay' }}</span>
+                        <div class="gh-board__meta">
+                            <span>{{ $order->assignedAttendant?->name ?? 'Unassigned' }}</span>
+                            <span>{{ $order->started_at?->diffForHumans() }}</span>
+                        </div>
+                        <button wire:click="completeWash({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary" style="margin-top:4px;">Complete</button>
                     </div>
-                </div>
+                @empty
+                    <span class="gh-muted" style="font-size:12px;">Nothing washing right now</span>
+                @endforelse
+            </div>
+
+            <div class="gh-board__col gh-board__col--done">
+                <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Completed today</span><span class="gh-board__count">{{ $this->completedTodayList->count() }}</span></div>
+                @forelse($this->completedTodayList as $order)
+                    <div class="gh-board__card gh-board__card--done">
+                        <b>{{ $order->vehicle->registration_number }}</b>
+                        <span style="font-size:12px;">{{ $order->customer->name }}</span>
+                        <div class="gh-board__meta"><span>{{ $order->washBay?->name ?? '—' }}</span><span>{{ $order->completed_at?->format('H:i') }}</span></div>
+                    </div>
+                @empty
+                    <span class="gh-muted" style="font-size:12px;">None yet today</span>
+                @endforelse
             </div>
         </div>
     @else
-        <!-- List View -->
-        <div class="app-filter-bar">
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Search..."
-                        class="input input-bordered input-sm"
-                    />
-                    <select wire:model.live="status" class="select select-bordered select-sm">
-                        <option value="">All Statuses</option>
-                        <option value="queued">Queued</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                    <select wire:model.live="source" class="select select-bordered select-sm">
-                        <option value="">All Sources</option>
-                        <option value="walk_in">Walk-in</option>
-                        <option value="combo">Combo</option>
-                        <option value="appointment">Appointment</option>
-                    </select>
-
-                    <select wire:model.live="perPage" class="select select-bordered select-sm">
-                        <option value="6">6</option>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
+        <div class="gh-table-toolbar">
+            <div class="gh-table-toolbar__filters">
+                <label class="gh-search" style="width:190px;">
+                    ⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search…">
+                </label>
+                <select wire:model.live="status" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                    <option value="">All statuses</option>
+                    <option value="queued">Queued</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <select wire:model.live="source" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                    <option value="">All sources</option>
+                    <option value="walk_in">Walk-in</option>
+                    <option value="combo">Combo</option>
+                    <option value="appointment">Appointment</option>
+                </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="gh-hint">Show</span>
+                <select wire:model.live="perPage" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                    <option value="6">6</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
         </div>
 
-        <div class="app-table-shell">
-            <div class="overflow-x-auto">
-                <table class="table">
+        <div class="gh-card gh-card--flush">
+            <div class="gh-table-scroll">
+                <table class="gh-table">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Order #</th>
-                            <th>Vehicle</th>
-                            <th>Customer</th>
-                            <th>Type</th>
-                            <th>Source</th>
-                            <th>Bay</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th class="text-right">Actions</th>
+                            <th class="is-index">#</th><th>Order</th><th>Vehicle</th><th>Customer</th>
+                            <th>Type</th><th>Source</th><th>Bay</th><th>Status</th><th>Created</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($washOrders as $index => $order)
-                            <tr class="hover">
-                                <td>
-                                    <div class="text-xs text-gray-900">{{ $washOrders->firstItem() + $index }}</div>
-                                </td>
-                                <td>
-                                    <a href="{{ route('wash-orders.show', $order) }}" class="link link-primary font-mono text-sm">
-                                        {{ $order->order_number }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div class="font-medium">{{ $order->vehicle->registration_number }}</div>
-                                </td>
+                            <tr data-href="{{ route('wash-orders.show', $order) }}">
+                                <td class="is-index">{{ $washOrders->firstItem() + $index }}</td>
+                                <td class="is-ref"><a href="{{ route('wash-orders.show', $order) }}">{{ $order->order_number }}</a></td>
+                                <td><b>{{ $order->vehicle->registration_number }}</b></td>
                                 <td>{{ $order->customer->name }}</td>
+                                <td><span class="gh-badge">{{ ucfirst($order->wash_type) }}</span></td>
+                                <td><span class="gh-badge {{ $order->source === 'combo' ? 'gh-badge--primary' : '' }}">{{ $order->source_badge }}</span></td>
+                                <td>{{ $order->washBay?->name ?? '—' }}</td>
                                 <td>
-                                    <span class="badge badge-ghost badge-sm">{{ ucfirst($order->wash_type) }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-{{ $order->source === 'combo' ? 'accent' : 'ghost' }} badge-sm">
-                                        {{ $order->source_badge }}
-                                    </span>
-                                </td>
-                                <td>{{ $order->washBay?->name ?? '-' }}</td>
-                                <td>
-                                    <span class="badge badge-{{ $order->status_color }} badge-sm">
+                                    <span class="gh-badge {{ $order->status_color !== 'ghost' ? 'gh-badge--'.$order->status_color : '' }}">
                                         {{ $order->status instanceof \App\Domains\Operations\Enums\WashOrderStatus ? $order->status->label() : ucfirst($order->status) }}
                                     </span>
                                 </td>
-                                <td class="text-sm text-base-content/60">
-                                    {{ $order->created_at->format('d M H:i') }}
-                                </td>
-                                <td class="text-right">
+                                <td class="gh-muted">{{ $order->created_at->format('d M H:i') }}</td>
+                                <td onclick="event.stopPropagation()">
                                     <div class="dropdown dropdown-end">
-                                        <label tabindex="0" class="btn btn-xs rounded-lg border border-gray-200 bg-base-100 shadow-none hover:bg-base-200">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                            </svg>
-                                        </label>
-                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box border border-gray-200 w-48">
+                                        <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                        <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-40 gh-card p-2 shadow-xl">
                                             <li><a href="{{ route('wash-orders.show', $order) }}">View</a></li>
                                             @if($order->canStart())
                                                 <li><button wire:click="startWash({{ $order->id }})">Start</button></li>
@@ -307,19 +196,16 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="10" class="text-center py-8 text-base-content/50">
-                                    No wash orders found
-                                </td>
-                            </tr>
+                            <tr><td colspan="10" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No wash orders found</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
             @if($washOrders->hasPages())
-                <div class="p-4 border-t border-gray-200">
-                    {{ $washOrders->links() }}
+                <div class="gh-pagination">
+                    <span class="gh-hint">Showing {{ $washOrders->firstItem() }}–{{ $washOrders->lastItem() }} of {{ $washOrders->total() }}</span>
+                    <div>{{ $washOrders->links() }}</div>
                 </div>
             @endif
         </div>
@@ -327,37 +213,37 @@
 
     <!-- Assign Bay Modal -->
     @if($showAssignBayModal)
-    <div class="modal modal-open">
-        <div class="modal-box app-modal-shell max-w-md">
-            <h3 class="font-bold text-lg mb-4">Assign Bay &amp; Start Wash</h3>
+        <div class="modal modal-open">
+            <div class="modal-box gh-card gh-card--pad" style="max-width:420px;">
+                <div class="gh-card__title" style="margin-bottom:16px;">Assign bay &amp; start wash</div>
 
-            <div class="form-control mb-4">
-                <label class="label"><span class="label-text font-medium">Select Wash Bay *</span></label>
-                <select wire:model="selectedBayId" class="select select-bordered">
-                    <option value="">— Choose a bay —</option>
-                    @foreach($this->availableBays as $bay)
-                        <option value="{{ $bay->id }}">{{ $bay->name }} ({{ ucfirst($bay->bay_type instanceof \App\Domains\Operations\Enums\WashBayType ? $bay->bay_type->label() : $bay->bay_type) }})</option>
-                    @endforeach
-                </select>
-                @error('selectedBayId') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
-            </div>
+                <div class="gh-field" style="margin-bottom:14px;">
+                    <span class="gh-label">Select wash bay *</span>
+                    <select wire:model="selectedBayId" class="gh-select">
+                        <option value="">— Choose a bay —</option>
+                        @foreach($this->availableBays as $bay)
+                            <option value="{{ $bay->id }}">{{ $bay->name }} ({{ ucfirst($bay->bay_type instanceof \App\Domains\Operations\Enums\WashBayType ? $bay->bay_type->label() : $bay->bay_type) }})</option>
+                        @endforeach
+                    </select>
+                    @error('selectedBayId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
 
-            <div class="form-control mb-4">
-                <label class="label"><span class="label-text font-medium">Assign Attendant <span class="text-base-content/50 font-normal">(optional)</span></span></label>
-                <select wire:model="selectedAttendantId" class="select select-bordered">
-                    <option value="">— Unassigned —</option>
-                    @foreach($this->attendants as $attendant)
-                        <option value="{{ $attendant->id }}">{{ $attendant->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="gh-field" style="margin-bottom:18px;">
+                    <span class="gh-label">Assign attendant (optional)</span>
+                    <select wire:model="selectedAttendantId" class="gh-select">
+                        <option value="">— Unassigned —</option>
+                        @foreach($this->attendants as $attendant)
+                            <option value="{{ $attendant->id }}">{{ $attendant->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="modal-action app-modal-actions">
-                <button wire:click="closeAssignBayModal" class="btn btn-ghost">Cancel</button>
-                <button wire:click="confirmAssignAndStart" class="btn btn-primary">Start Wash</button>
+                <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:14px;">
+                    <button wire:click="closeAssignBayModal" class="gh-btn">Cancel</button>
+                    <button wire:click="confirmAssignAndStart" class="gh-btn gh-btn--primary">Start wash</button>
+                </div>
             </div>
+            <div class="modal-backdrop" wire:click="closeAssignBayModal"></div>
         </div>
-        <div class="modal-backdrop app-modal-backdrop" wire:click="closeAssignBayModal"></div>
-    </div>
     @endif
 </div>

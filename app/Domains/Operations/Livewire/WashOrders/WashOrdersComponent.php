@@ -162,6 +162,16 @@ class WashOrdersComponent extends Component
             ->get();
     }
 
+    public function getCompletedTodayListProperty()
+    {
+        return WashOrder::with(['vehicle', 'customer', 'washBay'])
+            ->where('branch_id', session('current_branch_id'))
+            ->where('status', 'completed')
+            ->whereDate('completed_at', today())
+            ->latest('completed_at')
+            ->get();
+    }
+
     // Stats for the stats bar
     public function getStatsTodayQueuedProperty(): int
     {

@@ -8,7 +8,102 @@
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
 
-@plugin "daisyui";
+@plugin "daisyui" {
+    themes: light, dark;
+}
+
+/*
+ * tailwind.config.js used to define the "garage"/"garageDark" DaisyUI themes
+ * via the classic JS `daisyui.themes` option — but this project's build is
+ * Tailwind v4 (@tailwindcss/vite), which compiles resources/css/app.css
+ * directly and never reads tailwind.config.js. That JS config was silent
+ * dead weight: data-theme="garage" matched no registered theme, so every
+ * DaisyUI-driven color (--color-primary, btn-primary, badge-primary, active
+ * nav states, ...) fell back to DaisyUI's default indigo "light" theme
+ * instead of the terracotta brand palette.
+ *
+ * DaisyUI 5's documented fix is `@plugin "daisyui/theme" { ... }`, but that
+ * subpath doesn't resolve through this project's @tailwindcss/vite pipeline
+ * (daisyui ships no "exports" map for it, and @plugin resolution failures
+ * here fail silently rather than erroring). Writing the same custom
+ * properties as plain CSS is exactly what that plugin would generate, and
+ * it's tool-resolution-proof: :root outranks daisyui's own `:where(:root)`
+ * default on specificity, so it wins regardless of source order.
+ */
+:root,
+[data-theme="garage"] {
+    color-scheme: light;
+    --color-primary: #8A5A44;
+    --color-primary-content: #ffffff;
+    --color-secondary: #B08A74;
+    --color-secondary-content: #ffffff;
+    --color-accent: #8A5A44;
+    --color-accent-content: #ffffff;
+    --color-neutral: #1A1814;
+    --color-neutral-content: #ffffff;
+    --color-base-100: #ffffff;
+    --color-base-200: #F7F4ED;
+    --color-base-300: #E0DAC9;
+    --color-base-content: #1A1814;
+    --color-info: #7A95BD;
+    --color-info-content: #ffffff;
+    --color-success: #4D8A69;
+    --color-success-content: #ffffff;
+    --color-warning: #C28A2E;
+    --color-warning-content: #1A1814;
+    --color-error: #B65B52;
+    --color-error-content: #ffffff;
+}
+
+[data-theme="garageDark"] {
+    color-scheme: dark;
+    --color-primary: #D49A7A;
+    --color-primary-content: #131210;
+    --color-secondary: #B08A74;
+    --color-secondary-content: #131210;
+    --color-accent: #D49A7A;
+    --color-accent-content: #131210;
+    --color-neutral: #1F1D1A;
+    --color-neutral-content: #F2EFE7;
+    --color-base-100: #1F1D1A;
+    --color-base-200: #131210;
+    --color-base-300: #2D2A25;
+    --color-base-content: #F2EFE7;
+    --color-info: #86A6D0;
+    --color-info-content: #131210;
+    --color-success: #7DAF8F;
+    --color-success-content: #131210;
+    --color-warning: #D3A255;
+    --color-warning-content: #131210;
+    --color-error: #D58A80;
+    --color-error-content: #131210;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        color-scheme: dark;
+        --color-primary: #D49A7A;
+        --color-primary-content: #131210;
+        --color-secondary: #B08A74;
+        --color-secondary-content: #131210;
+        --color-accent: #D49A7A;
+        --color-accent-content: #131210;
+        --color-neutral: #1F1D1A;
+        --color-neutral-content: #F2EFE7;
+        --color-base-100: #1F1D1A;
+        --color-base-200: #131210;
+        --color-base-300: #2D2A25;
+        --color-base-content: #F2EFE7;
+        --color-info: #86A6D0;
+        --color-info-content: #131210;
+        --color-success: #7DAF8F;
+        --color-success-content: #131210;
+        --color-warning: #D3A255;
+        --color-warning-content: #131210;
+        --color-error: #D58A80;
+        --color-error-content: #131210;
+    }
+}
 
 [x-cloak] {
     display: none;
@@ -49,6 +144,63 @@
 
     .app-main {
         @apply flex-1 px-4 py-5 lg:px-6 lg:py-6 xl:px-8 xl:py-8 min-w-0;
+    }
+
+    /* Module launcher (card grid) + module-scoped sidebar chip */
+    .app-module-chip {
+        @apply mb-1.5 flex items-center gap-2.5 rounded-xl p-2.5;
+        background: var(--cream-bg);
+    }
+
+    .app-module-chip__icon {
+        @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-base-100 text-primary;
+        border-color: var(--cream-border);
+    }
+
+    .app-module-chip__icon svg {
+        @apply h-4 w-4;
+    }
+
+    .app-module-card {
+        @apply flex flex-col gap-3 rounded-lg border bg-base-100 p-4 shadow-md transition-colors duration-150;
+        border-color: var(--cream-border);
+    }
+
+    .app-module-card:hover {
+        border-color: var(--cream-accent);
+    }
+
+    .app-module-card__head {
+        @apply flex items-start justify-between gap-3;
+    }
+
+    .app-module-card__icon {
+        @apply flex h-9 w-9 items-center justify-center rounded-lg;
+        background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+        color: var(--color-primary);
+    }
+
+    .app-module-card__name {
+        @apply text-[14.5px] font-semibold text-base-content;
+    }
+
+    .app-module-card__stats {
+        @apply mt-1 flex flex-col gap-1.5 border-t pt-2.5 text-xs;
+        border-color: var(--cream-border);
+    }
+
+    .app-module-card__stat {
+        @apply flex items-baseline justify-between gap-3;
+        color: var(--cream-fg-muted);
+    }
+
+    .app-module-card__stat b {
+        @apply font-semibold;
+        color: var(--cream-fg);
+    }
+
+    .app-module-card__blurb {
+        @apply text-xs leading-relaxed text-base-content opacity-60;
     }
 
     .app-page-header > div:first-child {

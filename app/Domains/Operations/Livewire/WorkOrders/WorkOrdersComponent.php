@@ -87,7 +87,11 @@ class WorkOrdersComponent extends Component
                       ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$this->search}%"));
                 });
             })
-            ->when($this->status, fn($q) => $q->where('status', $this->status))
+            ->when(
+                $this->status,
+                fn($q) => $q->where('status', $this->status),
+                fn($q) => $q->whereNotIn('status', ['delivered', 'cancelled'])
+            )
             ->when($this->type, fn($q) => $q->where('type', $this->type))
             ->when($this->technician, fn($q) => $q->where('assigned_technician_id', $this->technician))
             ->when($this->dateFrom, fn($q) => $q->whereDate('created_at', '>=', $this->dateFrom))
