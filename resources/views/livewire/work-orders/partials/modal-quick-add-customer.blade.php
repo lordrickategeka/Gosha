@@ -1,75 +1,40 @@
 {{-- Quick Add Customer Modal --}}
-<input type="checkbox" id="customer-modal" class="modal-toggle" @if($showCustomerModal) checked @endif />
-<div class="modal" role="dialog">
-    <div class="modal-box app-modal-shell">
-        <h3 class="font-bold text-lg mb-4">Quick Add Customer</h3>
+@if ($showCustomerModal)
+    <div class="modal modal-open">
+        <div class="modal-box gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:16px;">Quick Add Customer</div>
 
-        <div class="space-y-3">
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text">Full Name *</span>
-                </label>
-                <input
-                    type="text"
-                    wire:model="newCustomerName"
-                    placeholder="Enter customer name"
-                    class="input input-bordered w-full"
-                />
-                @error('newCustomerName')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
+            <div class="gh-stack" style="gap:12px;">
+                <div class="gh-field">
+                    <span class="gh-label">Full name *</span>
+                    <input type="text" wire:model="newCustomerName" placeholder="Enter customer name" class="gh-input" style="width:100%;">
+                    @error('newCustomerName') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="gh-field">
+                    <span class="gh-label">Phone number *</span>
+                    <input type="text" wire:model="newCustomerPhone" placeholder="e.g., 0700123456" class="gh-input" style="width:100%;">
+                    @error('newCustomerPhone') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="gh-field">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <span class="gh-label">Email</span>
+                        <span class="gh-hint">Optional</span>
+                    </div>
+                    <input type="email" wire:model="newCustomerEmail" placeholder="customer@example.com" class="gh-input" style="width:100%;">
+                    @error('newCustomerEmail') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
             </div>
 
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text">Phone Number *</span>
-                </label>
-                <input
-                    type="text"
-                    wire:model="newCustomerPhone"
-                    placeholder="e.g., 0700123456"
-                    class="input input-bordered w-full"
-                />
-                @error('newCustomerPhone')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text">Email</span>
-                    <span class="label-text-alt text-base-content/50">Optional</span>
-                </label>
-                <input
-                    type="email"
-                    wire:model="newCustomerEmail"
-                    placeholder="customer@example.com"
-                    class="input input-bordered w-full"
-                />
-                @error('newCustomerEmail')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
+            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">
+                <button type="button" wire:click="closeCustomerModal" class="gh-btn">Cancel</button>
+                <button type="button" wire:click="saveNewCustomer" class="gh-btn gh-btn--primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="saveNewCustomer">Create customer</span>
+                    <span wire:loading wire:target="saveNewCustomer">Creating…</span>
+                </button>
             </div>
         </div>
-
-        <div class="modal-action app-modal-actions">
-            <button
-                type="button"
-                wire:click="closeCustomerModal"
-                class="btn btn-ghost"
-            >
-                Cancel
-            </button>
-            <button
-                type="button"
-                wire:click="saveNewCustomer"
-                class="btn btn-primary"
-                wire:loading.attr="disabled"
-            >
-                <span wire:loading.remove wire:target="saveNewCustomer">Create Customer</span>
-                <span wire:loading wire:target="saveNewCustomer" class="loading loading-spinner loading-sm"></span>
-            </button>
-        </div>
+        <div class="modal-backdrop" wire:click="closeCustomerModal"></div>
     </div>
-    <label class="modal-backdrop app-modal-backdrop" for="customer-modal" wire:click="closeCustomerModal">Close</label>
-</div>
+@endif

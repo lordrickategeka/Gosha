@@ -1,25 +1,19 @@
-<div class="card bg-base-100 shadow-sm mb-6">
-    <div class="card-body p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-            <label class="form-control">
-                <span class="label-text text-xs mb-1">Export Format</span>
-                <select wire:model.live="exportFormat" class="select select-bordered select-sm">
-                    <option value="pdf">PDF</option>
-                    <option value="excel">Excel</option>
-                </select>
-            </label>
-
-            <label class="form-control">
-                <span class="label-text text-xs mb-1">Export Type</span>
-                <select wire:model.live="exportType" class="select select-bordered select-sm">
-                    <option value="summary">Summary</option>
-                    <option value="detailed">Detailed</option>
-                </select>
-            </label>
-
-            <button wire:click="exportReport" class="btn btn-primary btn-sm">
-                Export Report
-            </button>
+<div class="gh-card gh-card--pad">
+    <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end;">
+        <div class="gh-field">
+            <span class="gh-label">Export format</span>
+            <select wire:model.live="exportFormat" class="gh-select" style="width:100%;">
+                <option value="pdf">PDF</option>
+                <option value="excel">Excel</option>
+            </select>
         </div>
+        <div class="gh-field">
+            <span class="gh-label">Export type</span>
+            <select wire:model.live="exportType" class="gh-select" style="width:100%;">
+                <option value="summary">Summary</option>
+                <option value="detailed">Detailed</option>
+            </select>
+        </div>
+        <button wire:click="exportReport" class="gh-btn gh-btn--primary gh-btn--sm">Export report</button>
     </div>
 </div>

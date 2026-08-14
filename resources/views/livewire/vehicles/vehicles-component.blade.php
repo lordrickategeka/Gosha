@@ -1,75 +1,56 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="gh-page">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
         <div>
-            <h1 class="text-2xl font-bold">Vehicles</h1>
-            <p class="text-base-content/60">All registered vehicles</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Vehicles</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">All registered vehicles</p>
         </div>
         @can('create_vehicles')
-        <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Vehicle
-        </a>
+            <a href="{{ route('vehicles.create') }}" class="gh-btn gh-btn--primary">+ Add vehicle</a>
         @endcan
     </div>
 
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by reg number, make, model, or owner..." class="input input-bordered w-full max-w-md" />
-        </div>
-    </div>
+    <label class="gh-search" style="width:320px;">
+        ⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by reg number, make, model, or owner…">
+    </label>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Registration</th>
-                        <th>Make / Model</th>
-                        <th>Year</th>
-                        <th>Color</th>
-                        <th>Owner</th>
-                        <th></th>
-                    </tr>
-                </thead>
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead><tr><th>Registration</th><th>Make / Model</th><th>Year</th><th>Color</th><th>Owner</th><th></th></tr></thead>
                 <tbody>
                     @forelse($vehicles as $vehicle)
-                        <tr class="hover">
+                        <tr data-href="{{ route('vehicles.show', $vehicle) }}">
+                            <td><a href="{{ route('vehicles.show', $vehicle) }}" class="gh-plate">{{ $vehicle->registration_number }}</a></td>
+                            <td><b>{{ $vehicle->make }}</b> <span class="gh-muted">{{ $vehicle->model }}</span></td>
+                            <td>{{ $vehicle->year ?? '—' }}</td>
+                            <td>{{ $vehicle->color ?? '—' }}</td>
                             <td>
-                                <a href="{{ route('vehicles.show', $vehicle) }}" class="font-bold font-mono link link-hover">{{ $vehicle->registration_number }}</a>
+                                <div class="gh-cell-stack">
+                                    <a href="{{ route('customers.show', $vehicle->customer) }}" class="is-ref">{{ $vehicle->customer->name }}</a>
+                                    <span>{{ $vehicle->customer->phone }}</span>
+                                </div>
                             </td>
-                            <td>
-                                <span class="font-medium">{{ $vehicle->make }}</span>
-                                <span class="text-base-content/60">{{ $vehicle->model }}</span>
-                            </td>
-                            <td>{{ $vehicle->year ?? '-' }}</td>
-                            <td>{{ $vehicle->color ?? '-' }}</td>
-                            <td>
-                                <a href="{{ route('customers.show', $vehicle->customer) }}" class="link link-hover">{{ $vehicle->customer->name }}</a>
-                                <p class="text-xs text-base-content/60">{{ $vehicle->customer->phone }}</p>
-                            </td>
-                            <td>
+                            <td onclick="event.stopPropagation()">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
-                                        <li><a href="{{ route('vehicles.show', $vehicle) }}">View History</a></li>
+                                    <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                    <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-44 gh-card p-2 shadow-xl">
+                                        <li><a href="{{ route('vehicles.show', $vehicle) }}">View history</a></li>
                                         @can('edit_vehicles')
                                             <li><a href="{{ route('vehicles.edit', $vehicle) }}">Edit</a></li>
                                         @endcan
-                                        <li><a href="{{ route('work-orders.create', ['vehicle' => $vehicle->id]) }}">New Work Order</a></li>
+                                        <li><a href="{{ route('work-orders.create', ['vehicle' => $vehicle->id]) }}">New work order</a></li>
                                     </ul>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-8 text-base-content/50">No vehicles found</td></tr>
+                        <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No vehicles found</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         @if($vehicles->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $vehicles->links() }}</div>
+            <div class="gh-pagination">{{ $vehicles->links() }}</div>
         @endif
     </div>
 </div>

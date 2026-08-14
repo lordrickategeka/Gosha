@@ -1,240 +1,202 @@
-<div>
-    <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('expenses.index') }}" class="btn btn-ghost btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </a>
+<div class="gh-page">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <a href="{{ route('expenses.index') }}" class="gh-btn gh-btn--sm">←</a>
             <div>
-                <h1 class="text-2xl font-bold">{{ $expense->expense_number }}</h1>
-                <p class="text-base-content/60">{{ $expense->description }}</p>
+                <div style="font-size:20px; font-weight:700; letter-spacing:-0.02em;">{{ $expense->expense_number }}</div>
+                <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">{{ $expense->description }}</p>
             </div>
         </div>
-        <div class="flex gap-2">
-            @if($expense->isDraft() || $expense->isPendingApproval())
-                @can('edit_expenses')
-                    <a href="{{ route('expenses.edit', $expense) }}" class="btn btn-ghost btn-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                    </a>
-                @endcan
-            @endif
-        </div>
+        @if($expense->isDraft() || $expense->isPendingApproval())
+            @can('edit_expenses')
+                <a href="{{ route('expenses.edit', $expense) }}" class="gh-btn gh-btn--sm">Edit</a>
+            @endcan
+        @endif
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
-            <!-- Basic Information -->
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="card-title">Details</h2>
-                        {!! $expense->status_badge !!}
+    <div class="gh-split">
+        <div class="gh-stack">
+            <div class="gh-card gh-card--pad">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                    <div class="gh-card__title">Details</div>
+                    {!! str_replace('badge badge-', 'gh-badge gh-badge--', $expense->status_badge) !!}
+                </div>
+
+                <div class="gh-grid-2">
+                    <div>
+                        <p class="gh-muted" style="font-size:10.5px;">Type</p>
+                        <p style="font-weight:600; font-size:12.5px;">{{ ucfirst(str_replace('_', ' ', $expense->expense_type)) }}</p>
+                    </div>
+                    <div>
+                        <p class="gh-muted" style="font-size:10.5px;">Category</p>
+                        <p style="font-weight:600; font-size:12.5px;">{!! $expense->category ? str_replace('badge badge-', 'gh-badge gh-badge--', $expense->category->badge_html) : 'N/A' !!}</p>
+                    </div>
+                    <div>
+                        <p class="gh-muted" style="font-size:10.5px;">Date</p>
+                        <p style="font-weight:600; font-size:12.5px;">{{ $expense->expense_date->format('d M Y') }}</p>
+                    </div>
+                    <div>
+                        <p class="gh-muted" style="font-size:10.5px;">Payment Method</p>
+                        <p style="font-weight:600; font-size:12.5px;">{{ ucfirst(str_replace('_', ' ', $expense->payment_method)) }}</p>
+                    </div>
+                    @if($expense->payment_reference)
+                        <div>
+                            <p class="gh-muted" style="font-size:10.5px;">Reference</p>
+                            <p style="font-weight:600; font-size:12px; font-family:monospace;">{{ $expense->payment_reference }}</p>
+                        </div>
+                    @endif
+                    @if($expense->supplier)
+                        <div>
+                            <p class="gh-muted" style="font-size:10.5px;">Supplier</p>
+                            <p style="font-weight:600; font-size:12.5px;">{{ $expense->supplier->name }}</p>
+                        </div>
+                    @endif
+                    @if($expense->branch)
+                        <div>
+                            <p class="gh-muted" style="font-size:10.5px;">Branch</p>
+                            <p style="font-weight:600; font-size:12.5px;">{{ $expense->branch->name }}</p>
+                        </div>
+                    @endif
+                </div>
+
+                @if($expense->notes)
+                    <div style="margin-top:14px;">
+                        <p class="gh-muted" style="font-size:10.5px; margin-bottom:2px;">Notes</p>
+                        <p style="font-size:12.5px;">{{ $expense->notes }}</p>
+                    </div>
+                @endif
+            </div>
+
+            <div class="gh-card gh-card--pad">
+                <div class="gh-card__title" style="margin-bottom:14px;">Amount Breakdown</div>
+
+                <div class="gh-stack" style="gap:9px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+                        <span class="gh-muted">Amount</span>
+                        <span style="font-weight:600;">{{ $expense->formatted_amount }}</span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-base-content/60">Type</p>
-                            <p class="font-medium">{{ ucfirst(str_replace('_', ' ', $expense->expense_type)) }}</p>
+                    @if($expense->tax_amount)
+                        <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+                            <span class="gh-muted">Tax ({{ $expense->tax_percentage }}%) {{ $expense->tax_inclusive ? '(Inclusive)' : '' }}</span>
+                            <span style="font-weight:600;">{{ $expense->currency }} {{ number_format($expense->tax_amount, 2) }}</span>
                         </div>
-                        <div>
-                            <p class="text-sm text-base-content/60">Category</p>
-                            <p class="font-medium">{!! $expense->category?->badge_html ?? 'N/A' !!}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-base-content/60">Date</p>
-                            <p class="font-medium">{{ $expense->expense_date->format('d M Y') }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-base-content/60">Payment Method</p>
-                            <p class="font-medium">{{ ucfirst(str_replace('_', ' ', $expense->payment_method)) }}</p>
-                        </div>
-                        @if($expense->payment_reference)
-                            <div>
-                                <p class="text-sm text-base-content/60">Reference</p>
-                                <p class="font-medium font-mono text-sm">{{ $expense->payment_reference }}</p>
-                            </div>
-                        @endif
-                        @if($expense->supplier)
-                            <div>
-                                <p class="text-sm text-base-content/60">Supplier</p>
-                                <p class="font-medium">{{ $expense->supplier->name }}</p>
-                            </div>
-                        @endif
-                        @if($expense->branch)
-                            <div>
-                                <p class="text-sm text-base-content/60">Branch</p>
-                                <p class="font-medium">{{ $expense->branch->name }}</p>
-                            </div>
-                        @endif
+                    @endif
+
+                    <div style="border-top:1px solid var(--gh-hairline); margin:4px 0;"></div>
+
+                    <div style="display:flex; justify-content:space-between; font-size:15px;">
+                        <span style="font-weight:700;">Total</span>
+                        <span style="font-weight:800;">{{ $expense->formatted_total }}</span>
                     </div>
 
-                    @if($expense->notes)
-                        <div class="mt-4">
-                            <p class="text-sm text-base-content/60 mb-1">Notes</p>
-                            <p class="text-sm">{{ $expense->notes }}</p>
+                    @if($expense->currency !== 'UGX')
+                        <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                            <span class="gh-muted">Exchange Rate</span>
+                            <span>1 {{ $expense->currency }} = {{ $expense->exchange_rate }} UGX</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+                            <span class="gh-muted">Amount in UGX</span>
+                            <span style="font-weight:600;">UGX {{ number_format($expense->amount_in_base_currency, 2) }}</span>
                         </div>
                     @endif
                 </div>
             </div>
 
-            <!-- Amount Breakdown -->
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title">Amount Breakdown</h2>
-
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-base-content/60">Amount</span>
-                            <span class="font-medium">{{ $expense->formatted_amount }}</span>
-                        </div>
-
-                        @if($expense->tax_amount)
-                            <div class="flex justify-between">
-                                <span class="text-base-content/60">Tax ({{ $expense->tax_percentage }}%) {{ $expense->tax_inclusive ? '(Inclusive)' : '' }}</span>
-                                <span class="font-medium">{{ $expense->currency }} {{ number_format($expense->tax_amount, 2) }}</span>
-                            </div>
-                        @endif
-
-                        <div class="divider my-2"></div>
-
-                        <div class="flex justify-between text-lg">
-                            <span class="font-semibold">Total</span>
-                            <span class="font-bold">{{ $expense->formatted_total }}</span>
-                        </div>
-
-                        @if($expense->currency !== 'UGX')
-                            <div class="flex justify-between text-sm">
-                                <span class="text-base-content/60">Exchange Rate</span>
-                                <span>1 {{ $expense->currency }} = {{ $expense->exchange_rate }} UGX</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-base-content/60">Amount in UGX</span>
-                                <span class="font-medium">UGX {{ number_format($expense->amount_in_base_currency, 2) }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Attachments -->
             @if($expense->attachments->count() > 0)
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title">Attachments</h2>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @foreach($expense->attachments as $attachment)
-                                <div class="flex items-center justify-between p-3 border border-base-300 rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-2xl">{{ $attachment->icon }}</span>
-                                        <div>
-                                            <p class="font-medium text-sm">{{ $attachment->file_name }}</p>
-                                            <p class="text-xs text-base-content/60">{{ $attachment->formatted_size }}</p>
-                                        </div>
+                <div class="gh-card gh-card--pad">
+                    <div class="gh-card__title" style="margin-bottom:14px;">Attachments</div>
+                    <div class="gh-grid-2">
+                        @foreach($expense->attachments as $attachment)
+                            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border:1px solid var(--gh-hairline); border-radius:var(--gh-radius);">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:22px;">{{ $attachment->icon }}</span>
+                                    <div>
+                                        <p style="font-weight:600; font-size:12.5px;">{{ $attachment->file_name }}</p>
+                                        <p class="gh-muted" style="font-size:10.5px;">{{ $attachment->formatted_size }}</p>
                                     </div>
-                                    <button wire:click="downloadAttachment({{ $attachment->id }})" class="btn btn-ghost btn-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                    </button>
                                 </div>
-                            @endforeach
-                        </div>
+                                <button wire:click="downloadAttachment({{ $attachment->id }})" class="gh-btn gh-btn--sm">↓</button>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endif
 
-            <!-- Approval History -->
             @if(count($approvalHistory) > 0)
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title">Approval History</h2>
+                <div class="gh-card gh-card--pad">
+                    <div class="gh-card__title" style="margin-bottom:14px;">Approval History</div>
 
-                        <div class="space-y-4">
-                            @foreach($approvalHistory as $level)
-                                <div>
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="badge badge-outline">Level {{ $level['level'] }}</span>
-                                        <span class="font-medium">{{ $level['description'] }}</span>
-                                    </div>
-
-                                    @foreach($level['approvals'] as $approval)
-                                        <div class="flex items-start gap-3 ml-4 py-2">
-                                            <div class="mt-1">
-                                                @if($approval['status'] === 'approved')
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                @elseif($approval['status'] === 'rejected')
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                @else
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                @endif
-                                            </div>
-                                            <div class="flex-1">
-                                                <p class="font-medium">{{ $approval['approver'] }}</p>
-                                                <p class="text-sm text-base-content/60">{{ ucfirst($approval['status']) }} · {{ $approval['timestamp']->diffForHumans() }}</p>
-                                                @if($approval['comments'])
-                                                    <p class="text-sm mt-1 italic">"{{ $approval['comments'] }}"</p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
+                    <div class="gh-stack">
+                        @foreach($approvalHistory as $level)
+                            <div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                    <span class="gh-badge">Level {{ $level['level'] }}</span>
+                                    <span style="font-weight:600; font-size:12.5px;">{{ $level['description'] }}</span>
                                 </div>
-                            @endforeach
-                        </div>
+
+                                @foreach($level['approvals'] as $approval)
+                                    <div style="display:flex; align-items:flex-start; gap:10px; margin-left:16px; padding:8px 0;">
+                                        <div style="margin-top:2px; font-size:15px;">
+                                            @if($approval['status'] === 'approved')
+                                                <span style="color:var(--gh-success);">✓</span>
+                                            @elseif($approval['status'] === 'rejected')
+                                                <span style="color:var(--gh-error);">✕</span>
+                                            @else
+                                                <span style="color:var(--gh-warning);">◷</span>
+                                            @endif
+                                        </div>
+                                        <div style="flex:1;">
+                                            <p style="font-weight:600; font-size:12.5px;">{{ $approval['approver'] }}</p>
+                                            <p class="gh-muted" style="font-size:11.5px;">{{ ucfirst($approval['status']) }} &middot; {{ $approval['timestamp']->diffForHumans() }}</p>
+                                            @if($approval['comments'])
+                                                <p style="font-size:12px; font-style:italic; margin-top:4px;">"{{ $approval['comments'] }}"</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endif
         </div>
 
-        <!-- Sidebar -->
-        <div class="lg:col-span-1">
-            <div class="card bg-base-100 shadow-sm sticky top-4">
-                <div class="card-body">
-                    <h2 class="card-title text-lg">Activity</h2>
+        <div class="gh-stack">
+            <div class="gh-card gh-card--pad" style="position:sticky; top:14px;">
+                <div class="gh-card__title" style="margin-bottom:12px;">Activity</div>
 
-                    <div class="space-y-3 text-sm">
-                        <div>
-                            <p class="text-base-content/60">Created by</p>
-                            <p class="font-medium">{{ $expense->createdBy?->name ?? 'Unknown' }}</p>
-                            <p class="text-xs text-base-content/60">{{ $expense->created_at->format('d M Y, H:i') }}</p>
-                        </div>
-
-                        @if($expense->approvedBy)
-                            <div>
-                                <p class="text-base-content/60">Approved by</p>
-                                <p class="font-medium">{{ $expense->approvedBy->name }}</p>
-                            </div>
-                        @endif
-
-                        @if($expense->rejectedBy)
-                            <div>
-                                <p class="text-base-content/60">Rejected by</p>
-                                <p class="font-medium">{{ $expense->rejectedBy->name }}</p>
-                                @if($expense->rejection_reason)
-                                    <p class="text-xs mt-1 italic">"{{ $expense->rejection_reason }}"</p>
-                                @endif
-                            </div>
-                        @endif
-
-                        @if($expense->paidBy)
-                            <div>
-                                <p class="text-base-content/60">Paid by</p>
-                                <p class="font-medium">{{ $expense->paidBy->name }}</p>
-                                <p class="text-xs text-base-content/60">{{ $expense->paid_at->format('d M Y, H:i') }}</p>
-                            </div>
-                        @endif
+                <div class="gh-stack" style="gap:12px; font-size:12.5px;">
+                    <div>
+                        <p class="gh-muted" style="font-size:10.5px;">Created by</p>
+                        <p style="font-weight:600;">{{ $expense->createdBy?->name ?? 'Unknown' }}</p>
+                        <p class="gh-hint">{{ $expense->created_at->format('d M Y, H:i') }}</p>
                     </div>
+
+                    @if($expense->approvedBy)
+                        <div>
+                            <p class="gh-muted" style="font-size:10.5px;">Approved by</p>
+                            <p style="font-weight:600;">{{ $expense->approvedBy->name }}</p>
+                        </div>
+                    @endif
+
+                    @if($expense->rejectedBy)
+                        <div>
+                            <p class="gh-muted" style="font-size:10.5px;">Rejected by</p>
+                            <p style="font-weight:600;">{{ $expense->rejectedBy->name }}</p>
+                            @if($expense->rejection_reason)
+                                <p style="font-size:11px; font-style:italic; margin-top:4px;">"{{ $expense->rejection_reason }}"</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if($expense->paidBy)
+                        <div>
+                            <p class="gh-muted" style="font-size:10.5px;">Paid by</p>
+                            <p style="font-weight:600;">{{ $expense->paidBy->name }}</p>
+                            <p class="gh-hint">{{ $expense->paid_at->format('d M Y, H:i') }}</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

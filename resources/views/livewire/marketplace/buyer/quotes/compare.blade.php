@@ -1,38 +1,35 @@
-<div class="p-6 space-y-4">
-    <h1 class="text-2xl font-bold">Compare Quotes &mdash; {{ $rfq->reference }}</h1>
-    <p class="text-base-content/60">{{ $rfq->title }}</p>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Compare Quotes — {{ $rfq->reference }}</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">{{ $rfq->title }}</p>
+    </div>
 
     @if ($quotes->isEmpty())
-        <p class="text-base-content/60">No submitted quotes yet.</p>
+        <p class="gh-muted" style="font-size:12.5px;">No submitted quotes yet.</p>
     @else
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="gh-grid-3">
             @foreach ($quotes as $index => $quote)
-                <div class="card bg-base-100 shadow border {{ $index === 0 ? 'border-success' : 'border-base-300' }}">
-                    <div class="card-body">
-                        <div class="flex items-center justify-between">
-                            <h2 class="card-title text-base">{{ $quote->supplier?->name }}</h2>
-                            @if ($index === 0)<span class="badge badge-success">Lowest</span>@endif
-                        </div>
-                        <div class="text-2xl font-bold">{{ number_format($quote->total) }} {{ $quote->currency }}</div>
-                        @if ($quote->valid_until)
-                            <p class="text-xs text-base-content/60">Valid until {{ $quote->valid_until->toFormattedDateString() }}</p>
-                        @endif
-                        <ul class="text-sm mt-2 space-y-1">
-                            @foreach ($quote->items as $qi)
-                                <li class="flex justify-between">
-                                    <span>{{ $qi->description ?? $qi->catalog_product_id }} &times; {{ $qi->qty }}</span>
-                                    <span>{{ number_format($qi->line_total) }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="card-actions justify-end mt-3">
-                            <button class="btn btn-sm btn-primary"
-                                    wire:click="award({{ $quote->id }})"
-                                    wire:confirm="Award this quote? A draft PO will be created and other quotes rejected."
-                                    wire:loading.attr="disabled">
-                                Award
-                            </button>
-                        </div>
+                <div class="gh-card gh-card--pad" style="{{ $index === 0 ? 'border-color:var(--gh-success); border-width:2px;' : '' }}">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                        <div style="font-weight:700; font-size:14px;">{{ $quote->supplier?->name }}</div>
+                        @if ($index === 0)<span class="gh-badge gh-badge--success">Lowest</span>@endif
+                    </div>
+                    <div style="font-size:20px; font-weight:800; margin-top:8px;">{{ number_format($quote->total) }} {{ $quote->currency }}</div>
+                    @if ($quote->valid_until)
+                        <p class="gh-muted" style="font-size:11px; margin-top:2px;">Valid until {{ $quote->valid_until->toFormattedDateString() }}</p>
+                    @endif
+                    <ul class="gh-stack" style="gap:4px; margin-top:10px; font-size:12px;">
+                        @foreach ($quote->items as $qi)
+                            <li style="display:flex; justify-content:space-between;">
+                                <span>{{ $qi->description ?? $qi->catalog_product_id }} &times; {{ $qi->qty }}</span>
+                                <span style="font-weight:600;">{{ number_format($qi->line_total) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+                        <button class="gh-btn gh-btn--primary gh-btn--sm" wire:click="award({{ $quote->id }})" wire:confirm="Award this quote? A draft PO will be created and other quotes rejected." wire:loading.attr="disabled">
+                            Award
+                        </button>
                     </div>
                 </div>
             @endforeach

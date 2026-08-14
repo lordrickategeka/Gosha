@@ -1,27 +1,27 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="form-control">
-        <label class="label"><span class="label-text">SMTP Host</span></label>
-        <input type="text" wire:model.defer="credentials.host" class="input input-bordered w-full" placeholder="smtp.mailprovider.com" />
-        @error('credentials.host')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
+<div class="gh-grid-2">
+    <div class="gh-field">
+        <span class="gh-label">SMTP host</span>
+        <input type="text" wire:model.defer="credentials.host" class="gh-input" style="width:100%;" placeholder="smtp.mailprovider.com">
+        @error('credentials.host') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
     </div>
-    <div class="form-control">
-        <label class="label"><span class="label-text">SMTP Port</span></label>
-        <input type="number" wire:model.defer="credentials.port" class="input input-bordered w-full" placeholder="587" />
-        @error('credentials.port')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
+    <div class="gh-field">
+        <span class="gh-label">SMTP port</span>
+        <input type="number" wire:model.defer="credentials.port" class="gh-input" style="width:100%;" placeholder="587">
+        @error('credentials.port') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
     </div>
-    <div class="form-control">
-        <label class="label"><span class="label-text">Username</span></label>
-        <input type="text" wire:model.defer="credentials.username" class="input input-bordered w-full" placeholder="SMTP username" />
-        @error('credentials.username')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
+    <div class="gh-field">
+        <span class="gh-label">Username</span>
+        <input type="text" wire:model.defer="credentials.username" class="gh-input" style="width:100%;" placeholder="SMTP username">
+        @error('credentials.username') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
     </div>
-    <div class="form-control">
-        <label class="label"><span class="label-text">Password</span></label>
-        <input type="password" wire:model.defer="credentials.password" class="input input-bordered w-full" placeholder="SMTP password" />
-        @error('credentials.password')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
+    <div class="gh-field">
+        <span class="gh-label">Password</span>
+        <input type="password" wire:model.defer="credentials.password" class="gh-input" style="width:100%;" placeholder="SMTP password">
+        @error('credentials.password') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
     </div>
-    <div class="form-control md:col-span-2">
-        <label class="label"><span class="label-text">Encryption</span></label>
-        <input type="text" wire:model.defer="credentials.encryption" class="input input-bordered w-full" placeholder="tls or ssl" />
-        @error('credentials.encryption')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
+    <div class="gh-field" style="grid-column:1/-1;">
+        <span class="gh-label">Encryption</span>
+        <input type="text" wire:model.defer="credentials.encryption" class="gh-input" style="width:100%;" placeholder="tls or ssl">
+        @error('credentials.encryption') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
     </div>
 </div>

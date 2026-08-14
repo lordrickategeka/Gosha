@@ -1,105 +1,82 @@
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <div>
-            <h3 class="text-xl font-bold text-black">Parts Intelligence</h3>
-            <p class="text-sm text-gray-500">
-                Compare supplier sources, landed costs, and fitment confidence per part line.
-            </p>
-        </div>
+<div class="gh-stack">
+    <div>
+        <div style="font-weight:700; font-size:15px;">Parts Intelligence</div>
+        <p class="gh-muted" style="font-size:12px; margin-top:2px;">Compare supplier sources, landed costs, and fitment confidence per part line.</p>
     </div>
 
     @if (session()->has('success'))
-        <div class="alert alert-success text-sm">{{ session('success') }}</div>
+        <div class="gh-badge gh-badge--success" style="display:block; padding:8px 12px; font-size:12px;">{{ session('success') }}</div>
     @endif
     @if (session()->has('warning'))
-        <div class="alert alert-warning text-sm">{{ session('warning') }}</div>
+        <div class="gh-badge gh-badge--warning" style="display:block; padding:8px 12px; font-size:12px;">{{ session('warning') }}</div>
     @endif
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead>
                     <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saved Sources</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="is-index">#</th>
+                        <th>Part</th>
+                        <th>Qty</th>
+                        <th>Saved Sources</th>
+                        <th></th>
                     </tr>
                 </thead>
-                <tbody class="bg-white">
+                <tbody>
                     @forelse($this->partItems as $index => $item)
-                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-base-200 transition-colors duration-150">
-                            <td class="px-4 py-2 whitespace-nowrap">
-                                <div class="text-xs text-gray-900">{{ $index + 1 }}</div>
+                        <tr>
+                            <td class="is-index">{{ $index + 1 }}</td>
+                            <td>
+                                <div style="font-weight:700;">{{ $item->description }}</div>
+                                <div class="gh-muted" style="font-size:10.5px;">Item #{{ $item->id }}</div>
                             </td>
-                            <td class="px-4 py-2">
-                                <div class="text-xs font-medium text-gray-900">{{ $item->description }}</div>
-                                <div class="text-xs text-gray-700">Item #{{ $item->id }}</div>
-                            </td>
-                            <td class="px-4 py-2 whitespace-nowrap">
-                                <div class="text-xs text-gray-900">{{ $item->quantity }}</div>
-                            </td>
-                            <td class="px-4 py-2">
-                                <div class="text-xs text-gray-900">{{ $item->partSources->count() }} source(s)</div>
+                            <td class="gh-muted">{{ $item->quantity }}</td>
+                            <td>
+                                <div class="gh-muted">{{ $item->partSources->count() }} source(s)</div>
                                 @if($item->partSources->where('is_recommended', true)->count())
-                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 mt-1">
-                                        Recommended source selected
-                                    </span>
+                                    <span class="gh-badge gh-badge--success" style="margin-top:4px;">Recommended source selected</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-right">
-                                <div class="inline-flex items-center gap-2">
-                                    <button wire:click="openSourceModal({{ $item->id }})"
-                                            class="px-2 py-1.5 text-xs border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                                        Add Source
-                                    </button>
-                                    <button wire:click="getRecommendation({{ $item->id }})"
-                                            class="btn btn-primary btn-xs">
-                                        Recommend
-                                    </button>
+                            <td style="text-align:right;">
+                                <div style="display:inline-flex; align-items:center; gap:6px;">
+                                    <button wire:click="openSourceModal({{ $item->id }})" class="gh-btn gh-btn--sm">Add source</button>
+                                    <button wire:click="getRecommendation({{ $item->id }})" class="gh-btn gh-btn--primary gh-btn--sm">Recommend</button>
                                 </div>
                             </td>
                         </tr>
 
                         @if($item->partSources->count())
                             <tr>
-                                <td colspan="5" class="px-4 py-2 bg-gray-50 border-t border-gray-200">
-                                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                                        <div class="overflow-x-auto">
-                                            <table class="w-full">
-                                                <thead class="bg-gray-50 border-b border-gray-200">
+                                <td colspan="5" style="background:var(--gh-base-200); border-top:1px solid var(--gh-hairline); padding:12px;">
+                                    <div class="gh-card" style="overflow:hidden;">
+                                        <div class="gh-table-scroll">
+                                            <table class="gh-table">
+                                                <thead>
                                                     <tr>
-                                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Part #</th>
-                                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Landed</th>
-                                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead Time</th>
-                                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                        <th>Supplier</th>
+                                                        <th>Part #</th>
+                                                        <th>Price</th>
+                                                        <th>Landed</th>
+                                                        <th>Lead Time</th>
+                                                        <th></th>
                                                     </tr>
                                                 </thead>
-                                                <tbody class="bg-white">
+                                                <tbody>
                                                     @foreach($item->partSources as $sIndex => $source)
-                                                        <tr class="{{ $sIndex % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} hover:bg-base-200 transition-colors duration-150">
-                                                            <td class="px-4 py-2">
-                                                                <div class="text-xs text-gray-900">
-                                                                    {{ $source->supplier?->name ?? ($source->source_name ?? 'Manual Source') }}
-                                                                </div>
+                                                        <tr>
+                                                            <td>
+                                                                <div>{{ $source->supplier?->name ?? ($source->source_name ?? 'Manual Source') }}</div>
                                                                 @if($source->is_recommended)
-                                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary mt-1">
-                                                                        Recommended
-                                                                    </span>
+                                                                    <span class="gh-badge gh-badge--primary" style="margin-top:4px;">Recommended</span>
                                                                 @endif
                                                             </td>
-                                                            <td class="px-4 py-2"><div class="text-xs text-gray-900">{{ $source->source_part_number ?? '-' }}</div></td>
-                                                            <td class="px-4 py-2"><div class="text-xs text-gray-900">{{ number_format((float)($source->supplier_price ?? 0), 2) }}</div></td>
-                                                            <td class="px-4 py-2"><div class="text-xs text-gray-900">{{ number_format((float)($source->total_landed_cost ?? 0), 2) }}</div></td>
-                                                            <td class="px-4 py-2"><div class="text-xs text-gray-900">{{ $source->lead_time_days ?? '-' }} day(s)</div></td>
-                                                            <td class="px-4 py-2 text-right">
-                                                                <button wire:click="markRecommended({{ $source->id }})"
-                                                                        class="px-2 py-1.5 text-xs border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                                                                    Mark Recommended
-                                                                </button>
+                                                            <td class="gh-muted">{{ $source->source_part_number ?? '-' }}</td>
+                                                            <td>{{ number_format((float)($source->supplier_price ?? 0), 2) }}</td>
+                                                            <td>{{ number_format((float)($source->total_landed_cost ?? 0), 2) }}</td>
+                                                            <td class="gh-muted">{{ $source->lead_time_days ?? '-' }} day(s)</td>
+                                                            <td style="text-align:right;">
+                                                                <button wire:click="markRecommended({{ $source->id }})" class="gh-btn gh-btn--sm">Mark recommended</button>
                                                             </td>
                                                         </tr>
                                                     @endforeach
@@ -110,19 +87,17 @@
 
                                     @if(isset($recommendations[$item->id]['recommended']) && $recommendations[$item->id]['recommended'])
                                         @php $r = $recommendations[$item->id]['recommended']; @endphp
-                                        <div class="mt-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
-                                            <p class="text-xs text-gray-700">
-                                                <span class="font-semibold text-gray-900">Recommendation:</span>
+                                        <div style="margin-top:10px; padding:10px 12px; border-radius:var(--gh-radius); border:1px solid var(--gh-primary); background:var(--gh-primary-tint);">
+                                            <p style="font-size:11.5px;">
+                                                <strong>Recommendation:</strong>
                                                 {{ $r['is_local'] ? 'Local Source' : 'Import Source' }}
-                                                •
-                                                <span class="font-semibold text-gray-900">Confidence:</span> {{ $r['confidence_score'] }}%
-                                                •
-                                                <span class="font-semibold text-gray-900">Total Landed:</span> {{ number_format((float)$r['total_landed_cost'], 2) }}
+                                                &middot;
+                                                <strong>Confidence:</strong> {{ $r['confidence_score'] }}%
+                                                &middot;
+                                                <strong>Total Landed:</strong> {{ number_format((float)$r['total_landed_cost'], 2) }}
                                             </p>
                                             @if(!empty($r['reason_codes']))
-                                                <p class="text-xs text-gray-600 mt-1">
-                                                    Reason: {{ implode(', ', $r['reason_codes']) }}
-                                                </p>
+                                                <p class="gh-muted" style="font-size:11px; margin-top:4px;">Reason: {{ implode(', ', $r['reason_codes']) }}</p>
                                             @endif
                                         </div>
                                     @endif
@@ -131,9 +106,9 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <div class="text-lg font-medium text-gray-500">No part items found</div>
-                                <p class="text-sm text-gray-500 mt-1">Add part-type line items on this work order to begin sourcing.</p>
+                            <td colspan="5" style="text-align:center; padding:48px 20px;">
+                                <div style="font-size:15px; font-weight:600; color:var(--gh-ink-faint);">No part items found</div>
+                                <p class="gh-muted" style="font-size:12px; margin-top:4px;">Add part-type line items on this work order to begin sourcing.</p>
                             </td>
                         </tr>
                     @endforelse
@@ -143,134 +118,114 @@
     </div>
 
     @if($showSourceModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeSourceModal"></div>
+        <div class="modal modal-open">
+            <div class="modal-box gh-card" style="max-width:42rem; padding:0; overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1px solid var(--gh-hairline);">
+                    <div class="gh-card__title">Add Supplier Source</div>
+                    <p class="gh-muted" style="font-size:12px; margin-top:2px;">Manual link-based source entry (v1).</p>
+                </div>
 
-            <div class="flex items-end justify-center min-h-screen p-4 text-center sm:items-center sm:p-0">
-                <div class="inline-block align-bottom bg-base-100 rounded-lg text-left overflow-hidden shadow-md transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                    <div class="p-4 border-b border-gray-200">
-                        <h3 class="text-xl font-bold text-black">Add Supplier Source</h3>
-                        <p class="text-sm text-gray-500">Manual link-based source entry (v1).</p>
+                <div class="gh-grid-2" style="padding:20px;">
+                    <div class="gh-field">
+                        <span class="gh-label">Supplier</span>
+                        <select wire:model="sourceSupplierId" class="gh-select" style="width:100%;">
+                            <option value="">Select supplier (optional)</option>
+                            @foreach($this->suppliers as $supplier)
+                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('sourceSupplierId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Supplier</label>
-                            <select wire:model="sourceSupplierId" class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
-                                <option value="">Select supplier (optional)</option>
-                                @foreach($this->suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('sourceSupplierId') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Source Name</label>
-                            <input type="text" wire:model="sourceName"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                                   placeholder="PartSouq / 7zap / Local Supplier" />
-                            @error('sourceName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="text-xs font-medium text-gray-700">Source Link</label>
-                            <input type="url" wire:model="sourceLink"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                                   placeholder="https://..." />
-                            @error('sourceLink') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Part Number</label>
-                            <input type="text" wire:model="sourcePartNumber"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourcePartNumber') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Supplier Price</label>
-                            <input type="number" step="0.01" wire:model="sourceSupplierPrice"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceSupplierPrice') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Shipping</label>
-                            <input type="number" step="0.01" wire:model="sourceShippingCost"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceShippingCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Duty</label>
-                            <input type="number" step="0.01" wire:model="sourceDutyCost"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceDutyCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Clearing</label>
-                            <input type="number" step="0.01" wire:model="sourceClearingCost"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceClearingCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Margin Amount</label>
-                            <input type="number" step="0.01" wire:model="sourceMarginAmount"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceMarginAmount') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Margin %</label>
-                            <input type="number" step="0.01" wire:model="sourceMarginPercent"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceMarginPercent') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Availability</label>
-                            <input type="text" wire:model="sourceAvailability"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                                   placeholder="in_stock / preorder" />
-                            @error('sourceAvailability') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="text-xs font-medium text-gray-700">Lead Time (days)</label>
-                            <input type="number" wire:model="sourceLeadTimeDays"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceLeadTimeDays') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="inline-flex items-center gap-2 text-xs font-medium text-gray-700">
-                                <input type="checkbox" wire:model="sourceIsLocal" class="checkbox checkbox-xs" />
-                                Local Source
-                            </label>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="text-xs font-medium text-gray-700">Warranty</label>
-                            <input type="text" wire:model="sourceWarrantyText"
-                                   class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" />
-                            @error('sourceWarrantyText') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="text-xs font-medium text-gray-700">Notes</label>
-                            <textarea rows="3" wire:model="sourceNotes"
-                                      class="w-full px-4 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"></textarea>
-                            @error('sourceNotes') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                    <div class="gh-field">
+                        <span class="gh-label">Source name</span>
+                        <input type="text" wire:model="sourceName" class="gh-input" style="width:100%;" placeholder="PartSouq / 7zap / Local Supplier">
+                        @error('sourceName') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                        <button wire:click="saveSource" class="btn btn-primary btn-sm">Save Source</button>
-                        <button wire:click="closeSourceModal" class="btn btn-ghost btn-sm">Cancel</button>
+                    <div class="gh-field" style="grid-column:1/-1;">
+                        <span class="gh-label">Source link</span>
+                        <input type="url" wire:model="sourceLink" class="gh-input" style="width:100%;" placeholder="https://...">
+                        @error('sourceLink') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Part number</span>
+                        <input type="text" wire:model="sourcePartNumber" class="gh-input" style="width:100%;">
+                        @error('sourcePartNumber') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Supplier price</span>
+                        <input type="number" step="0.01" wire:model="sourceSupplierPrice" class="gh-input" style="width:100%;">
+                        @error('sourceSupplierPrice') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Shipping</span>
+                        <input type="number" step="0.01" wire:model="sourceShippingCost" class="gh-input" style="width:100%;">
+                        @error('sourceShippingCost') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Duty</span>
+                        <input type="number" step="0.01" wire:model="sourceDutyCost" class="gh-input" style="width:100%;">
+                        @error('sourceDutyCost') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Clearing</span>
+                        <input type="number" step="0.01" wire:model="sourceClearingCost" class="gh-input" style="width:100%;">
+                        @error('sourceClearingCost') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Margin amount</span>
+                        <input type="number" step="0.01" wire:model="sourceMarginAmount" class="gh-input" style="width:100%;">
+                        @error('sourceMarginAmount') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Margin %</span>
+                        <input type="number" step="0.01" wire:model="sourceMarginPercent" class="gh-input" style="width:100%;">
+                        @error('sourceMarginPercent') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Availability</span>
+                        <input type="text" wire:model="sourceAvailability" class="gh-input" style="width:100%;" placeholder="in_stock / preorder">
+                        @error('sourceAvailability') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field">
+                        <span class="gh-label">Lead time (days)</span>
+                        <input type="number" wire:model="sourceLeadTimeDays" class="gh-input" style="width:100%;">
+                        @error('sourceLeadTimeDays') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div style="grid-column:1/-1;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" wire:model="sourceIsLocal">
+                            <span style="font-weight:600; font-size:12.5px;">Local source</span>
+                        </label>
+                    </div>
+
+                    <div class="gh-field" style="grid-column:1/-1;">
+                        <span class="gh-label">Warranty</span>
+                        <input type="text" wire:model="sourceWarrantyText" class="gh-input" style="width:100%;">
+                        @error('sourceWarrantyText') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field" style="grid-column:1/-1;">
+                        <span class="gh-label">Notes</span>
+                        <textarea rows="3" wire:model="sourceNotes" class="gh-input" style="width:100%;"></textarea>
+                        @error('sourceNotes') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <div style="background:var(--gh-base-200); padding:14px 20px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline);">
+                    <button wire:click="closeSourceModal" class="gh-btn gh-btn--sm">Cancel</button>
+                    <button wire:click="saveSource" class="gh-btn gh-btn--primary gh-btn--sm">Save source</button>
                 </div>
             </div>
         </div>

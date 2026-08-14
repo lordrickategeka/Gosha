@@ -1,25 +1,19 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="gh-page">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
         <div>
-            <h1 class="text-2xl font-bold">Appointments</h1>
-            <p class="text-base-content/60">{{ $todayCount }} today, {{ $upcomingCount }} upcoming</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Appointments</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">{{ $todayCount }} today, {{ $upcomingCount }} upcoming</p>
         </div>
         @can('create_appointments')
-        <a href="{{ route('appointments.create') }}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            New Appointment
-        </a>
+            <a href="{{ route('appointments.create') }}" class="gh-btn gh-btn--primary">+ New appointment</a>
         @endcan
     </div>
 
-    <!-- Filters (in table header) -->
-    <div class="card bg-base-100 shadow-sm mb-4">
-        <div class="flex flex-wrap items-center gap-2 p-4">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="input input-bordered input-sm w-40" />
-            <input type="date" wire:model.live="date" class="input input-bordered input-sm w-36" />
-            <select wire:model.live="status" class="select select-bordered select-sm w-36">
+    <div class="gh-card gh-card--pad">
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="gh-input" style="width:10rem;">
+            <input type="date" wire:model.live="date" class="gh-input" style="width:9.5rem;">
+            <select wire:model.live="status" class="gh-select" style="width:9.5rem;">
                 <option value="">All Status</option>
                 <option value="scheduled">Scheduled</option>
                 <option value="confirmed">Confirmed</option>
@@ -28,26 +22,22 @@
                 <option value="cancelled">Cancelled</option>
                 <option value="no_show">No Show</option>
             </select>
-            <div class="flex gap-1">
-                <button wire:click="$set('date', '{{ now()->format('Y-m-d') }}')" class="btn btn-xs btn-ghost">Today</button>
-                <button wire:click="$set('date', '{{ now()->addDay()->format('Y-m-d') }}')" class="btn btn-xs btn-ghost">Tomorrow</button>
+            <div style="display:flex; gap:6px;">
+                <button wire:click="$set('date', '{{ now()->format('Y-m-d') }}')" class="gh-btn gh-btn--sm">Today</button>
+                <button wire:click="$set('date', '{{ now()->addDay()->format('Y-m-d') }}')" class="gh-btn gh-btn--sm">Tomorrow</button>
             </div>
             @if($search || $date || $status)
-            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+                <button wire:click="clearFilters" class="gh-btn gh-btn--sm" title="Clear filters">✕</button>
             @endif
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
                 <thead>
                     <tr>
-                        <th>Date & Time</th>
+                        <th>Date &amp; Time</th>
                         <th>Customer</th>
                         <th>Vehicle</th>
                         <th>Service Type</th>
@@ -57,25 +47,25 @@
                 </thead>
                 <tbody>
                     @forelse($appointments as $apt)
-                        <tr class="hover">
+                        <tr>
                             <td>
-                                <div class="font-medium">{{ $apt->scheduled_date->format('D, d M') }}</div>
-                                <div class="text-sm text-base-content/60">{{ $apt->scheduled_time->format('H:i') }}</div>
+                                <div style="font-weight:600;">{{ $apt->scheduled_date->format('D, d M') }}</div>
+                                <div class="gh-muted" style="font-size:11px;">{{ $apt->scheduled_time->format('H:i') }}</div>
                             </td>
                             <td>
-                                <div class="font-medium">{{ $apt->customer->name }}</div>
-                                <div class="text-sm text-base-content/60">{{ $apt->customer->phone }}</div>
+                                <div style="font-weight:600;">{{ $apt->customer->name }}</div>
+                                <div class="gh-muted" style="font-size:11px;">{{ $apt->customer->phone }}</div>
                             </td>
                             <td>
                                 <div>{{ $apt->vehicle->registration_number }}</div>
-                                <div class="text-xs text-base-content/60">{{ $apt->vehicle->make }} {{ $apt->vehicle->model }}</div>
+                                <div class="gh-muted" style="font-size:10.5px;">{{ $apt->vehicle->make }} {{ $apt->vehicle->model }}</div>
                             </td>
-                            <td><span class="badge badge-ghost badge-sm">{{ ucfirst($apt->type) }}</span></td>
-                            <td><span class="badge badge-{{ $apt->status_color }} badge-sm">{{ ucfirst(str_replace('_', ' ', $apt->status)) }}</span></td>
-                            <td>
+                            <td><span class="gh-badge">{{ ucfirst($apt->type) }}</span></td>
+                            <td><span class="gh-badge gh-badge--{{ $apt->status_color }}">{{ ucfirst(str_replace('_', ' ', $apt->status)) }}</span></td>
+                            <td style="text-align:right;">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
+                                    <button tabindex="0" type="button" class="gh-btn gh-btn--sm">⋯</button>
+                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44 border border-base-300">
                                         @if($apt->status === 'scheduled')
                                             <li><button wire:click="confirm({{ $apt->id }})">Confirm</button></li>
                                         @endif
@@ -92,13 +82,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-8 text-base-content/50">No appointments found</td></tr>
+                        <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No appointments found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         @if($appointments->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $appointments->links() }}</div>
+            <div style="padding:12px 16px; border-top:1px solid var(--gh-hairline);">{{ $appointments->links() }}</div>
         @endif
     </div>
 </div>

@@ -1,380 +1,186 @@
-<div>
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="gh-page">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
         <div>
-            <h1 class="text-2xl font-bold">Inventory</h1>
-            <p class="text-base-content/60">Manage parts and supplies</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Inventory</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Manage parts and supplies</p>
         </div>
-        <div class="flex gap-2">
-            <a href="{{ route('inventory.low-stock') }}" class="btn btn-warning btn-sm gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Low Stock ({{ $stats['low_stock'] }})
-            </a>
+        <div style="display:flex; gap:8px;">
+            <a href="{{ route('inventory.low-stock') }}" class="gh-btn gh-btn--sm" style="color:var(--gh-warning);">Low stock ({{ $stats['low_stock'] }})</a>
             @can('create_inventory')
-            <button type="button" wire:click="openCreateModal" class="btn btn-primary rounded-lg px-5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add Item
-            </button>
+                <button type="button" wire:click="openCreateModal" class="gh-btn gh-btn--primary">+ Add item</button>
             @endcan
         </div>
     </div>
 
-    {{-- Stats Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-lg shadow-sm border border-base-300">
-            <div class="stat-figure text-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-            </div>
-            <div class="stat-title text-xs">Total Items</div>
-            <div class="stat-value text-2xl">{{ number_format($stats['total']) }}</div>
+    <div class="gh-grid-4" style="grid-template-columns:repeat(5,1fr);">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Total items</span>
+            <span class="gh-stat__value">{{ number_format($stats['total']) }}</span>
         </div>
-
-        <div class="stat bg-base-100 rounded-lg shadow-sm border border-base-300">
-            <div class="stat-figure text-accent">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                </svg>
-            </div>
-            <div class="stat-title text-xs">Service Parts</div>
-            <div class="stat-value text-2xl">{{ number_format($stats['service_parts']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Service parts</span>
+            <span class="gh-stat__value">{{ number_format($stats['service_parts']) }}</span>
         </div>
-
-        <div class="stat bg-base-100 rounded-lg shadow-sm border border-base-300">
-            <div class="stat-figure text-info">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-            </div>
-            <div class="stat-title text-xs">Wash Supplies</div>
-            <div class="stat-value text-2xl">{{ number_format($stats['wash_supplies']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Wash supplies</span>
+            <span class="gh-stat__value">{{ number_format($stats['wash_supplies']) }}</span>
         </div>
-
-        <div class="stat bg-warning/10 rounded-lg shadow-sm border border-warning/30">
-            <div class="stat-figure text-warning">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
-            <div class="stat-title text-xs">Low Stock</div>
-            <div class="stat-value text-2xl text-warning">{{ number_format($stats['low_stock']) }}</div>
+        <div class="gh-card gh-stat" style="background:var(--gh-warning-bg); border-color:var(--gh-warning);">
+            <span class="gh-stat__label">Low stock</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning);">{{ number_format($stats['low_stock']) }}</span>
         </div>
-
-        <div class="stat bg-error/10 rounded-lg shadow-sm border border-error/30">
-            <div class="stat-figure text-error">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <div class="stat-title text-xs">Out of Stock</div>
-            <div class="stat-value text-2xl text-error">{{ number_format($stats['out_of_stock']) }}</div>
+        <div class="gh-card gh-stat" style="background:var(--gh-error-bg); border-color:var(--gh-error);">
+            <span class="gh-stat__label">Out of stock</span>
+            <span class="gh-stat__value gh-stat__value--neg">{{ number_format($stats['out_of_stock']) }}</span>
         </div>
-</div>
+    </div>
 
-    {{-- Filters (in table area) --}}
-    <div class="card bg-base-100 shadow-sm mb-4">
-        <div class="flex flex-wrap items-center gap-2 p-4">
-            <!-- Search -->
-            <div class="form-control">
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Search by name, SKU, barcode..."
-                    class="input input-bordered input-sm w-44"
-                />
-            </div>
-
-            <!-- Type Filter -->
-            <div class="form-control">
-                <select wire:model.live="itemType" class="select select-bordered select-sm w-36">
-                    <option value="">All Types</option>
-                    <option value="service_part">Service Parts</option>
-                    <option value="wash_supply">Wash Supplies</option>
-                </select>
-            </div>
-
-            <!-- Category Filter -->
-            <div class="form-control">
-                <select wire:model.live="category" class="select select-bordered select-sm w-40">
-                    <option value="">All Categories</option>
-                    @foreach($this->categories as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->full_path }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Stock Filter -->
-            <div class="form-control">
-                <select wire:model.live="stockStatus" class="select select-bordered select-sm w-32">
-                    <option value="">All Stock</option>
-                    <option value="low">Low Stock</option>
-                    <option value="out">Out of Stock</option>
-                    <option value="in_stock">In Stock</option>
-                </select>
-            </div>
-
-            <!-- Condition Filter -->
-            <div class="form-control">
-                <select wire:model.live="condition" class="select select-bordered select-sm w-36">
-                    <option value="">All Conditions</option>
-                    <option value="new">New</option>
-                    <option value="used">Used</option>
-                    <option value="refurbished">Refurbished</option>
-                </select>
-            </div>
-
-            <!-- Clear Filters -->
+    <div class="gh-table-toolbar">
+        <div class="gh-table-toolbar__filters">
+            <label class="gh-search" style="width:190px;">⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name, SKU, barcode…"></label>
+            <select wire:model.live="itemType" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All types</option>
+                <option value="service_part">Service Parts</option>
+                <option value="wash_supply">Wash Supplies</option>
+            </select>
+            <select wire:model.live="category" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All categories</option>
+                @foreach($this->categories as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->full_path }}</option>
+                @endforeach
+            </select>
+            <select wire:model.live="stockStatus" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All stock</option>
+                <option value="low">Low Stock</option>
+                <option value="out">Out of Stock</option>
+                <option value="in_stock">In Stock</option>
+            </select>
+            <select wire:model.live="condition" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All conditions</option>
+                <option value="new">New</option>
+                <option value="used">Used</option>
+                <option value="refurbished">Refurbished</option>
+            </select>
             @if($search || $itemType || $category || $stockStatus || $condition)
-            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+                <button wire:click="clearFilters" class="gh-btn gh-btn--sm">Clear</button>
             @endif
         </div>
     </div>
 
-    {{-- Inventory Items Grouped by Category --}}
     @if($items->count())
-        <div class="space-y-4">
+        <div class="gh-stack">
             @foreach($groupedItems as $categoryName => $categoryItems)
-                <div class="card bg-base-100 shadow-sm border border-base-300">
-                    {{-- Category Header --}}
-                    <div class="card-body p-0">
-                        <div class="collapse collapse-arrow">
-                            <input type="checkbox" checked="checked" />
-                            <div class="collapse-title bg-base-200/50 font-semibold flex items-center justify-between px-6">
-                                <div class="flex items-center gap-3">
-                                    <div class="badge badge-neutral badge-lg">{{ $categoryItems->count() }}</div>
-                                    <span class="text-lg">{{ $categoryName }}</span>
-                                </div>
-                                <div class="flex items-center gap-4 text-sm">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-base-content/60">Total Value:</span>
-                                        <span class="font-bold">UGX {{ number_format($categoryItems->sum(fn($i) => $i->quantity * $i->cost_price)) }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="badge badge-warning badge-sm">{{ $categoryItems->where('quantity', '<=', 'reorder_level')->count() }} Low</span>
-                                        <span class="badge badge-error badge-sm">{{ $categoryItems->where('quantity', '<=', 0)->count() }} Out</span>
-                                    </div>
-                                </div>
+                <div class="gh-card gh-card--flush">
+                    <div class="collapse collapse-arrow">
+                        <input type="checkbox" checked="checked">
+                        <div class="collapse-title" style="background:var(--gh-surface-header); font-weight:700; display:flex; align-items:center; justify-content:space-between; padding:14px 18px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span class="gh-badge">{{ $categoryItems->count() }}</span>
+                                <span style="font-size:14.5px;">{{ $categoryName }}</span>
                             </div>
-                            <div class="collapse-content px-0 pt-0">
-                                <div class="overflow-x-auto">
-                                    <table class="table table-zebra">
-                                        <thead class="bg-base-200">
+                            <div style="display:flex; align-items:center; gap:14px; font-size:12px; font-weight:400;">
+                                <span class="gh-muted">Total value: <b style="color:var(--gh-ink); font-weight:700;">UGX {{ number_format($categoryItems->sum(fn($i) => $i->quantity * $i->cost_price)) }}</b></span>
+                                <span class="gh-badge gh-badge--warning">{{ $categoryItems->where('quantity', '<=', 'reorder_level')->count() }} Low</span>
+                                <span class="gh-badge gh-badge--error">{{ $categoryItems->where('quantity', '<=', 0)->count() }} Out</span>
+                            </div>
+                        </div>
+                        <div class="collapse-content" style="padding:0;">
+                            <div class="gh-table-scroll">
+                                <table class="gh-table">
+                                    <thead>
+                                        <tr><th class="is-index">#</th><th>Item details</th><th>SKU / Codes</th><th style="text-align:center;">Stock</th><th style="text-align:right;">Cost price</th><th style="text-align:right;">Selling price</th><th style="text-align:center;">Status</th><th style="text-align:right;">Actions</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($categoryItems as $item)
                                             <tr>
-                                                <th class="w-12">#</th>
-                                                <th>Item Details</th>
-                                                <th>SKU / Codes</th>
-                                                <th class="text-center">Stock</th>
-                                                <th class="text-right">Cost Price</th>
-                                                <th class="text-right">Selling Price</th>
-                                                <th class="text-center">Status</th>
-                                                <th class="text-right">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($categoryItems as $item)
-                                                <tr class="hover">
-                                                    <td class="font-mono text-xs text-base-content/60">{{ $loop->iteration }}</td>
+                                                <td class="is-index">{{ $loop->iteration }}</td>
 
-                                                    {{-- Item Details --}}
-                                                    <td>
-                                                        <div class="flex items-start gap-3">
-                                                            @if($item->image_path)
-                                                                <div class="avatar">
-                                                                    <div class="w-12 h-12 rounded-lg">
-                                                                        <img src="{{ Storage::url($item->image_path) }}" alt="{{ $item->name }}" />
-                                                                    </div>
-                                                                </div>
-                                                            @else
-                                                                <div class="avatar placeholder">
-                                                                    <div class="w-12 h-12 rounded-lg bg-neutral text-neutral-content">
-                                                                        <span class="text-xl">{{ strtoupper(substr($item->name, 0, 1)) }}</span>
-                                                                    </div>
-                                                                </div>
-                                                            @endif
-                                                            <div class="flex-1 min-w-0">
-                                                                <a href="{{ route('inventory.show', $item) }}" class="font-semibold link link-hover">
-                                                                    {{ $item->name }}
-                                                                </a>
-                                                                @if($item->brand)
-                                                                    <span class="badge badge-sm badge-ghost ml-2">{{ $item->brand }}</span>
-                                                                @endif
-                                                                @if($item->description)
-                                                                    <p class="text-xs text-base-content/60 truncate max-w-md mt-1">{{ $item->description }}</p>
-                                                                @endif
-                                                                <div class="flex gap-2 mt-1">
-                                                                    @if($item->position)
-                                                                        <span class="badge badge-xs">{{ ucfirst($item->position) }}</span>
-                                                                    @endif
-                                                                    @if($item->condition)
-                                                                        <span class="badge badge-xs badge-{{ $item->condition === 'new' ? 'success' : 'warning' }}">
-                                                                            {{ ucfirst($item->condition) }}
-                                                                        </span>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
-                                                    {{-- SKU / Codes --}}
-                                                    <td>
-                                                        <div class="space-y-1">
-                                                            @if($item->sku)
-                                                                <div class="flex items-center gap-2">
-                                                                    <span class="text-xs text-base-content/60">SKU:</span>
-                                                                    <code class="text-xs bg-base-200 px-2 py-0.5 rounded">{{ $item->sku }}</code>
-                                                                </div>
-                                                            @endif
-                                                            @if($item->oem_number)
-                                                                <div class="flex items-center gap-2">
-                                                                    <span class="text-xs text-base-content/60">OEM:</span>
-                                                                    <code class="text-xs bg-base-200 px-2 py-0.5 rounded">{{ $item->oem_number }}</code>
-                                                                </div>
-                                                            @endif
-                                                            @if($item->barcode)
-                                                                <div class="flex items-center gap-2">
-                                                                    <span class="text-xs text-base-content/60">Barcode:</span>
-                                                                    <code class="text-xs bg-base-200 px-2 py-0.5 rounded">{{ $item->barcode }}</code>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-
-                                                    {{-- Stock --}}
-                                                    <td class="text-center">
-                                                        <div class="flex flex-col items-center gap-1">
-                                                            <span class="font-bold text-lg">{{ number_format($item->quantity, 2) }}</span>
-                                                            <span class="text-xs text-base-content/60">{{ $item->unit }}</span>
-                                                            @if($item->quantity <= $item->reorder_level && $item->quantity > 0)
-                                                                <div class="text-xs text-warning flex items-center gap-1">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                                                                    </svg>
-                                                                    Reorder at {{ $item->reorder_level }}
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-
-                                                    {{-- Cost Price --}}
-                                                    <td class="text-right">
-                                                        <div class="font-semibold">UGX {{ number_format($item->cost_price) }}</div>
-                                                        <div class="text-xs text-base-content/60">Total: {{ number_format($item->quantity * $item->cost_price) }}</div>
-                                                    </td>
-
-                                                    {{-- Selling Price --}}
-                                                    <td class="text-right">
-                                                        <div class="font-semibold">UGX {{ number_format($item->selling_price) }}</div>
-                                                        @if($item->selling_price > 0)
-                                                            @php
-                                                                $margin = (($item->selling_price - $item->cost_price) / $item->selling_price) * 100;
-                                                            @endphp
-                                                            <div class="text-xs {{ $margin > 0 ? 'text-success' : 'text-error' }}">
-                                                                {{ number_format($margin, 1) }}% margin
-                                                            </div>
-                                                        @endif
-                                                    </td>
-
-                                                    {{-- Status --}}
-                                                    <td class="text-center">
-                                                        @if($item->quantity <= 0)
-                                                            <div class="badge badge-error gap-2">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                                </svg>
-                                                                Out of Stock
-                                                            </div>
-                                                        @elseif($item->quantity <= $item->reorder_level)
-                                                            <div class="badge badge-warning gap-2">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                                </svg>
-                                                                Low Stock
-                                                            </div>
+                                                <td>
+                                                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                                                        @if($item->image_path)
+                                                            <img src="{{ Storage::url($item->image_path) }}" alt="{{ $item->name }}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;">
                                                         @else
-                                                            <div class="badge badge-success gap-2">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                In Stock
+                                                            <div class="gh-module-card__icon">{{ strtoupper(substr($item->name, 0, 1)) }}</div>
+                                                        @endif
+                                                        <div style="min-width:0;">
+                                                            <a href="{{ route('inventory.show', $item) }}" class="is-ref" style="font-weight:700;">{{ $item->name }}</a>
+                                                            @if($item->brand)<span class="gh-badge" style="margin-left:6px;">{{ $item->brand }}</span>@endif
+                                                            @if($item->description)<p class="gh-muted" style="font-size:11px; margin-top:4px; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $item->description }}</p>@endif
+                                                            <div style="display:flex; gap:6px; margin-top:4px;">
+                                                                @if($item->position)<span class="gh-badge">{{ ucfirst($item->position) }}</span>@endif
+                                                                @if($item->condition)<span class="gh-badge {{ $item->condition === 'new' ? 'gh-badge--success' : 'gh-badge--warning' }}">{{ ucfirst($item->condition) }}</span>@endif
                                                             </div>
-                                                        @endif
-
-                                                        @if($item->expiry_date)
-                                                            @php
-                                                                $daysToExpiry = now()->diffInDays($item->expiry_date, false);
-                                                            @endphp
-                                                            @if($daysToExpiry < 0)
-                                                                <div class="badge badge-error badge-sm mt-1">Expired</div>
-                                                            @elseif($daysToExpiry <= 30)
-                                                                <div class="badge badge-warning badge-sm mt-1">{{ $daysToExpiry }}d to expiry</div>
-                                                            @endif
-                                                        @endif
-                                                    </td>
-
-                                                    {{-- Actions --}}
-                                                    <td class="text-right">
-                                                        <div class="dropdown dropdown-end">
-                                                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                                </svg>
-                                                            </label>
-                                                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52 border border-base-300">
-                                                                <li>
-                                                                    <a href="{{ route('inventory.show', $item) }}">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                        </svg>
-                                                                        View Details
-                                                                    </a>
-                                                                </li>
-                                                                @can('edit_inventory')
-                                                                    <li>
-                                                                        <a href="{{ route('inventory.edit', $item) }}">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                            </svg>
-                                                                            Edit Item
-                                                                        </a>
-                                                                    </li>
-                                                                @endcan
-                                                                <div class="divider my-0"></div>
-                                                                @can('adjust_stock')
-                                                                    <li>
-                                                                        <a wire:click="$dispatch('openAdjustModal', { itemId: {{ $item->id }} })">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                                                                            </svg>
-                                                                            Adjust Stock
-                                                                        </a>
-                                                                    </li>
-                                                                    <li>
-                                                                        <a href="{{ route('inventory.movements') }}?item={{ $item->id }}">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                                                            </svg>
-                                                                            View History
-                                                                        </a>
-                                                                    </li>
-                                                                @endcan
-                                                            </ul>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <div class="gh-stack" style="gap:4px;">
+                                                        @if($item->sku)<div class="gh-muted" style="font-size:11px;">SKU: <code style="background:var(--gh-base-200); padding:1px 6px; border-radius:4px;">{{ $item->sku }}</code></div>@endif
+                                                        @if($item->oem_number)<div class="gh-muted" style="font-size:11px;">OEM: <code style="background:var(--gh-base-200); padding:1px 6px; border-radius:4px;">{{ $item->oem_number }}</code></div>@endif
+                                                        @if($item->barcode)<div class="gh-muted" style="font-size:11px;">Barcode: <code style="background:var(--gh-base-200); padding:1px 6px; border-radius:4px;">{{ $item->barcode }}</code></div>@endif
+                                                    </div>
+                                                </td>
+
+                                                <td style="text-align:center;">
+                                                    <div style="font-weight:800; font-size:16px;">{{ number_format($item->quantity, 2) }}</div>
+                                                    <div class="gh-muted" style="font-size:11px;">{{ $item->unit }}</div>
+                                                    @if($item->quantity <= $item->reorder_level && $item->quantity > 0)
+                                                        <div style="font-size:10.5px; color:var(--gh-warning); margin-top:2px;">Reorder at {{ $item->reorder_level }}</div>
+                                                    @endif
+                                                </td>
+
+                                                <td class="is-num">
+                                                    <div>UGX {{ number_format($item->cost_price) }}</div>
+                                                    <div class="gh-muted" style="font-size:10.5px; font-weight:400;">Total: {{ number_format($item->quantity * $item->cost_price) }}</div>
+                                                </td>
+
+                                                <td class="is-num">
+                                                    <div>UGX {{ number_format($item->selling_price) }}</div>
+                                                    @if($item->selling_price > 0)
+                                                        @php $margin = (($item->selling_price - $item->cost_price) / $item->selling_price) * 100; @endphp
+                                                        <div style="font-size:10.5px; font-weight:400; color:{{ $margin > 0 ? 'var(--gh-success)' : 'var(--gh-error)' }};">{{ number_format($margin, 1) }}% margin</div>
+                                                    @endif
+                                                </td>
+
+                                                <td style="text-align:center;">
+                                                    @if($item->quantity <= 0)
+                                                        <span class="gh-badge gh-badge--error">Out of stock</span>
+                                                    @elseif($item->quantity <= $item->reorder_level)
+                                                        <span class="gh-badge gh-badge--warning">Low stock</span>
+                                                    @else
+                                                        <span class="gh-badge gh-badge--success">In stock</span>
+                                                    @endif
+                                                    @if($item->expiry_date)
+                                                        @php $daysToExpiry = now()->diffInDays($item->expiry_date, false); @endphp
+                                                        @if($daysToExpiry < 0)
+                                                            <div class="gh-badge gh-badge--error" style="margin-top:4px;">Expired</div>
+                                                        @elseif($daysToExpiry <= 30)
+                                                            <div class="gh-badge gh-badge--warning" style="margin-top:4px;">{{ $daysToExpiry }}d to expiry</div>
+                                                        @endif
+                                                    @endif
+                                                </td>
+
+                                                <td onclick="event.stopPropagation()">
+                                                    <div class="dropdown dropdown-end">
+                                                        <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                                        <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-52 gh-card p-2 shadow-xl">
+                                                            <li><a href="{{ route('inventory.show', $item) }}">View details</a></li>
+                                                            @can('edit_inventory')
+                                                                <li><a href="{{ route('inventory.edit', $item) }}">Edit item</a></li>
+                                                            @endcan
+                                                            <div class="divider my-0"></div>
+                                                            @can('adjust_stock')
+                                                                <li><a wire:click="$dispatch('openAdjustModal', { itemId: {{ $item->id }} })">Adjust stock</a></li>
+                                                                <li><a href="{{ route('inventory.movements') }}?item={{ $item->id }}">View history</a></li>
+                                                            @endcan
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -382,177 +188,165 @@
             @endforeach
         </div>
 
-        {{-- Pagination --}}
-        <div class="mt-6">
-            {{ $items->links() }}
-        </div>
+        <div class="gh-pagination">{{ $items->links() }}</div>
     @else
-        {{-- Empty State --}}
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body text-center py-16">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-base-content/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <h3 class="text-lg font-semibold mt-4">No inventory items found</h3>
-                <p class="text-base-content/60">
-                    @if($search || $itemType || $category || $stockStatus)
-                        Try adjusting your filters or search terms
-                    @else
-                        Get started by adding your first inventory item
-                    @endif
-                </p>
-                <div class="card-actions justify-center mt-6">
-                    @if($search || $itemType || $category || $stockStatus)
-                        <button wire:click="clearFilters" class="btn btn-primary">Clear Filters</button>
-                    @else
-                        @can('create_inventory')
-                            <button type="button" wire:click="openCreateModal" class="btn btn-primary rounded-lg px-5">Add First Item</button>
-                        @endcan
-                    @endif
-                </div>
+        <div class="gh-card gh-card--pad" style="text-align:center; padding:60px 0;">
+            <p style="font-size:16px; font-weight:700; margin-top:14px;">No inventory items found</p>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">
+                @if($search || $itemType || $category || $stockStatus)
+                    Try adjusting your filters or search terms
+                @else
+                    Get started by adding your first inventory item
+                @endif
+            </p>
+            <div style="margin-top:20px;">
+                @if($search || $itemType || $category || $stockStatus)
+                    <button wire:click="clearFilters" class="gh-btn gh-btn--primary">Clear filters</button>
+                @else
+                    @can('create_inventory')
+                        <button type="button" wire:click="openCreateModal" class="gh-btn gh-btn--primary">Add first item</button>
+                    @endcan
+                @endif
             </div>
         </div>
     @endif
 
     @if($showCreateModal)
         <div class="modal modal-open" role="dialog">
-            <div class="modal-box app-modal-shell max-w-4xl">
-                <h3 class="font-bold text-lg mb-4">Add Inventory Item</h3>
+            <div class="modal-box gh-card gh-card--pad" style="max-width:64rem;">
+                <div class="gh-card__title" style="margin-bottom:16px;">Add Inventory Item</div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="form-control sm:col-span-2">
-                        <label class="block text-sm font-medium mb-2">Item Name *</label>
-                        <input type="text" wire:model="createName" class="input input-bordered" />
-                        @error('createName') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                <div class="gh-grid-2">
+                    <div class="gh-field" style="grid-column:1/-1;">
+                        <span class="gh-label">Item name *</span>
+                        <input type="text" wire:model="createName" class="gh-input" style="width:100%;">
+                        @error('createName') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Item Type *</label>
-                        <select wire:model="createItemType" class="select select-bordered">
+                    <div class="gh-field">
+                        <span class="gh-label">Item type *</span>
+                        <select wire:model="createItemType" class="gh-select" style="width:100%;">
                             <option value="service_part">Service Part</option>
                             <option value="wash_supply">Wash Supply</option>
                         </select>
-                        @error('createItemType') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                        @error('createItemType') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Category *</label>
-                        <select wire:model="createCategoryId" class="select select-bordered">
-                            <option value="">Select category...</option>
+                    <div class="gh-field">
+                        <span class="gh-label">Category *</span>
+                        <select wire:model="createCategoryId" class="gh-select" style="width:100%;">
+                            <option value="">Select category…</option>
                             @foreach($this->createCategories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                             @endforeach
                         </select>
-                        @error('createCategoryId') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                        @error('createCategoryId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">SKU</label>
-                        <input type="text" value="{{ $createSku ?: 'Select a category to generate SKU' }}" class="input input-bordered" readonly />
-                        <span class="label-text-alt text-base-content/60 mt-1">Generated automatically from the selected category.</span>
+                    <div class="gh-field">
+                        <span class="gh-label">SKU</span>
+                        <input type="text" value="{{ $createSku ?: 'Select a category to generate SKU' }}" class="gh-input" style="width:100%; background:var(--gh-base-200);" readonly>
+                        <span class="gh-hint">Generated automatically from the selected category.</span>
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Barcode</label>
-                        <input type="text" wire:model="createBarcode" class="input input-bordered" />
-                        @error('createBarcode') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Barcode</span>
+                        <input type="text" wire:model="createBarcode" class="gh-input" style="width:100%;">
+                        @error('createBarcode') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Supplier</label>
-                        <select wire:model="createSupplierId" class="select select-bordered">
-                            <option value="">Select supplier...</option>
+                    <div class="gh-field">
+                        <span class="gh-label">Supplier</span>
+                        <select wire:model="createSupplierId" class="gh-select" style="width:100%;">
+                            <option value="">Select supplier…</option>
                             @foreach($this->suppliers as $supplier)
                                 <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                             @endforeach
                         </select>
-                        @error('createSupplierId') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                        @error('createSupplierId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Brand</label>
-                        <input type="text" wire:model="createBrand" class="input input-bordered" />
-                        @error('createBrand') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Brand</span>
+                        <input type="text" wire:model="createBrand" class="gh-input" style="width:100%;">
+                        @error('createBrand') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Unit *</label>
-                        <select wire:model="createUnit" class="select select-bordered">
+                    <div class="gh-field">
+                        <span class="gh-label">Unit *</span>
+                        <select wire:model="createUnit" class="gh-select" style="width:100%;">
                             <option value="pcs">Pieces</option>
                             <option value="liters">Liters</option>
                             <option value="kg">Kilograms</option>
                             <option value="meters">Meters</option>
                             <option value="sets">Sets</option>
                         </select>
-                        @error('createUnit') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                        @error('createUnit') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Condition *</label>
-                        <select wire:model="createCondition" class="select select-bordered">
+                    <div class="gh-field">
+                        <span class="gh-label">Condition *</span>
+                        <select wire:model="createCondition" class="gh-select" style="width:100%;">
                             <option value="new">New</option>
                             <option value="used">Used</option>
                             <option value="refurbished">Refurbished</option>
                             <option value="reconditioned">Reconditioned</option>
                         </select>
-                        @error('createCondition') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                        @error('createCondition') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Initial Quantity *</label>
-                        <input type="number" wire:model="createQuantity" class="input input-bordered" min="0" step="0.01" />
-                        @error('createQuantity') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Initial quantity *</span>
+                        <input type="number" wire:model="createQuantity" class="gh-input" style="width:100%;" min="0" step="0.01">
+                        @error('createQuantity') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Reorder Level *</label>
-                        <input type="number" wire:model="createReorderLevel" class="input input-bordered" min="0" step="0.01" />
-                        @error('createReorderLevel') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Reorder level *</span>
+                        <input type="number" wire:model="createReorderLevel" class="gh-input" style="width:100%;" min="0" step="0.01">
+                        @error('createReorderLevel') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Cost Price (UGX) *</label>
-                        <input type="number" wire:model="createCostPrice" class="input input-bordered" min="0" step="0.01" />
-                        @error('createCostPrice') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Cost price (UGX) *</span>
+                        <input type="number" wire:model="createCostPrice" class="gh-input" style="width:100%;" min="0" step="0.01">
+                        @error('createCostPrice') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Selling Price (UGX) *</label>
-                        <input type="number" wire:model="createSellingPrice" class="input input-bordered" min="0" step="0.01" />
-                        @error('createSellingPrice') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Selling price (UGX) *</span>
+                        <input type="number" wire:model="createSellingPrice" class="gh-input" style="width:100%;" min="0" step="0.01">
+                        @error('createSellingPrice') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control">
-                        <label class="block text-sm font-medium mb-2">Storage Location</label>
-                        <input type="text" wire:model="createLocation" class="input input-bordered" />
-                        @error('createLocation') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Storage location</span>
+                        <input type="text" wire:model="createLocation" class="gh-input" style="width:100%;">
+                        @error('createLocation') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control sm:col-span-2">
-                        <label class="block text-sm font-medium mb-2">Description</label>
-                        <textarea wire:model="createDescription" rows="3" class="textarea textarea-bordered"></textarea>
-                        @error('createDescription') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field" style="grid-column:1/-1;">
+                        <span class="gh-label">Description</span>
+                        <textarea wire:model="createDescription" rows="3" class="gh-input" style="width:100%;"></textarea>
+                        @error('createDescription') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
-                <div class="modal-action app-modal-actions">
-                    <button type="button" wire:click="closeCreateModal" class="btn btn-ghost">Cancel</button>
-                    <button type="button" wire:click="saveInventoryItem" class="btn btn-primary rounded-lg px-5" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="saveInventoryItem">Create Item</span>
-                        <span wire:loading wire:target="saveInventoryItem" class="loading loading-spinner loading-sm"></span>
+                <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:16px; margin-top:20px;">
+                    <button type="button" wire:click="closeCreateModal" class="gh-btn">Cancel</button>
+                    <button type="button" wire:click="saveInventoryItem" class="gh-btn gh-btn--primary" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="saveInventoryItem">Create item</span>
+                        <span wire:loading wire:target="saveInventoryItem">Creating…</span>
                     </button>
                 </div>
             </div>
-            <div class="modal-backdrop app-modal-backdrop" wire:click="closeCreateModal"></div>
+            <div class="modal-backdrop" wire:click="closeCreateModal"></div>
         </div>
     @endif
 </div>
 
 @push('scripts')
 <script>
-    // Add method to clear filters
-    Livewire.on('filtersCleared', () => {
-        // Optional: Show toast notification
-    });
+    Livewire.on('filtersCleared', () => {});
 </script>
 @endpush

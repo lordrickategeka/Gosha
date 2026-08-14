@@ -1,334 +1,259 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">Creditors</h1>
-            <p class="text-base-content/60">Supplier payables, aging, and bill settlement</p>
-        </div>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Creditors</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Supplier payables, aging, and bill settlement</p>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-        <div class="card bg-base-100 shadow-sm xl:col-span-2">
-            <div class="card-body">
-                <h2 class="card-title text-base">Aging Filters</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <label class="form-control">
-                        <span class="label-text text-xs">As Of Date</span>
-                        <input type="date" wire:model.live="asOfDate" class="input input-bordered" />
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text text-xs">Branch</span>
-                        <select wire:model.live="branchId" class="select select-bordered">
-                            <option value="">All Branches</option>
-                            @foreach($this->availableBranches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text text-xs">Search Supplier</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" class="input input-bordered" placeholder="Supplier, phone, or email" />
-                    </label>
+    <div class="gh-grid-2" style="grid-template-columns:2fr 1fr;">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Aging Filters</div>
+            <div class="gh-grid-3">
+                <div class="gh-field">
+                    <span class="gh-label">As of date</span>
+                    <input type="date" wire:model.live="asOfDate" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Branch</span>
+                    <select wire:model.live="branchId" class="gh-select" style="width:100%;">
+                        <option value="">All branches</option>
+                        @foreach($this->availableBranches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Search supplier</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" class="gh-input" style="width:100%;" placeholder="Supplier, phone, or email">
                 </div>
             </div>
         </div>
 
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">Quick Vendor Bill Capture</h2>
-                <label class="form-control">
-                    <span class="label-text text-xs">Supplier</span>
-                    <select wire:model="newSupplierId" class="select select-bordered">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Quick Vendor Bill Capture</div>
+            <div class="gh-stack" style="gap:10px;">
+                <div class="gh-field">
+                    <span class="gh-label">Supplier</span>
+                    <select wire:model="newSupplierId" class="gh-select" style="width:100%;">
                         <option value="">Select supplier</option>
                         @foreach($this->suppliers as $supplier)
                             <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                         @endforeach
                     </select>
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">Bill Date</span>
-                    <input type="date" wire:model="newBillDate" class="input input-bordered" />
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">Due Date</span>
-                    <input type="date" wire:model="newDueDate" class="input input-bordered" />
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">Amount</span>
-                    <input type="number" min="0" step="0.01" wire:model="newBillTotal" class="input input-bordered" placeholder="0.00" />
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">Description</span>
-                    <input type="text" wire:model="newDescription" class="input input-bordered" placeholder="Invoice reference or note" />
-                </label>
-                @error('newSupplierId') <span class="text-error text-xs">{{ $message }}</span> @enderror
-                @error('newBillTotal') <span class="text-error text-xs">{{ $message }}</span> @enderror
-                <button type="button" wire:click="createBill" class="btn btn-primary btn-sm mt-2">Submit For Approval</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body">
-            <h2 class="card-title text-base">Vendor Bills Pending Approval</h2>
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Bill</th>
-                            <th>Supplier</th>
-                            <th>Bill Date</th>
-                            <th class="text-right">Amount</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($this->pendingApprovalBills as $bill)
-                            <tr>
-                                <td>{{ $bill->bill_number }}</td>
-                                <td>{{ $bill->supplier?->name }}</td>
-                                <td>{{ $bill->bill_date?->format('d M Y') ?? 'N/A' }}</td>
-                                <td class="text-right">UGX {{ number_format($bill->balance_due) }}</td>
-                                <td>
-                                    <div class="flex gap-2 justify-end">
-                                        <button type="button" class="btn btn-xs btn-success" wire:click="approveBill({{ $bill->id }})">Approve</button>
-                                        <button type="button" class="btn btn-xs btn-ghost" wire:click="rejectBill({{ $bill->id }})">Reject</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-6 text-base-content/50">No vendor bills awaiting approval</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Total Payables</div>
-            <div class="stat-value text-lg text-warning">UGX {{ number_format($this->totals['total_due']) }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Suppliers Owing</div>
-            <div class="stat-value text-lg">{{ $this->totals['suppliers'] }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Open Bills</div>
-            <div class="stat-value text-lg">{{ $this->totals['bill_count'] }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">90+ Days</div>
-            <div class="stat-value text-lg text-error">UGX {{ number_format($this->totals['days_90_plus']) }}</div>
-        </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-0">
-            <div class="overflow-x-auto">
-                <table class="table table-zebra">
-                    <thead>
-                        <tr>
-                            <th>Supplier</th>
-                            <th class="text-right">Current</th>
-                            <th class="text-right">1-30</th>
-                            <th class="text-right">31-60</th>
-                            <th class="text-right">61-90</th>
-                            <th class="text-right">90+</th>
-                            <th class="text-right">Total Due</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($this->rows as $row)
-                            <tr>
-                                <td>
-                                    <div class="font-semibold">{{ $row['supplier_name'] }}</div>
-                                    <div class="text-xs opacity-60">{{ $row['phone'] ?: $row['email'] ?: 'No contact' }}</div>
-                                </td>
-                                <td class="text-right">{{ number_format($row['buckets']['current']) }}</td>
-                                <td class="text-right">{{ number_format($row['buckets']['days_1_30']) }}</td>
-                                <td class="text-right">{{ number_format($row['buckets']['days_31_60']) }}</td>
-                                <td class="text-right">{{ number_format($row['buckets']['days_61_90']) }}</td>
-                                <td class="text-right text-error">{{ number_format($row['buckets']['days_90_plus']) }}</td>
-                                <td class="text-right font-semibold">{{ number_format($row['total_due']) }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-8 text-base-content/50">No creditors for selected filters</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-base">Approved Vendor Bills and Payment Posting</h2>
-            <div class="overflow-x-auto mb-4">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Bill</th>
-                            <th>Supplier</th>
-                            <th>Due Date</th>
-                            <th class="text-right">Balance</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($this->openBills as $bill)
-                            <tr>
-                                <td>{{ $bill->bill_number }}</td>
-                                <td>{{ $bill->supplier?->name }}</td>
-                                <td>{{ $bill->due_date?->format('d M Y') ?? 'N/A' }}</td>
-                                <td class="text-right">UGX {{ number_format($bill->balance_due) }}</td>
-                                <td>
-                                    <button type="button" class="btn btn-xs btn-outline" wire:click="startPayment({{ $bill->id }})">Post Payment</button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-6 text-base-content/50">No open supplier bills</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if($paymentBillId)
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 border border-base-300 rounded-lg p-3">
-                    <input type="number" min="0" step="0.01" wire:model="paymentAmount" class="input input-bordered input-sm" placeholder="Amount" />
-                    <select wire:model="paymentMethod" class="select select-bordered select-sm">
-                        <option value="cash">Cash</option>
-                        <option value="bank_transfer">Bank Transfer</option>
-                        <option value="mobile_money">Mobile Money</option>
-                        <option value="cheque">Cheque</option>
-                        <option value="credit_card">Credit Card</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <input type="date" wire:model="paymentDate" class="input input-bordered input-sm" />
-                    <input type="text" wire:model="paymentReference" class="input input-bordered input-sm" placeholder="Reference" />
-                    <div class="md:col-span-4 flex gap-2">
-                        <button type="button" wire:click="recordPayment" class="btn btn-primary btn-sm">Confirm Payment</button>
-                        <button type="button" wire:click="$set('paymentBillId', null)" class="btn btn-ghost btn-sm">Cancel</button>
-                    </div>
-                    @error('paymentAmount') <span class="text-error text-xs md:col-span-4">{{ $message }}</span> @enderror
                 </div>
-            @endif
+                <div class="gh-field">
+                    <span class="gh-label">Bill date</span>
+                    <input type="date" wire:model="newBillDate" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Due date</span>
+                    <input type="date" wire:model="newDueDate" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Amount</span>
+                    <input type="number" min="0" step="0.01" wire:model="newBillTotal" class="gh-input" style="width:100%;" placeholder="0.00">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Description</span>
+                    <input type="text" wire:model="newDescription" class="gh-input" style="width:100%;" placeholder="Invoice reference or note">
+                </div>
+                @error('newSupplierId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                @error('newBillTotal') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                <button type="button" wire:click="createBill" class="gh-btn gh-btn--primary gh-btn--sm">Submit for approval</button>
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">Staff Payable Capture</h2>
-                <label class="form-control">
-                    <span class="label-text text-xs">Staff Member</span>
-                    <select wire:model="newStaffUserId" class="select select-bordered">
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Vendor Bills Pending Approval</div>
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead><tr><th>Bill</th><th>Supplier</th><th>Bill date</th><th style="text-align:right;">Amount</th><th></th></tr></thead>
+                <tbody>
+                    @forelse($this->pendingApprovalBills as $bill)
+                        <tr>
+                            <td class="is-ref">{{ $bill->bill_number }}</td>
+                            <td>{{ $bill->supplier?->name }}</td>
+                            <td class="gh-muted">{{ $bill->bill_date?->format('d M Y') ?? 'N/A' }}</td>
+                            <td class="is-num">UGX {{ number_format($bill->balance_due) }}</td>
+                            <td>
+                                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                                    <button type="button" class="gh-btn gh-btn--sm" style="color:var(--gh-success);" wire:click="approveBill({{ $bill->id }})">Approve</button>
+                                    <button type="button" class="gh-btn gh-btn--sm" wire:click="rejectBill({{ $bill->id }})">Reject</button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" style="text-align:center; padding:32px; color:var(--gh-ink-faint);">No vendor bills awaiting approval</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="gh-grid-4">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Total payables</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning);">UGX {{ number_format($this->totals['total_due']) }}</span>
+        </div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Suppliers owing</span>
+            <span class="gh-stat__value">{{ $this->totals['suppliers'] }}</span>
+        </div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Open bills</span>
+            <span class="gh-stat__value">{{ $this->totals['bill_count'] }}</span>
+        </div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">90+ days</span>
+            <span class="gh-stat__value gh-stat__value--neg">UGX {{ number_format($this->totals['days_90_plus']) }}</span>
+        </div>
+    </div>
+
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead>
+                    <tr><th>Supplier</th><th style="text-align:right;">Current</th><th style="text-align:right;">1-30</th><th style="text-align:right;">31-60</th><th style="text-align:right;">61-90</th><th style="text-align:right;">90+</th><th style="text-align:right;">Total due</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($this->rows as $row)
+                        <tr>
+                            <td><div class="gh-cell-stack"><b>{{ $row['supplier_name'] }}</b><span>{{ $row['phone'] ?: $row['email'] ?: 'No contact' }}</span></div></td>
+                            <td class="is-num">{{ number_format($row['buckets']['current']) }}</td>
+                            <td class="is-num">{{ number_format($row['buckets']['days_1_30']) }}</td>
+                            <td class="is-num">{{ number_format($row['buckets']['days_31_60']) }}</td>
+                            <td class="is-num">{{ number_format($row['buckets']['days_61_90']) }}</td>
+                            <td class="is-num" style="color:var(--gh-error);">{{ number_format($row['buckets']['days_90_plus']) }}</td>
+                            <td class="is-num" style="font-weight:700;">{{ number_format($row['total_due']) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No creditors for selected filters</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Approved Vendor Bills and Payment Posting</div>
+        <div class="gh-table-scroll" style="margin-bottom:16px;">
+            <table class="gh-table">
+                <thead><tr><th>Bill</th><th>Supplier</th><th>Due date</th><th style="text-align:right;">Balance</th><th></th></tr></thead>
+                <tbody>
+                    @forelse($this->openBills as $bill)
+                        <tr>
+                            <td class="is-ref">{{ $bill->bill_number }}</td>
+                            <td>{{ $bill->supplier?->name }}</td>
+                            <td class="gh-muted">{{ $bill->due_date?->format('d M Y') ?? 'N/A' }}</td>
+                            <td class="is-num">UGX {{ number_format($bill->balance_due) }}</td>
+                            <td><button type="button" class="gh-btn gh-btn--sm" wire:click="startPayment({{ $bill->id }})">Post payment</button></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" style="text-align:center; padding:32px; color:var(--gh-ink-faint);">No open supplier bills</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($paymentBillId)
+            <div class="gh-grid-4" style="border:1px solid var(--gh-base-300); border-radius:var(--gh-radius); padding:14px; align-items:end;">
+                <input type="number" min="0" step="0.01" wire:model="paymentAmount" class="gh-input" placeholder="Amount">
+                <select wire:model="paymentMethod" class="gh-select">
+                    <option value="cash">Cash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="mobile_money">Mobile Money</option>
+                    <option value="cheque">Cheque</option>
+                    <option value="credit_card">Credit Card</option>
+                    <option value="other">Other</option>
+                </select>
+                <input type="date" wire:model="paymentDate" class="gh-input">
+                <input type="text" wire:model="paymentReference" class="gh-input" placeholder="Reference">
+                <div style="grid-column:1/-1; display:flex; gap:8px;">
+                    <button type="button" wire:click="recordPayment" class="gh-btn gh-btn--primary gh-btn--sm">Confirm payment</button>
+                    <button type="button" wire:click="$set('paymentBillId', null)" class="gh-btn gh-btn--sm">Cancel</button>
+                </div>
+                @error('paymentAmount') <span class="gh-hint" style="color:var(--gh-error); grid-column:1/-1;">{{ $message }}</span> @enderror
+            </div>
+        @endif
+    </div>
+
+    <div class="gh-grid-2">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Staff Payable Capture</div>
+            <div class="gh-stack" style="gap:10px;">
+                <div class="gh-field">
+                    <span class="gh-label">Staff member</span>
+                    <select wire:model="newStaffUserId" class="gh-select" style="width:100%;">
                         <option value="">Select staff member</option>
                         @foreach($this->staffUsers as $staff)
                             <option value="{{ $staff->id }}">{{ $staff->name }}</option>
                         @endforeach
                     </select>
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">Amount</span>
-                    <input type="number" min="0" step="0.01" wire:model="newStaffAmount" class="input input-bordered" placeholder="0.00" />
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">Description</span>
-                    <input type="text" wire:model="newStaffDescription" class="input input-bordered" placeholder="Payout note" />
-                </label>
-                @error('newStaffUserId') <span class="text-error text-xs">{{ $message }}</span> @enderror
-                @error('newStaffAmount') <span class="text-error text-xs">{{ $message }}</span> @enderror
-                <button type="button" wire:click="createStaffPayable" class="btn btn-primary btn-sm mt-2">Submit For Approval</button>
-            </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">Staff Payables Pending Approval</h2>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Staff</th>
-                                <th class="text-right">Amount</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($this->pendingStaffPayables as $payable)
-                                <tr>
-                                    <td>
-                                        <div class="font-medium">{{ $payable->user?->name ?? 'Unknown' }}</div>
-                                        <div class="text-xs opacity-60">{{ $payable->notes ?: 'No note' }}</div>
-                                    </td>
-                                    <td class="text-right">UGX {{ number_format($payable->commission_amount) }}</td>
-                                    <td class="text-right">
-                                        <button type="button" class="btn btn-xs btn-success" wire:click="approveCommission({{ $payable->id }})">Approve</button>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="text-center py-6 text-base-content/50">No staff payables awaiting approval</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
                 </div>
+                <div class="gh-field">
+                    <span class="gh-label">Amount</span>
+                    <input type="number" min="0" step="0.01" wire:model="newStaffAmount" class="gh-input" style="width:100%;" placeholder="0.00">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Description</span>
+                    <input type="text" wire:model="newStaffDescription" class="gh-input" style="width:100%;" placeholder="Payout note">
+                </div>
+                @error('newStaffUserId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                @error('newStaffAmount') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                <button type="button" wire:click="createStaffPayable" class="gh-btn gh-btn--primary gh-btn--sm">Submit for approval</button>
             </div>
         </div>
-    </div>
 
-    <div class="card bg-base-100 shadow-sm mt-6">
-        <div class="card-body">
-            <h2 class="card-title text-base">Approved Staff Payables and Payment Posting</h2>
-            <div class="overflow-x-auto mb-4">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Staff</th>
-                            <th class="text-right">Approved Amount</th>
-                            <th></th>
-                        </tr>
-                    </thead>
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Staff Payables Pending Approval</div>
+            <div class="gh-table-scroll">
+                <table class="gh-table">
+                    <thead><tr><th>Staff</th><th style="text-align:right;">Amount</th><th></th></tr></thead>
                     <tbody>
-                        @forelse($this->approvedStaffPayables as $payable)
+                        @forelse($this->pendingStaffPayables as $payable)
                             <tr>
-                                <td>
-                                    <div class="font-medium">{{ $payable->user?->name ?? 'Unknown' }}</div>
-                                    <div class="text-xs opacity-60">{{ $payable->notes ?: 'No note' }}</div>
-                                </td>
-                                <td class="text-right">UGX {{ number_format($payable->commission_amount) }}</td>
-                                <td class="text-right">
-                                    <button type="button" class="btn btn-xs btn-outline" wire:click="startCommissionPayment({{ $payable->id }})">Post Payment</button>
-                                </td>
+                                <td><div class="gh-cell-stack"><b>{{ $payable->user?->name ?? 'Unknown' }}</b><span>{{ $payable->notes ?: 'No note' }}</span></div></td>
+                                <td class="is-num">UGX {{ number_format($payable->commission_amount) }}</td>
+                                <td style="text-align:right;"><button type="button" class="gh-btn gh-btn--sm" style="color:var(--gh-success);" wire:click="approveCommission({{ $payable->id }})">Approve</button></td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="3" class="text-center py-6 text-base-content/50">No approved staff payables</td>
-                            </tr>
+                            <tr><td colspan="3" style="text-align:center; padding:32px; color:var(--gh-ink-faint);">No staff payables awaiting approval</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            @if($paymentCommissionId)
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border border-base-300 rounded-lg p-3">
-                    <input type="number" min="0" step="0.01" wire:model="staffPaymentAmount" class="input input-bordered input-sm" placeholder="Amount" />
-                    <input type="text" wire:model="staffPaymentReference" class="input input-bordered input-sm" placeholder="Reference" />
-                    <div class="flex gap-2">
-                        <button type="button" wire:click="recordCommissionPayment" class="btn btn-primary btn-sm">Confirm Payment</button>
-                        <button type="button" wire:click="$set('paymentCommissionId', null)" class="btn btn-ghost btn-sm">Cancel</button>
-                    </div>
-                    @error('staffPaymentAmount') <span class="text-error text-xs md:col-span-3">{{ $message }}</span> @enderror
-                </div>
-            @endif
         </div>
+    </div>
+
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Approved Staff Payables and Payment Posting</div>
+        <div class="gh-table-scroll" style="margin-bottom:16px;">
+            <table class="gh-table">
+                <thead><tr><th>Staff</th><th style="text-align:right;">Approved amount</th><th></th></tr></thead>
+                <tbody>
+                    @forelse($this->approvedStaffPayables as $payable)
+                        <tr>
+                            <td><div class="gh-cell-stack"><b>{{ $payable->user?->name ?? 'Unknown' }}</b><span>{{ $payable->notes ?: 'No note' }}</span></div></td>
+                            <td class="is-num">UGX {{ number_format($payable->commission_amount) }}</td>
+                            <td style="text-align:right;"><button type="button" class="gh-btn gh-btn--sm" wire:click="startCommissionPayment({{ $payable->id }})">Post payment</button></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" style="text-align:center; padding:32px; color:var(--gh-ink-faint);">No approved staff payables</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($paymentCommissionId)
+            <div class="gh-grid-3" style="border:1px solid var(--gh-base-300); border-radius:var(--gh-radius); padding:14px;">
+                <input type="number" min="0" step="0.01" wire:model="staffPaymentAmount" class="gh-input" placeholder="Amount">
+                <input type="text" wire:model="staffPaymentReference" class="gh-input" placeholder="Reference">
+                <div style="display:flex; gap:8px;">
+                    <button type="button" wire:click="recordCommissionPayment" class="gh-btn gh-btn--primary gh-btn--sm">Confirm payment</button>
+                    <button type="button" wire:click="$set('paymentCommissionId', null)" class="gh-btn gh-btn--sm">Cancel</button>
+                </div>
+                @error('staffPaymentAmount') <span class="gh-hint" style="color:var(--gh-error); grid-column:1/-1;">{{ $message }}</span> @enderror
+            </div>
+        @endif
     </div>
 </div>

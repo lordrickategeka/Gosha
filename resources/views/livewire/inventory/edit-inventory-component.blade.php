@@ -1,89 +1,83 @@
-<div>
-    <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('inventory.show', $inventoryItem) }}" class="btn btn-ghost btn-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </a>
+<div class="gh-page">
+    <div style="display:flex; align-items:center; gap:14px;">
+        <a href="{{ route('inventory.show', $inventoryItem) }}" class="gh-btn gh-btn--sm">←</a>
         <div>
-            <h1 class="text-2xl font-bold">Edit Item</h1>
-            <p class="text-base-content/60">{{ $inventoryItem->name }}</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Edit Item</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:2px;">{{ $inventoryItem->name }}</p>
         </div>
     </div>
 
-    <form wire:submit="save" class="max-w-3xl">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="form-control sm:col-span-2">
-                        <label class="label"><span class="label-text font-medium">Item Name *</span></label>
-                        <input type="text" wire:model="name" class="input input-bordered" />
-                        @error('name') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">SKU</span></label>
-                        <input type="text" wire:model="sku" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Category *</span></label>
-                        <select wire:model="category_id" class="select select-bordered">
-                            <option value="">Select category...</option>
-                            @foreach($this->categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Supplier</span></label>
-                        <select wire:model="supplier_id" class="select select-bordered">
-                            <option value="">Select supplier...</option>
-                            @foreach($this->suppliers as $supplier)
-                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Unit</span></label>
-                        <select wire:model="unit" class="select select-bordered">
-                            <option value="pcs">Pieces</option>
-                            <option value="liters">Liters</option>
-                            <option value="kg">Kilograms</option>
-                            <option value="meters">Meters</option>
-                            <option value="sets">Sets</option>
-                        </select>
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Reorder Level *</span></label>
-                        <input type="number" wire:model="reorder_level" class="input input-bordered" min="0" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Cost Price (UGX) *</span></label>
-                        <input type="number" wire:model="cost_price" class="input input-bordered" min="0" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Selling Price (UGX) *</span></label>
-                        <input type="number" wire:model="selling_price" class="input input-bordered" min="0" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Storage Location</span></label>
-                        <input type="text" wire:model="location" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Status</span></label>
-                        <label class="label cursor-pointer justify-start gap-3">
-                            <input type="checkbox" wire:model="is_active" class="toggle toggle-primary" />
-                            <span class="label-text">{{ $is_active ? 'Active' : 'Inactive' }}</span>
-                        </label>
-                    </div>
-                    <div class="form-control sm:col-span-2">
-                        <label class="label"><span class="label-text font-medium">Description</span></label>
-                        <textarea wire:model="description" rows="2" class="textarea textarea-bordered"></textarea>
-                    </div>
+    <form wire:submit="save" style="max-width:48rem;">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-grid-2">
+                <div class="gh-field" style="grid-column:1/-1;">
+                    <span class="gh-label">Item name *</span>
+                    <input type="text" wire:model="name" class="gh-input" style="width:100%;">
+                    @error('name') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
-                <div class="card-actions justify-end mt-6">
-                    <a href="{{ route('inventory.show', $inventoryItem) }}" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="gh-field">
+                    <span class="gh-label">SKU</span>
+                    <input type="text" wire:model="sku" class="gh-input" style="width:100%;">
                 </div>
+                <div class="gh-field">
+                    <span class="gh-label">Category *</span>
+                    <select wire:model="category_id" class="gh-select" style="width:100%;">
+                        <option value="">Select category…</option>
+                        @foreach($this->categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Supplier</span>
+                    <select wire:model="supplier_id" class="gh-select" style="width:100%;">
+                        <option value="">Select supplier…</option>
+                        @foreach($this->suppliers as $supplier)
+                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Unit</span>
+                    <select wire:model="unit" class="gh-select" style="width:100%;">
+                        <option value="pcs">Pieces</option>
+                        <option value="liters">Liters</option>
+                        <option value="kg">Kilograms</option>
+                        <option value="meters">Meters</option>
+                        <option value="sets">Sets</option>
+                    </select>
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Reorder level *</span>
+                    <input type="number" wire:model="reorder_level" class="gh-input" style="width:100%;" min="0">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Cost price (UGX) *</span>
+                    <input type="number" wire:model="cost_price" class="gh-input" style="width:100%;" min="0">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Selling price (UGX) *</span>
+                    <input type="number" wire:model="selling_price" class="gh-input" style="width:100%;" min="0">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Storage location</span>
+                    <input type="text" wire:model="location" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Status</span>
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" wire:model="is_active">
+                        <span style="font-size:12.5px;">{{ $is_active ? 'Active' : 'Inactive' }}</span>
+                    </label>
+                </div>
+                <div class="gh-field" style="grid-column:1/-1;">
+                    <span class="gh-label">Description</span>
+                    <textarea wire:model="description" rows="2" class="gh-input" style="width:100%;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:16px; margin-top:20px;">
+                <a href="{{ route('inventory.show', $inventoryItem) }}" class="gh-btn">Cancel</a>
+                <button type="submit" class="gh-btn gh-btn--primary">Save changes</button>
             </div>
         </div>
     </form>

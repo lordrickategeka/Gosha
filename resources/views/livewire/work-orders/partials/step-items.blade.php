@@ -1,238 +1,127 @@
-<div class="card bg-base-100 shadow-sm border border-base-300">
-    <div class="card-body">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h2 class="card-title text-lg">Job Items</h2>
-                <p class="text-xs text-base-content/60 mt-1">Capture labor and parts required before quotation and pricing.</p>
-            </div>
-
-            {{-- Template Selector --}}
-            @if($this->templates->isNotEmpty())
-                <select wire:model="selectedTemplate" wire:change="applyTemplate" class="select select-bordered select-sm">
-                    <option value="">Apply Template...</option>
-                    @foreach($this->templates as $template)
-                        <option value="{{ $template->id }}">{{ $template->name }}</option>
-                    @endforeach
-                </select>
-            @endif
+<div class="gh-card gh-card--pad">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div>
+            <div class="gh-card__title">Job Items</div>
+            <p class="gh-muted" style="font-size:11px; margin-top:2px;">Capture labor and parts required before quotation and pricing.</p>
         </div>
 
-        {{-- Items List --}}
-        @if(count($items) > 0)
-            <div class="space-y-3 mb-4">
-                @foreach($items as $index => $item)
-                    <div class="border border-base-300 rounded-xl p-4 relative bg-base-100 shadow-sm">
+        @if($this->templates->isNotEmpty())
+            <select wire:model="selectedTemplate" wire:change="applyTemplate" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">Apply template…</option>
+                @foreach($this->templates as $template)
+                    <option value="{{ $template->id }}">{{ $template->name }}</option>
+                @endforeach
+            </select>
+        @endif
+    </div>
 
-                        {{-- Remove Button --}}
-                        <button
-                            type="button"
-                            wire:click="removeItem({{ $index }})"
-                            class="btn btn-ghost btn-xs text-error absolute top-2 right-2"
-                        >✕</button>
+    @if(count($items) > 0)
+        <div class="gh-stack" style="gap:12px; margin-bottom:16px;">
+            @foreach($items as $index => $item)
+                <div class="gh-card gh-card--pad" style="position:relative;">
+                    <button type="button" wire:click="removeItem({{ $index }})" class="gh-btn gh-btn--sm" style="position:absolute; top:10px; right:10px; color:var(--gh-error);">✕</button>
 
-                        <div class="grid grid-cols-12 gap-3 items-start">
+                    <div style="display:grid; grid-template-columns:repeat(12,1fr); gap:12px; align-items:start;">
+                        <div class="gh-field" style="grid-column: span 2;">
+                            <span class="gh-label">Type</span>
+                            <select wire:model="items.{{ $index }}.item_type" class="gh-select" style="width:100%;">
+                                <option value="labor">Labor</option>
+                                <option value="part">Part</option>
+                            </select>
+                        </div>
 
-                            {{-- Item Type --}}
-                            <div class="form-control col-span-12 sm:col-span-2">
-                                <label class="label py-1">
-                                    <span class="label-text text-xs font-medium">Type</span>
-                                </label>
-                                <select
-                                    wire:model="items.{{ $index }}.item_type"
-                                    class="select select-bordered select-sm"
-                                >
-                                    <option value="labor">Labor</option>
-                                    <option value="part">Part</option>
-                                </select>
-                            </div>
+                        <div class="gh-field" style="grid-column: span 7;" x-data="{ open: false }" x-on:focusin="open = true" x-on:focusout="setTimeout(() => { open = false }, 200)">
+                            <span class="gh-label">Description / search inventory *</span>
+                            <div style="position:relative;">
+                                <input type="text" wire:model.live.debounce.350ms="items.{{ $index }}.description" placeholder="Type to search inventory or enter a custom item…" class="gh-input" style="width:100%;" autocomplete="off">
 
-                            {{-- Description with live inventory search --}}
-                            <div class="form-control col-span-6 sm:col-span-7"
-                                 x-data="{ open: false }"
-                                 x-on:focusin="open = true"
-                                 x-on:focusout="setTimeout(() => { open = false }, 200)">
-                                <label class="label py-1">
-                                    <span class="label-text text-xs font-medium">Description / Search Inventory *</span>
-                                </label>
-                                <div class="relative">
-                                    <input
-                                        type="text"
-                                        wire:model.live.debounce.350ms="items.{{ $index }}.description"
-                                        placeholder="Type to search inventory or enter a custom item..."
-                                        class="input input-bordered input-sm w-full"
-                                        autocomplete="off"
-                                    />
+                                @php
+                                    $mySuggestions    = $itemSuggestions[$index]['my_branch']      ?? [];
+                                    $otherSuggestions = $itemSuggestions[$index]['other_branches']  ?? [];
+                                    $hasSuggestions   = count($mySuggestions) > 0 || count($otherSuggestions) > 0;
+                                @endphp
 
-                                    {{-- Inventory suggestions dropdown --}}
-                                    @php
-                                        $mySuggestions    = $itemSuggestions[$index]['my_branch']      ?? [];
-                                        $otherSuggestions = $itemSuggestions[$index]['other_branches']  ?? [];
-                                        $hasSuggestions   = count($mySuggestions) > 0 || count($otherSuggestions) > 0;
-                                    @endphp
-
-                                    @if($hasSuggestions)
-                                        <div
-                                            x-show="open"
-                                            class="absolute z-50 top-full left-0 right-0 bg-base-100 border border-base-300 rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto"
-                                        >
-                                            {{-- Current branch results --}}
-                                            @if(count($mySuggestions) > 0)
-                                                <div class="px-3 py-1 text-xs font-semibold text-base-content/50 bg-base-200 sticky top-0">
-                                                    This Branch
-                                                </div>
-                                                @foreach($mySuggestions as $suggestion)
-                                                    <button
-                                                        type="button"
-                                                        @mousedown.prevent
-                                                        wire:click="selectInventoryItem({{ $index }}, {{ $suggestion['id'] }})"
-                                                        class="w-full text-left px-3 py-2 hover:bg-base-200 flex items-center justify-between text-sm border-b border-base-200 last:border-0"
-                                                    >
-                                                        <span class="font-medium">{{ $suggestion['name'] }}</span>
-                                                        <span class="text-xs text-base-content/50 flex items-center gap-1">
-                                                            {{ $suggestion['sku'] }}
-                                                            @if($suggestion['quantity'] > 0)
-                                                                &middot; <span class="text-success font-medium">{{ $suggestion['quantity'] }} {{ $suggestion['unit'] }}</span>
-                                                            @else
-                                                                &middot; <span class="text-error font-medium">Out of stock</span>
-                                                            @endif
-                                                        </span>
-                                                    </button>
-                                                @endforeach
-                                            @endif
-
-                                            {{-- Other branches with stock --}}
-                                            @if(count($otherSuggestions) > 0)
-                                                <div class="px-3 py-1 text-xs font-semibold text-base-content/50 bg-base-200 sticky top-0">
-                                                    Available at Other Branches
-                                                </div>
-                                                @foreach($otherSuggestions as $suggestion)
-                                                    <div class="flex items-center justify-between px-3 py-2 border-b border-base-200 last:border-0 hover:bg-warning/10">
-                                                        <div>
-                                                            <span class="font-medium text-sm">{{ $suggestion['name'] }}</span>
-                                                            <span class="text-xs text-base-content/50 ml-1">{{ $suggestion['sku'] }}</span>
-                                                            <div class="text-xs text-warning font-medium mt-0.5">
-                                                                {{ $suggestion['branch_name'] }} &middot; {{ $suggestion['quantity'] }} {{ $suggestion['unit'] }} in stock
-                                                            </div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            @mousedown.prevent
-                                                            wire:click="requestItemFromBranch({{ $index }}, {{ $suggestion['id'] }}, {{ $suggestion['branch_id'] }})"
-                                                            class="btn btn-warning btn-xs shrink-0 ml-2"
-                                                        >
-                                                            Request Transfer
-                                                        </button>
-                                                    </div>
-                                                @endforeach
-                                            @endif
-                                        </div>
-                                    @elseif(strlen($item['description'] ?? '') >= 2 && empty($item['inventory_item_id'] ?? null))
-                                        <div
-                                            x-show="open"
-                                            class="absolute z-50 top-full left-0 right-0 bg-base-100 border border-base-300 rounded-lg shadow-lg mt-1 px-3 py-2 text-sm text-base-content/55 italic"
-                                        >
-                                            No inventory match — will appear on quotation for pricing
-                                        </div>
-                                    @endif
-                                </div>
-
-                                {{-- Linked inventory badge --}}
-                                @if(!empty($item['inventory_item_id']))
-                                    <div class="flex items-center gap-2 mt-1">
-                                        @if(!empty($item['source_branch_id']))
-                                            <span class="badge badge-warning badge-sm">⇄ Transfer requested</span>
-                                        @else
-                                            <span class="badge badge-success badge-sm">✓ Linked to inventory</span>
+                                @if($hasSuggestions)
+                                    <div x-show="open" class="gh-card" style="position:absolute; z-index:50; top:100%; left:0; right:0; margin-top:4px; max-height:16rem; overflow-y:auto;">
+                                        @if(count($mySuggestions) > 0)
+                                            <div style="padding:6px 12px; font-size:11px; font-weight:700; color:var(--gh-ink-subtle); background:var(--gh-base-200);">This branch</div>
+                                            @foreach($mySuggestions as $suggestion)
+                                                <button type="button" @mousedown.prevent wire:click="selectInventoryItem({{ $index }}, {{ $suggestion['id'] }})" style="width:100%; text-align:left; padding:8px 12px; border:0; border-bottom:1px solid var(--gh-hairline); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:12.5px;">
+                                                    <span style="font-weight:600;">{{ $suggestion['name'] }}</span>
+                                                    <span class="gh-muted" style="font-size:11px;">
+                                                        {{ $suggestion['sku'] }}
+                                                        @if($suggestion['quantity'] > 0)
+                                                            · <span style="color:var(--gh-success); font-weight:600;">{{ $suggestion['quantity'] }} {{ $suggestion['unit'] }}</span>
+                                                        @else
+                                                            · <span style="color:var(--gh-error); font-weight:600;">Out of stock</span>
+                                                        @endif
+                                                    </span>
+                                                </button>
+                                            @endforeach
                                         @endif
-                                        <button
-                                            type="button"
-                                            wire:click="clearInventoryLink({{ $index }})"
-                                            class="text-xs text-error hover:underline"
-                                        >Unlink</button>
+
+                                        @if(count($otherSuggestions) > 0)
+                                            <div style="padding:6px 12px; font-size:11px; font-weight:700; color:var(--gh-ink-subtle); background:var(--gh-base-200);">Available at other branches</div>
+                                            @foreach($otherSuggestions as $suggestion)
+                                                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--gh-hairline);">
+                                                    <div>
+                                                        <span style="font-weight:600; font-size:12.5px;">{{ $suggestion['name'] }}</span>
+                                                        <span class="gh-muted" style="font-size:11px; margin-left:4px;">{{ $suggestion['sku'] }}</span>
+                                                        <div style="font-size:11px; color:var(--gh-warning); font-weight:600; margin-top:2px;">{{ $suggestion['branch_name'] }} · {{ $suggestion['quantity'] }} {{ $suggestion['unit'] }} in stock</div>
+                                                    </div>
+                                                    <button type="button" @mousedown.prevent wire:click="requestItemFromBranch({{ $index }}, {{ $suggestion['id'] }}, {{ $suggestion['branch_id'] }})" class="gh-btn gh-btn--sm" style="color:var(--gh-warning); flex-shrink:0; margin-left:8px;">Request transfer</button>
+                                                </div>
+                                            @endforeach
+                                        @endif
                                     </div>
+                                @elseif(strlen($item['description'] ?? '') >= 2 && empty($item['inventory_item_id'] ?? null))
+                                    <div x-show="open" class="gh-card" style="position:absolute; z-index:50; top:100%; left:0; right:0; margin-top:4px; padding:10px 12px; font-size:12.5px; color:var(--gh-ink-subtle); font-style:italic;">No inventory match — will appear on quotation for pricing</div>
                                 @endif
-
-                                @error("items.$index.description")
-                                    <span class="text-error text-xs mt-1">{{ $message }}</span>
-                                @enderror
                             </div>
 
-                            {{-- Quantity --}}
-                            <div class="form-control col-span-6 sm:col-span-3">
-                                <label class="label py-1">
-                                    <span class="label-text text-xs font-medium">Qty *</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    wire:model="items.{{ $index }}.quantity"
-                                    step="0.01"
-                                    min="0.01"
-                                    class="input input-bordered input-sm"
-                                />
-                                @error("items.$index.quantity")
-                                    <span class="text-error text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
+                            @if(!empty($item['inventory_item_id']))
+                                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                                    @if(!empty($item['source_branch_id']))
+                                        <span class="gh-badge gh-badge--warning">⇄ Transfer requested</span>
+                                    @else
+                                        <span class="gh-badge gh-badge--success">✓ Linked to inventory</span>
+                                    @endif
+                                    <button type="button" wire:click="clearInventoryLink({{ $index }})" style="font-size:11px; color:var(--gh-error); background:none; border:0; cursor:pointer; text-decoration:underline;">Unlink</button>
+                                </div>
+                            @endif
 
+                            @error("items.$index.description") <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="gh-field" style="grid-column: span 3;">
+                            <span class="gh-label">Qty *</span>
+                            <input type="number" wire:model="items.{{ $index }}.quantity" step="0.01" min="0.01" class="gh-input" style="width:100%;">
+                            @error("items.$index.quantity") <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                @endforeach
-            </div>
-        @else
-            <div class="text-center py-8 text-base-content/50">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p class="font-medium">No items added yet</p>
-                <p class="text-sm">Add labor or parts to this work order</p>
-            </div>
-        @endif
-
-        @error('items')
-            <div class="alert alert-error py-2 mb-4">
-                <span class="text-sm">{{ $message }}</span>
-            </div>
-        @enderror
-
-        {{-- Add Item Buttons --}}
-        <div class="flex flex-wrap gap-2">
-            <button type="button" wire:click="addItem('labor')" class="btn btn-outline btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add Labor
-            </button>
-            <button type="button" wire:click="addItem('part')" class="btn btn-outline btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add Part
-            </button>
+                </div>
+            @endforeach
         </div>
-
-        {{-- Pricing notice --}}
-        <div class="alert alert-info mt-4 py-2 text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Prices will be set during the quotation stage. Just add items and quantities for now.</span>
+    @else
+        <div style="text-align:center; padding:32px 0; color:var(--gh-ink-faint);">
+            <p style="font-weight:600;">No items added yet</p>
+            <p style="font-size:12.5px;">Add labor or parts to this work order</p>
         </div>
+    @endif
+
+    @error('items') <div class="gh-note" style="margin-bottom:14px; background:var(--gh-error-bg); border-color:var(--gh-error);"><span class="gh-note__body" style="color:var(--gh-error);">{{ $message }}</span></div> @enderror
+
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button type="button" wire:click="addItem('labor')" class="gh-btn gh-btn--sm">+ Add labor</button>
+        <button type="button" wire:click="addItem('part')" class="gh-btn gh-btn--sm">+ Add part</button>
     </div>
+
+    <div class="gh-note" style="margin-top:14px;"><span class="gh-note__body">Prices will be set during the quotation stage. Just add items and quantities for now.</span></div>
 </div>
 
-<div class="mt-5 border-t border-base-300 pt-4">
-    <div class="flex justify-between gap-2">
-        <button type="button" wire:click="previousStep" class="btn btn-ghost">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-        </button>
-        <button type="button" wire:click="nextStep" class="btn btn-primary">
-            Continue to Review
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
+<div style="border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">
+    <div style="display:flex; justify-content:space-between; gap:8px;">
+        <button type="button" wire:click="previousStep" class="gh-btn">← Back</button>
+        <button type="button" wire:click="nextStep" class="gh-btn gh-btn--primary">Continue to review →</button>
     </div>
 </div>

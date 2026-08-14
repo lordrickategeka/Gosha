@@ -1,57 +1,52 @@
-<div class="p-6 space-y-4">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Marketplace</h1>
-        <a class="btn btn-outline btn-sm" href="{{ route('marketplace.rfqs.create') }}">Request a quote (RFQ)</a>
+<div class="gh-page">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Marketplace</div>
+        <a class="gh-btn gh-btn--sm" href="{{ route('marketplace.rfqs.create') }}">Request a quote (RFQ)</a>
     </div>
 
     @if ($focusProduct)
-        <div class="alert alert-info">
-            <span>Showing suppliers for <strong>{{ $focusProduct->brand }} {{ $focusProduct->name }}</strong>
+        <div class="gh-badge gh-badge--info" style="display:block; padding:10px 12px; font-size:12px;">
+            Showing suppliers for <strong>{{ $focusProduct->brand }} {{ $focusProduct->name }}</strong>
             ({{ $focusProduct->part_number }}).
-            <a class="link" href="{{ route('marketplace.browse') }}" wire:navigate>Clear filter</a></span>
+            <a href="{{ route('marketplace.browse') }}" wire:navigate style="text-decoration:underline;">Clear filter</a>
         </div>
     @endif
 
-    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search part name, brand, or part number"
-           class="input input-bordered w-full max-w-lg" />
+    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search part name, brand, or part number" class="gh-input" style="max-width:28rem;">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="gh-grid-3">
         @forelse ($listings as $listing)
-            <div class="card bg-base-100 shadow border border-base-300">
-                <div class="card-body">
-                    <div class="flex items-start justify-between gap-2">
-                        <h2 class="card-title text-base">{{ $listing->product?->brand }} {{ $listing->product?->name }}</h2>
-                        @if ($listing->supplier?->is_verified_supplier)
-                            <span class="badge badge-success badge-sm">Verified</span>
-                        @endif
-                    </div>
-                    <p class="text-sm text-base-content/60 font-mono">{{ $listing->product?->part_number }}</p>
-                    <p class="text-sm">{{ $listing->supplier?->name }}</p>
-
-                    <div class="flex items-baseline gap-2 mt-2">
-                        <span class="text-xl font-bold">{{ number_format($listing->price) }}</span>
-                        <span class="text-sm text-base-content/60">{{ $listing->currency }}</span>
-                    </div>
-                    @if ($listing->priceTiers->isNotEmpty())
-                        <p class="text-xs text-success">
-                            Bulk: {{ number_format($listing->priceTiers->last()->unit_price) }} @ {{ $listing->priceTiers->last()->min_qty }}+
-                        </p>
+            <div class="gh-card gh-card--pad">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+                    <div style="font-weight:700; font-size:14px;">{{ $listing->product?->brand }} {{ $listing->product?->name }}</div>
+                    @if ($listing->supplier?->is_verified_supplier)
+                        <span class="gh-badge gh-badge--success">Verified</span>
                     @endif
-                    <p class="text-xs text-base-content/60">
-                        Stock {{ $listing->stock_qty }} &middot; MOQ {{ $listing->min_order_qty }} &middot; lead {{ $listing->lead_time_days }}d
-                    </p>
+                </div>
+                <p class="gh-muted" style="font-size:11.5px; font-family:monospace; margin-top:4px;">{{ $listing->product?->part_number }}</p>
+                <p style="font-size:12.5px; margin-top:2px;">{{ $listing->supplier?->name }}</p>
 
-                    <div class="card-actions justify-end mt-3">
-                        <button class="btn btn-sm btn-primary"
-                                wire:click="buy({{ $listing->id }}, {{ $listing->min_order_qty }})"
-                                wire:loading.attr="disabled">
-                            Buy ({{ $listing->min_order_qty }})
-                        </button>
-                    </div>
+                <div style="display:flex; align-items:baseline; gap:6px; margin-top:10px;">
+                    <span style="font-size:19px; font-weight:800;">{{ number_format($listing->price) }}</span>
+                    <span class="gh-muted" style="font-size:12px;">{{ $listing->currency }}</span>
+                </div>
+                @if ($listing->priceTiers->isNotEmpty())
+                    <p style="font-size:11px; color:var(--gh-success); margin-top:4px;">
+                        Bulk: {{ number_format($listing->priceTiers->last()->unit_price) }} @ {{ $listing->priceTiers->last()->min_qty }}+
+                    </p>
+                @endif
+                <p class="gh-muted" style="font-size:11px; margin-top:4px;">
+                    Stock {{ $listing->stock_qty }} &middot; MOQ {{ $listing->min_order_qty }} &middot; lead {{ $listing->lead_time_days }}d
+                </p>
+
+                <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+                    <button class="gh-btn gh-btn--primary gh-btn--sm" wire:click="buy({{ $listing->id }}, {{ $listing->min_order_qty }})" wire:loading.attr="disabled">
+                        Buy ({{ $listing->min_order_qty }})
+                    </button>
                 </div>
             </div>
         @empty
-            <p class="text-base-content/60 col-span-full text-center py-10">No listings match.</p>
+            <p class="gh-muted" style="grid-column:1/-1; text-align:center; padding:40px 0;">No listings match.</p>
         @endforelse
     </div>
     {{ $listings->links() }}

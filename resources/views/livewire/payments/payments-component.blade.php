@@ -1,97 +1,71 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">Payments</h1>
-            <p class="text-base-content/60">Payment history and records</p>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Payments</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Payment history and records</p>
+    </div>
+
+    <div class="gh-grid-3">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Today</span>
+            <span class="gh-stat__value" style="color:var(--gh-success);">UGX {{ number_format($totals['today']) }}</span>
+        </div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">This week</span>
+            <span class="gh-stat__value">UGX {{ number_format($totals['week']) }}</span>
+        </div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">This month</span>
+            <span class="gh-stat__value">UGX {{ number_format($totals['month']) }}</span>
         </div>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Today</div>
-            <div class="stat-value text-lg text-success">UGX {{ number_format($totals['today']) }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">This Week</div>
-            <div class="stat-value text-lg">UGX {{ number_format($totals['week']) }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">This Month</div>
-            <div class="stat-value text-lg">UGX {{ number_format($totals['month']) }}</div>
-        </div>
-    </div>
-
-    <!-- Filters (in table header) -->
-    <div class="card bg-base-100 shadow-sm mb-4">
-        <div class="flex flex-wrap items-center gap-2 p-4">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="input input-bordered input-sm w-40" />
-            <select wire:model.live="method" class="select select-bordered select-sm w-36">
-                <option value="">All Methods</option>
+    <div class="gh-table-toolbar">
+        <div class="gh-table-toolbar__filters">
+            <label class="gh-search" style="width:190px;">⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search…"></label>
+            <select wire:model.live="method" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All methods</option>
                 <option value="cash">Cash</option>
                 <option value="mobile_money">Mobile Money</option>
                 <option value="card">Card</option>
                 <option value="bank_transfer">Bank Transfer</option>
             </select>
-            <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm w-36" />
-            <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm w-36" />
+            <input type="date" wire:model.live="dateFrom" class="gh-input" style="padding:6px 10px; font-size:12px;">
+            <input type="date" wire:model.live="dateTo" class="gh-input" style="padding:6px 10px; font-size:12px;">
             @if($search || $method || $dateFrom || $dateTo)
-            <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+                <button wire:click="clearFilters" class="gh-btn gh-btn--sm">Clear</button>
             @endif
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Customer</th>
-                        <th>Invoice</th>
-                        <th>Method</th>
-                        <th>Reference</th>
-                        <th class="text-right">Amount</th>
-                        <th>Received By</th>
-                    </tr>
-                </thead>
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead><tr><th>Date</th><th>Customer</th><th>Invoice</th><th>Method</th><th>Reference</th><th style="text-align:right;">Amount</th><th>Received by</th></tr></thead>
                 <tbody>
                     @forelse($payments as $payment)
-                        <tr class="hover">
-                            <td>{{ $payment->payment_date->format('d M Y') }}</td>
-                            <td>
-                                <a href="{{ route('customers.show', $payment->invoice->customer) }}" class="link link-hover">
-                                    {{ $payment->invoice->customer->name }}
-                                </a>
-                            </td>
+                        <tr>
+                            <td class="gh-muted">{{ $payment->payment_date->format('d M Y') }}</td>
+                            <td><a href="{{ route('customers.show', $payment->invoice->customer) }}">{{ $payment->invoice->customer->name }}</a></td>
                             <td>
                                 @if($payment->invoice)
-                                    <a href="{{ route('invoices.show', $payment->invoice) }}" class="link link-primary font-mono text-sm">
-                                        {{ $payment->invoice->invoice_number }}
-                                    </a>
+                                    <span class="is-ref"><a href="{{ route('invoices.show', $payment->invoice) }}">{{ $payment->invoice->invoice_number }}</a></span>
                                 @else
-                                    <span class="text-base-content/40">-</span>
+                                    <span class="gh-muted">—</span>
                                 @endif
                             </td>
-                            <td>
-                                <span class="badge badge-ghost badge-sm">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</span>
-                            </td>
-                            <td class="font-mono text-sm">{{ $payment->reference_number ?? '-' }}</td>
-                            <td class="text-right font-medium text-success">UGX {{ number_format($payment->amount) }}</td>
-                            <td>{{ $payment->receivedBy?->name ?? '-' }}</td>
+                            <td><span class="gh-badge">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</span></td>
+                            <td>{{ $payment->reference_number ?? '—' }}</td>
+                            <td class="is-num" style="color:var(--gh-success);">UGX {{ number_format($payment->amount) }}</td>
+                            <td>{{ $payment->receivedBy?->name ?? '—' }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center py-8 text-base-content/50">No payments found</td></tr>
+                        <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No payments found</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         @if($payments->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $payments->links() }}</div>
+            <div class="gh-pagination">{{ $payments->links() }}</div>
         @endif
     </div>
 </div>

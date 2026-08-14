@@ -1,185 +1,176 @@
-<div>
-    <div class="mb-6">
-        <div class="badge badge-warning mb-2">Platform Admin</div>
-        <h1 class="text-2xl font-bold">API Integrations</h1>
-        <p class="text-base-content/60">Manage service credentials, activation status, and webhook endpoints.</p>
+<div class="gh-page">
+    <div>
+        <span class="gh-badge gh-badge--warning">Platform Admin</span>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-top:8px;">API Integrations</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Manage service credentials, activation status, and webhook endpoints.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="card bg-base-100 shadow-sm lg:col-span-1">
-            <div class="card-body">
-                <h2 class="card-title text-lg">Services</h2>
-                <div class="space-y-2">
-                    @foreach ($providers as $providerKey => $provider)
-                        @php
-                            $providerIntegration = $integrations->get($providerKey);
-                            $isSelected = $selectedProvider === $providerKey;
-                        @endphp
-                        <button
-                            wire:click="selectProvider('{{ $providerKey }}')"
-                            class="btn w-full justify-between {{ $isSelected ? 'btn-primary' : 'btn-ghost' }}"
-                        >
-                            <span>{{ $provider['label'] }}</span>
-                            @if ($providerIntegration)
-                                <span class="badge {{ $providerIntegration->is_active ? 'badge-success' : 'badge-neutral' }}">
-                                    {{ $providerIntegration->is_active ? 'Active' : 'Inactive' }}
-                                </span>
-                            @else
-                                <span class="badge badge-ghost">Not Configured</span>
-                            @endif
-                        </button>
-                    @endforeach
-                </div>
+    <div class="gh-split">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:12px;">Services</div>
+            <div class="gh-stack" style="gap:6px;">
+                @foreach ($providers as $providerKey => $provider)
+                    @php
+                        $providerIntegration = $integrations->get($providerKey);
+                        $isSelected = $selectedProvider === $providerKey;
+                    @endphp
+                    <button
+                        wire:click="selectProvider('{{ $providerKey }}')"
+                        class="gh-nav-item {{ $isSelected ? 'is-active' : '' }}"
+                        style="width:100%; justify-content:space-between;"
+                    >
+                        <span>{{ $provider['label'] }}</span>
+                        @if ($providerIntegration)
+                            <span class="gh-badge {{ $providerIntegration->is_active ? 'gh-badge--success' : '' }}">
+                                {{ $providerIntegration->is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        @else
+                            <span class="gh-badge">Not Configured</span>
+                        @endif
+                    </button>
+                @endforeach
             </div>
         </div>
 
-        <div class="card bg-base-100 shadow-sm lg:col-span-2">
-            <div class="card-body">
-                <h2 class="card-title text-lg">{{ $providers[$selectedProvider]['label'] ?? ucfirst($selectedProvider) }} Configuration</h2>
-                <p class="text-sm text-base-content/60 mb-4">{{ $providers[$selectedProvider]['description'] ?? '' }}</p>
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title">{{ $providers[$selectedProvider]['label'] ?? ucfirst($selectedProvider) }} Configuration</div>
+            <p class="gh-muted" style="font-size:12px; margin:4px 0 16px;">{{ $providers[$selectedProvider]['description'] ?? '' }}</p>
 
-                <div class="mb-4">
-                    <label class="label cursor-pointer justify-start gap-3">
-                        <input type="checkbox" class="toggle toggle-success" wire:model="isActive" />
-                        <span class="label-text">Set integration as active</span>
-                    </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:16px;">
+                <input type="checkbox" wire:model="isActive">
+                <span style="font-weight:600; font-size:12.5px;">Set integration as active</span>
+            </label>
+
+            @if ($selectedProvider === 'whatsapp')
+                @include('livewire.platform.integrations.forms.whatsapp')
+            @elseif ($selectedProvider === 'email')
+                @include('livewire.platform.integrations.forms.email')
+            @elseif ($selectedProvider === 'flutterwave')
+                @include('livewire.platform.integrations.forms.flutterwave')
+            @endif
+
+            <div style="border-top:1px solid var(--gh-hairline); margin:20px 0;"></div>
+
+            <div class="gh-grid-2">
+                <div class="gh-field">
+                    <span class="gh-label">Webhook URL</span>
+                    <input type="url" wire:model.defer="webhookUrl" class="gh-input" style="width:100%;" placeholder="https://example.com/api/webhooks/provider">
+                    @error('webhookUrl') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Webhook secret</span>
+                    <input type="text" wire:model.defer="webhookSecret" class="gh-input" style="width:100%;" placeholder="Webhook signing secret">
+                    @error('webhookSecret') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+            </div>
+
+            @if ($selectedProvider === 'whatsapp' && $selectedIntegration)
+                <p class="gh-eyebrow" style="margin:20px 0 10px;">Send test message</p>
+                <div class="gh-grid-2">
+                    <div class="gh-field">
+                        <span class="gh-label">Recipient phone (E.164)</span>
+                        <input type="text" wire:model.defer="testRecipientPhone" class="gh-input" style="width:100%;" placeholder="2567XXXXXXXX">
+                        @error('testRecipientPhone') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="gh-field" style="grid-column:1/-1;">
+                        <span class="gh-label">Message body</span>
+                        <textarea wire:model.defer="testMessageBody" rows="3" class="gh-input" style="width:100%;" placeholder="Type a short test message"></textarea>
+                        @error('testMessageBody') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+            @endif
+
+            @if ($selectedProvider === 'flutterwave' && $selectedIntegration)
+                <p class="gh-eyebrow" style="margin:20px 0 10px;">Initiate test payment</p>
+                <div class="gh-grid-2">
+                    <div class="gh-field">
+                        <span class="gh-label">Customer email</span>
+                        <input type="email" wire:model.defer="flutterwaveTestCustomerEmail" class="gh-input" style="width:100%;" placeholder="customer@example.com">
+                        @error('flutterwaveTestCustomerEmail') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="gh-field">
+                        <span class="gh-label">Customer name</span>
+                        <input type="text" wire:model.defer="flutterwaveTestCustomerName" class="gh-input" style="width:100%;" placeholder="Customer Name">
+                        @error('flutterwaveTestCustomerName') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="gh-field">
+                        <span class="gh-label">Amount</span>
+                        <input type="number" step="0.01" min="100" wire:model.defer="flutterwaveTestAmount" class="gh-input" style="width:100%;" placeholder="1000">
+                        @error('flutterwaveTestAmount') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="gh-field">
+                        <span class="gh-label">Currency</span>
+                        <input type="text" maxlength="3" wire:model.defer="flutterwaveTestCurrency" class="gh-input" style="width:100%;" placeholder="UGX">
+                        @error('flutterwaveTestCurrency') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
                 </div>
 
-                @if ($selectedProvider === 'whatsapp')
-                    @include('livewire.platform.integrations.forms.whatsapp')
-                @elseif ($selectedProvider === 'email')
-                    @include('livewire.platform.integrations.forms.email')
-                @elseif ($selectedProvider === 'flutterwave')
-                    @include('livewire.platform.integrations.forms.flutterwave')
-                @endif
-
-                <div class="divider"></div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Webhook URL</span></label>
-                        <input type="url" wire:model.defer="webhookUrl" class="input input-bordered w-full" placeholder="https://example.com/api/webhooks/provider" />
-                        @error('webhookUrl')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Webhook Secret</span></label>
-                        <input type="text" wire:model.defer="webhookSecret" class="input input-bordered w-full" placeholder="Webhook signing secret" />
-                        @error('webhookSecret')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                    </div>
-                </div>
-
-                @if ($selectedProvider === 'whatsapp' && $selectedIntegration)
-                    <div class="divider">Send Test Message</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Recipient Phone (E.164)</span></label>
-                            <input type="text" wire:model.defer="testRecipientPhone" class="input input-bordered w-full" placeholder="2567XXXXXXXX" />
-                            @error('testRecipientPhone')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                        </div>
-                        <div class="form-control md:col-span-2">
-                            <label class="label"><span class="label-text">Message Body</span></label>
-                            <textarea wire:model.defer="testMessageBody" class="textarea textarea-bordered w-full" rows="3" placeholder="Type a short test message"></textarea>
-                            @error('testMessageBody')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                        </div>
+                @if ($flutterwaveCheckoutLink)
+                    <div class="gh-badge gh-badge--info" style="display:block; margin-top:12px; padding:10px 12px; font-size:12px; word-break:break-all;">
+                        Checkout link ready:
+                        <a href="{{ $flutterwaveCheckoutLink }}" target="_blank" style="color:var(--gh-primary); text-decoration:underline;">{{ $flutterwaveCheckoutLink }}</a>
                     </div>
                 @endif
+            @endif
 
-                @if ($selectedProvider === 'flutterwave' && $selectedIntegration)
-                    <div class="divider">Initiate Test Payment</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Customer Email</span></label>
-                            <input type="email" wire:model.defer="flutterwaveTestCustomerEmail" class="input input-bordered w-full" placeholder="customer@example.com" />
-                            @error('flutterwaveTestCustomerEmail')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Customer Name</span></label>
-                            <input type="text" wire:model.defer="flutterwaveTestCustomerName" class="input input-bordered w-full" placeholder="Customer Name" />
-                            @error('flutterwaveTestCustomerName')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Amount</span></label>
-                            <input type="number" step="0.01" min="100" wire:model.defer="flutterwaveTestAmount" class="input input-bordered w-full" placeholder="1000" />
-                            @error('flutterwaveTestAmount')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Currency</span></label>
-                            <input type="text" maxlength="3" wire:model.defer="flutterwaveTestCurrency" class="input input-bordered w-full" placeholder="UGX" />
-                            @error('flutterwaveTestCurrency')<span class="text-error text-xs mt-1">{{ $message }}</span>@enderror
-                        </div>
-                    </div>
-
-                    @if ($flutterwaveCheckoutLink)
-                        <div class="alert alert-info mt-4">
-                            <span>Checkout link ready:</span>
-                            <a href="{{ $flutterwaveCheckoutLink }}" target="_blank" class="link link-primary break-all">{{ $flutterwaveCheckoutLink }}</a>
-                        </div>
-                    @endif
-                @endif
-
-                <div class="flex flex-wrap gap-2 mt-6">
-                    <button class="btn btn-primary" wire:click="save">Save Integration</button>
-
-                    @if ($selectedIntegration)
-                        <button class="btn btn-outline" wire:click="testConnection({{ $selectedIntegration->id }})">Test Connection</button>
-                        @if ($selectedProvider === 'whatsapp')
-                            <button class="btn btn-accent" wire:click="sendTestMessage({{ $selectedIntegration->id }})">Send Test Message</button>
-                        @elseif ($selectedProvider === 'flutterwave')
-                            <button class="btn btn-accent" wire:click="initiateFlutterwaveTestPayment({{ $selectedIntegration->id }})">Initiate Test Payment</button>
-                        @endif
-                        <button class="btn btn-secondary" wire:click="toggleStatus({{ $selectedIntegration->id }})">
-                            {{ $selectedIntegration->is_active ? 'Deactivate' : 'Activate' }}
-                        </button>
-                        <button class="btn btn-error btn-outline" wire:click="deleteIntegration({{ $selectedIntegration->id }})"
-                            wire:confirm="Remove this integration?">
-                            Remove
-                        </button>
-                    @endif
-                </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;">
+                <button class="gh-btn gh-btn--primary" wire:click="save">Save integration</button>
 
                 @if ($selectedIntegration)
-                    <div class="text-xs text-base-content/60 mt-4">
-                        Last tested:
-                        {{ $selectedIntegration->last_tested_at ? $selectedIntegration->last_tested_at->diffForHumans() : 'Never' }}
-                    </div>
+                    <button class="gh-btn" wire:click="testConnection({{ $selectedIntegration->id }})">Test connection</button>
+                    @if ($selectedProvider === 'whatsapp')
+                        <button class="gh-btn" wire:click="sendTestMessage({{ $selectedIntegration->id }})">Send test message</button>
+                    @elseif ($selectedProvider === 'flutterwave')
+                        <button class="gh-btn" wire:click="initiateFlutterwaveTestPayment({{ $selectedIntegration->id }})">Initiate test payment</button>
+                    @endif
+                    <button class="gh-btn" wire:click="toggleStatus({{ $selectedIntegration->id }})">
+                        {{ $selectedIntegration->is_active ? 'Deactivate' : 'Activate' }}
+                    </button>
+                    <button class="gh-btn" style="color:var(--gh-error);" wire:click="deleteIntegration({{ $selectedIntegration->id }})" wire:confirm="Remove this integration?">
+                        Remove
+                    </button>
                 @endif
             </div>
-        </div>
-    </div>
 
-    <div class="card bg-base-100 shadow-sm mt-6">
-        <div class="card-body">
-            <h2 class="card-title text-lg">Recent Logs</h2>
-            @if ($recentLogs->isEmpty())
-                <p class="text-base-content/60 text-sm">No activity logs for this provider yet.</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Action</th>
-                                <th>Status</th>
-                                <th>Message</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($recentLogs as $log)
-                                <tr>
-                                    <td class="text-xs">{{ $log->created_at->format('d M Y H:i') }}</td>
-                                    <td><span class="badge badge-ghost badge-sm">{{ $log->action }}</span></td>
-                                    <td>
-                                        <span class="badge badge-sm {{ $log->status === 'success' ? 'badge-success' : 'badge-error' }}">
-                                            {{ ucfirst($log->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="text-xs">{{ $log->error_message ?: 'OK' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            @if ($selectedIntegration)
+                <div class="gh-hint" style="margin-top:14px;">
+                    Last tested: {{ $selectedIntegration->last_tested_at ? $selectedIntegration->last_tested_at->diffForHumans() : 'Never' }}
                 </div>
             @endif
         </div>
+    </div>
+
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Recent Logs</div>
+        @if ($recentLogs->isEmpty())
+            <p class="gh-muted" style="font-size:12px;">No activity logs for this provider yet.</p>
+        @else
+            <div class="gh-table-scroll">
+                <table class="gh-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($recentLogs as $log)
+                            <tr>
+                                <td class="gh-muted">{{ $log->created_at->format('d M Y H:i') }}</td>
+                                <td><span class="gh-badge">{{ $log->action }}</span></td>
+                                <td>
+                                    <span class="gh-badge {{ $log->status === 'success' ? 'gh-badge--success' : 'gh-badge--error' }}">
+                                        {{ ucfirst($log->status) }}
+                                    </span>
+                                </td>
+                                <td class="gh-muted">{{ $log->error_message ?: 'OK' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     </div>
 </div>

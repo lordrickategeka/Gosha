@@ -1,150 +1,97 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="gh-page">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
         <div>
-            <h1 class="text-2xl font-bold">Invoices</h1>
-            <p class="text-base-content/60">Manage billing and payments</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Invoices</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Manage billing and payments</p>
         </div>
         @can('create_invoices')
-        <a href="{{ route('invoices.create') }}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            New Invoice
-        </a>
+            <a href="{{ route('invoices.create') }}" class="gh-btn gh-btn--primary">+ New invoice</a>
         @endcan
     </div>
 
-<!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Total Invoiced</div>
-            <div class="stat-value text-lg">UGX {{ number_format($stats['total']) }}</div>
+    <div class="gh-grid-4">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Total invoiced</span>
+            <span class="gh-stat__value">UGX {{ number_format($stats['total']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Paid</div>
-            <div class="stat-value text-lg text-success">UGX {{ number_format($stats['paid']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Paid</span>
+            <span class="gh-stat__value" style="color:var(--gh-success);">UGX {{ number_format($stats['paid']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Pending</div>
-            <div class="stat-value text-lg text-warning">UGX {{ number_format($stats['pending']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Pending</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning);">UGX {{ number_format($stats['pending']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Overdue</div>
-            <div class="stat-value text-lg text-error">UGX {{ number_format($stats['overdue']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Overdue</span>
+            <span class="gh-stat__value gh-stat__value--neg">UGX {{ number_format($stats['overdue']) }}</span>
         </div>
     </div>
 
-<div class="card bg-base-100 shadow-sm">
-        <div class="flex flex-col gap-4 border-b border-base-200 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h2 class="text-lg font-semibold">Invoices</h2>
-                <p class="text-sm text-base-content/60">{{ $invoices->total() }} total records</p>
-            </div>
-
-            <!-- Table Filters -->
-            <div class="flex flex-wrap items-center gap-2">
-                <!-- Search -->
-                <div class="form-control">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Search invoices..."
-                        class="input input-bordered input-sm w-40"
-                    />
-                </div>
-
-                <!-- Status Filter -->
-                <div class="form-control">
-                    <select wire:model.live="status" class="select select-bordered select-sm w-32">
-                        <option value="">All Status</option>
-                        <option value="sent">Pending</option>
-                        <option value="partial">Partially Paid</option>
-                        <option value="paid">Paid</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-
-                <!-- Date From -->
-                <div class="form-control">
-                    <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm w-36" placeholder="From" />
-                </div>
-
-                <!-- Date To -->
-                <div class="form-control">
-                    <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm w-36" placeholder="To" />
-                </div>
-
-                <!-- Clear Filters -->
-                @if($search || $status || $dateFrom || $dateTo)
-                <button wire:click="clearFilters" class="btn btn-xs btn-ghost" title="Clear filters">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                @endif
-            </div>
+    <div class="gh-table-toolbar">
+        <span class="gh-hint">{{ $invoices->total() }} total records</span>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <label class="gh-search" style="width:190px;">⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoices…"></label>
+            <select wire:model.live="status" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All status</option>
+                <option value="sent">Pending</option>
+                <option value="partial">Partially paid</option>
+                <option value="paid">Paid</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="date" wire:model.live="dateFrom" class="gh-input" style="padding:6px 10px; font-size:12px;">
+            <input type="date" wire:model.live="dateTo" class="gh-input" style="padding:6px 10px; font-size:12px;">
+            @if($search || $status || $dateFrom || $dateTo)
+                <button wire:click="clearFilters" class="gh-btn gh-btn--sm">Clear</button>
+            @endif
         </div>
+    </div>
 
-        <div class="overflow-x-auto">
-            <table class="table">
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
                 <thead>
-                    <tr>
-                        <th>Invoice #</th>
-                        <th>Customer</th>
-                        <th>Related Order</th>
-                        <th>Date</th>
-                        <th>Due Date</th>
-                        <th class="text-right">Total</th>
-                        <th class="text-right">Balance</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
+                    <tr><th>Invoice #</th><th>Customer</th><th>Related order</th><th>Date</th><th>Due date</th><th style="text-align:right;">Total</th><th style="text-align:right;">Balance</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
                     @forelse($invoices as $invoice)
-                        <tr class="hover">
-                            <td>
-                                <a href="{{ route('invoices.show', $invoice) }}" class="link link-primary font-mono text-sm">{{ $invoice->invoice_number }}</a>
-                            </td>
+                        <tr data-href="{{ route('invoices.show', $invoice) }}">
+                            <td class="is-ref"><a href="{{ route('invoices.show', $invoice) }}">{{ $invoice->invoice_number }}</a></td>
                             <td>{{ $invoice->customer->name }}</td>
                             <td>
                                 @if($invoice->workOrder)
-                                    <a href="{{ route('work-orders.show', $invoice->workOrder) }}" class="link text-sm">{{ $invoice->workOrder->order_number }}</a>
+                                    <a href="{{ route('work-orders.show', $invoice->workOrder) }}">{{ $invoice->workOrder->order_number }}</a>
                                 @elseif($invoice->washOrder)
-                                    <a href="{{ route('wash-orders.show', $invoice->washOrder) }}" class="link text-sm">{{ $invoice->washOrder->order_number }}</a>
+                                    <a href="{{ route('wash-orders.show', $invoice->washOrder) }}">{{ $invoice->washOrder->order_number }}</a>
                                 @else
-                                    <span class="text-base-content/40">-</span>
+                                    <span class="gh-muted">—</span>
                                 @endif
                             </td>
-                            <td class="text-sm">{{ $invoice->created_at->format('d M Y') }}</td>
-                            <td class="text-sm {{ $invoice->isOverdue() ? 'text-error font-medium' : '' }}">
-                                {{ $invoice->due_date->format('d M Y') }}
-                            </td>
-                            <td class="text-right font-medium">UGX {{ number_format($invoice->total) }}</td>
-                            <td class="text-right {{ $invoice->balance_due > 0 ? 'text-warning font-medium' : 'text-success' }}">
-                                UGX {{ number_format($invoice->balance_due) }}
-                            </td>
-                            <td><span class="badge badge-{{ $invoice->status_color }} badge-sm">{{ ucfirst($invoice->status) }}</span></td>
-                            <td>
+                            <td class="gh-muted">{{ $invoice->created_at->format('d M Y') }}</td>
+                            <td style="{{ $invoice->isOverdue() ? 'color:var(--gh-error); font-weight:700;' : '' }}">{{ $invoice->due_date->format('d M Y') }}</td>
+                            <td class="is-num">UGX {{ number_format($invoice->total) }}</td>
+                            <td class="is-num" style="{{ $invoice->balance_due > 0 ? 'color:var(--gh-warning);' : 'color:var(--gh-success);' }}">UGX {{ number_format($invoice->balance_due) }}</td>
+                            <td><span class="gh-badge {{ $invoice->status_color !== 'ghost' ? 'gh-badge--'.($invoice->status_color === 'accent' ? 'primary' : $invoice->status_color) : '' }}">{{ ucfirst($invoice->status) }}</span></td>
+                            <td onclick="event.stopPropagation()">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-40">
+                                    <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                    <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-44 gh-card p-2 shadow-xl">
                                         <li><a href="{{ route('invoices.show', $invoice) }}">View</a></li>
                                         @if($invoice->balance_due > 0)
-                                            <li><a href="{{ route('invoices.show', $invoice) }}?record_payment=1">Record Payment</a></li>
+                                            <li><a href="{{ route('invoices.show', $invoice) }}?record_payment=1">Record payment</a></li>
                                         @endif
                                     </ul>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="text-center py-8 text-base-content/50">No invoices found</td></tr>
+                        <tr><td colspan="9" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No invoices found</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         @if($invoices->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $invoices->links() }}</div>
+            <div class="gh-pagination">{{ $invoices->links() }}</div>
         @endif
     </div>
 </div>

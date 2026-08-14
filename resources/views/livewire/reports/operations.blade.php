@@ -1,96 +1,78 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">Operations Report</h1>
-            <p class="text-base-content/60">Work orders and wash statistics</p>
-        </div>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Operations Report</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Work orders and wash statistics</p>
     </div>
 
     <x-reports.filters :period="$period" :showYear="true" :showStaff="true" />
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Work Orders -->
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Work Orders</h2>
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div class="text-center p-4 bg-base-200 rounded-lg">
-                        <p class="text-2xl font-bold">{{ $this->workOrderStats['total'] }}</p>
-                        <p class="text-xs text-base-content/60">Total</p>
-                    </div>
-                    <div class="text-center p-4 bg-success/10 rounded-lg">
-                        <p class="text-2xl font-bold text-success">{{ $this->workOrderStats['completed'] }}</p>
-                        <p class="text-xs text-base-content/60">Completed</p>
-                    </div>
-                    <div class="text-center p-4 bg-warning/10 rounded-lg">
-                        <p class="text-2xl font-bold text-warning">{{ $this->workOrderStats['in_progress'] }}</p>
-                        <p class="text-xs text-base-content/60">In Progress</p>
-                    </div>
+    <div class="gh-grid-2">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Work Orders</div>
+            <div class="gh-grid-3" style="margin-bottom:20px;">
+                <div style="text-align:center; padding:14px; background:var(--gh-base-200); border-radius:var(--gh-radius);">
+                    <p style="font-size:22px; font-weight:800;">{{ $this->workOrderStats['total'] }}</p>
+                    <p class="gh-muted" style="font-size:11px;">Total</p>
                 </div>
-                <h3 class="font-medium mb-2">By Type</h3>
-                <div class="space-y-2">
-                    @foreach($this->workOrderStats['by_type'] as $type => $count)
-                        <div class="flex justify-between items-center">
-                            <span>{{ ucfirst($type) }}</span>
-                            <span class="badge badge-ghost">{{ $count }}</span>
-                        </div>
-                    @endforeach
+                <div style="text-align:center; padding:14px; background:var(--gh-success-bg); border-radius:var(--gh-radius);">
+                    <p style="font-size:22px; font-weight:800; color:var(--gh-success);">{{ $this->workOrderStats['completed'] }}</p>
+                    <p class="gh-muted" style="font-size:11px;">Completed</p>
                 </div>
+                <div style="text-align:center; padding:14px; background:var(--gh-warning-bg); border-radius:var(--gh-radius);">
+                    <p style="font-size:22px; font-weight:800; color:var(--gh-warning);">{{ $this->workOrderStats['in_progress'] }}</p>
+                    <p class="gh-muted" style="font-size:11px;">In progress</p>
+                </div>
+            </div>
+            <div class="gh-eyebrow" style="margin-bottom:8px;">By type</div>
+            <div class="gh-stack" style="gap:8px;">
+                @foreach($this->workOrderStats['by_type'] as $type => $count)
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12.5px;">{{ ucfirst($type) }}</span>
+                        <span class="gh-badge">{{ $count }}</span>
+                    </div>
+                @endforeach
             </div>
         </div>
 
-        <!-- Wash Orders -->
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Wash Orders</h2>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="text-center p-4 bg-base-200 rounded-lg">
-                        <p class="text-2xl font-bold">{{ $this->washOrderStats['total'] }}</p>
-                        <p class="text-xs text-base-content/60">Total</p>
-                    </div>
-                    <div class="text-center p-4 bg-success/10 rounded-lg">
-                        <p class="text-2xl font-bold text-success">{{ $this->washOrderStats['completed'] }}</p>
-                        <p class="text-xs text-base-content/60">Completed</p>
-                    </div>
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Wash Orders</div>
+            <div class="gh-grid-2" style="margin-bottom:20px;">
+                <div style="text-align:center; padding:14px; background:var(--gh-base-200); border-radius:var(--gh-radius);">
+                    <p style="font-size:22px; font-weight:800;">{{ $this->washOrderStats['total'] }}</p>
+                    <p class="gh-muted" style="font-size:11px;">Total</p>
                 </div>
-                <h3 class="font-medium mb-2">By Source</h3>
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span>Walk-in</span>
-                        <span class="badge badge-ghost">{{ $this->washOrderStats['walk_in'] }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span>Combo (from service)</span>
-                        <span class="badge badge-accent">{{ $this->washOrderStats['combo'] }}</span>
-                    </div>
+                <div style="text-align:center; padding:14px; background:var(--gh-success-bg); border-radius:var(--gh-radius);">
+                    <p style="font-size:22px; font-weight:800; color:var(--gh-success);">{{ $this->washOrderStats['completed'] }}</p>
+                    <p class="gh-muted" style="font-size:11px;">Completed</p>
                 </div>
+            </div>
+            <div class="gh-eyebrow" style="margin-bottom:8px;">By source</div>
+            <div class="gh-stack" style="gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12.5px;">Walk-in</span><span class="gh-badge">{{ $this->washOrderStats['walk_in'] }}</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12.5px;">Combo (from service)</span><span class="gh-badge gh-badge--primary">{{ $this->washOrderStats['combo'] }}</span></div>
             </div>
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm mt-6">
-        <div class="card-body">
-            <h2 class="card-title text-lg mb-4">Daily Activity</h2>
-            @if($this->dailyVolume->count() > 0)
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr><th>Date</th><th class="text-right">Work Orders</th><th class="text-right">Wash Orders</th></tr>
-                        </thead>
-                        <tbody>
-                            @foreach($this->dailyVolume as $day)
-                                <tr>
-                                    <td>{{ \Carbon\Carbon::parse($day['date'])->format('D, d M') }}</td>
-                                    <td class="text-right">{{ $day['work_orders'] }}</td>
-                                    <td class="text-right">{{ $day['wash_orders'] }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p class="text-center py-8 text-base-content/50">No operations data for selected filters</p>
-            @endif
-        </div>
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Daily Activity</div>
+        @if($this->dailyVolume->count() > 0)
+            <div class="gh-table-scroll">
+                <table class="gh-table">
+                    <thead><tr><th>Date</th><th style="text-align:right;">Work orders</th><th style="text-align:right;">Wash orders</th></tr></thead>
+                    <tbody>
+                        @foreach($this->dailyVolume as $day)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($day['date'])->format('D, d M') }}</td>
+                                <td class="is-num">{{ $day['work_orders'] }}</td>
+                                <td class="is-num">{{ $day['wash_orders'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="gh-muted" style="text-align:center; padding:32px 0;">No operations data for selected filters</p>
+        @endif
     </div>
 </div>

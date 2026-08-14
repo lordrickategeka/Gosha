@@ -1,160 +1,126 @@
-<div>
-    <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('invoices.index') }}" class="btn btn-ghost btn-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </a>
+<div class="gh-page">
+    <div style="display:flex; align-items:center; gap:14px;">
+        <a href="{{ route('invoices.index') }}" class="gh-btn gh-btn--sm">←</a>
         <div>
-            <h1 class="text-2xl font-bold">Create Invoice</h1>
-            <p class="text-base-content/60">Generate a new invoice</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Create Invoice</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:2px;">Generate a new invoice</p>
         </div>
     </div>
 
-    <form wire:submit="save" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
+    <form wire:submit="save" class="gh-split">
+        <div class="gh-stack">
             <!-- Customer -->
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <div class="flex items-center justify-between gap-4 mb-4">
-                        <h2 class="card-title text-lg">Customer</h2>
-                        @unless($work_order_id || $wash_order_id)
-                            <button type="button" wire:click="openCustomerModal" class="btn btn-outline btn-sm">+ New Customer</button>
-                        @endunless
-                    </div>
-                    <div class="form-control">
-                        <select wire:model="customer_id" class="select select-bordered w-full" {{ $work_order_id || $wash_order_id ? 'disabled' : '' }}>
-                            <option value="">Select customer...</option>
-                            @foreach($this->customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->name }} - {{ $customer->phone }}</option>
-                            @endforeach
-                        </select>
-                        @error('customer_id') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
+            <div class="gh-card gh-card--pad">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                    <div class="gh-card__title">Customer</div>
+                    @unless($work_order_id || $wash_order_id)
+                        <button type="button" wire:click="openCustomerModal" class="gh-btn gh-btn--sm">+ New customer</button>
+                    @endunless
+                </div>
+                <div class="gh-field">
+                    <select wire:model="customer_id" class="gh-select" style="width:100%;" {{ $work_order_id || $wash_order_id ? 'disabled' : '' }}>
+                        <option value="">Select customer…</option>
+                        @foreach($this->customers as $customer)
+                            <option value="{{ $customer->id }}">{{ $customer->name }} - {{ $customer->phone }}</option>
+                        @endforeach
+                    </select>
+                    @error('customer_id') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
             </div>
 
             <!-- Line Items -->
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-lg mb-4">Line Items</h2>
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
+            <div class="gh-card gh-card--pad">
+                <div class="gh-card__title" style="margin-bottom:14px;">Line Items</div>
+                <div class="gh-table-scroll">
+                    <table class="gh-table">
+                        <thead><tr><th>Description</th><th style="width:100px;">Qty</th><th style="width:140px;">Unit price</th><th style="width:140px; text-align:right;">Total</th><th style="width:48px;"></th></tr></thead>
+                        <tbody>
+                            @foreach($items as $index => $item)
                                 <tr>
-                                    <th>Description</th>
-                                    <th class="w-24">Qty</th>
-                                    <th class="w-32">Unit Price</th>
-                                    <th class="w-32 text-right">Total</th>
-                                    <th class="w-12"></th>
+                                    <td><input type="text" wire:model="items.{{ $index }}.description" class="gh-input" style="width:100%;"></td>
+                                    <td><input type="number" wire:model="items.{{ $index }}.quantity" step="0.01" class="gh-input" style="width:100%;"></td>
+                                    <td><input type="number" wire:model="items.{{ $index }}.unit_price" class="gh-input" style="width:100%;"></td>
+                                    <td class="is-num">UGX {{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)) }}</td>
+                                    <td><button type="button" wire:click="removeItem({{ $index }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);">×</button></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($items as $index => $item)
-                                    <tr>
-                                        <td><input type="text" wire:model="items.{{ $index }}.description" class="input input-bordered input-sm w-full" /></td>
-                                        <td><input type="number" wire:model="items.{{ $index }}.quantity" step="0.01" class="input input-bordered input-sm w-full" /></td>
-                                        <td><input type="number" wire:model="items.{{ $index }}.unit_price" class="input input-bordered input-sm w-full" /></td>
-                                        <td class="text-right font-medium">UGX {{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)) }}</td>
-                                        <td><button type="button" wire:click="removeItem({{ $index }})" class="btn btn-ghost btn-xs text-error">×</button></td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <button type="button" wire:click="addItem" class="btn btn-outline btn-sm mt-2">+ Add Item</button>
-                    @error('items') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
+                <button type="button" wire:click="addItem" class="gh-btn gh-btn--sm" style="margin-top:12px;">+ Add item</button>
+                @error('items') <div class="gh-hint" style="color:var(--gh-error);">{{ $message }}</div> @enderror
             </div>
 
             <!-- Notes -->
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-lg mb-4">Notes</h2>
-                    <textarea wire:model="notes" rows="2" class="textarea textarea-bordered w-full" placeholder="Invoice notes..."></textarea>
-                </div>
+            <div class="gh-card gh-card--pad">
+                <div class="gh-card__title" style="margin-bottom:10px;">Notes</div>
+                <textarea wire:model="notes" rows="2" class="gh-input" style="width:100%;" placeholder="Invoice notes…"></textarea>
             </div>
         </div>
 
         <!-- Sidebar -->
-        <div class="space-y-6">
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-lg mb-4">Invoice Details</h2>
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text">Due Date</span></label>
-                        <input type="date" wire:model="due_date" class="input input-bordered" />
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label"><span class="label-text">Tax Rate (%)</span></label>
-                        <input type="number" wire:model.live="tax_rate" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Discount</span></label>
-                        <input type="number" wire:model.live="discount" class="input input-bordered" />
-                    </div>
+        <div class="gh-stack">
+            <div class="gh-card gh-card--pad">
+                <div class="gh-card__title" style="margin-bottom:14px;">Invoice Details</div>
+                <div class="gh-field" style="margin-bottom:14px;">
+                    <span class="gh-label">Due date</span>
+                    <input type="date" wire:model="due_date" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field" style="margin-bottom:14px;">
+                    <span class="gh-label">Tax rate (%)</span>
+                    <input type="number" wire:model.live="tax_rate" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Discount</span>
+                    <input type="number" wire:model.live="discount" class="gh-input" style="width:100%;">
                 </div>
             </div>
 
-            <div class="card bg-primary text-primary-content shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-lg">Summary</h2>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between"><span>Subtotal:</span><span>UGX {{ number_format($this->subtotal) }}</span></div>
-                        <div class="flex justify-between"><span>Tax ({{ $tax_rate }}%):</span><span>UGX {{ number_format($this->tax) }}</span></div>
-                        @if($discount > 0)
-                            <div class="flex justify-between"><span>Discount:</span><span>-UGX {{ number_format($discount) }}</span></div>
-                        @endif
-                        <div class="divider my-1"></div>
-                        <div class="flex justify-between text-lg font-bold"><span>Total:</span><span>UGX {{ number_format($this->total) }}</span></div>
-                    </div>
-                    <button type="submit" class="btn btn-accent w-full mt-4">Create Invoice</button>
+            <div class="gh-card gh-card--pad" style="background:var(--gh-primary); color:var(--gh-primary-content); border-color:var(--gh-primary);">
+                <div style="font-weight:700; font-size:15px; margin-bottom:12px;">Summary</div>
+                <div class="gh-stack" style="gap:8px; font-size:12.5px;">
+                    <div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>UGX {{ number_format($this->subtotal) }}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Tax ({{ $tax_rate }}%):</span><span>UGX {{ number_format($this->tax) }}</span></div>
+                    @if($discount > 0)
+                        <div style="display:flex; justify-content:space-between;"><span>Discount:</span><span>-UGX {{ number_format($discount) }}</span></div>
+                    @endif
+                    <div style="border-top:1px solid rgba(255,255,255,.25); padding-top:8px; display:flex; justify-content:space-between; font-size:15px; font-weight:800;"><span>Total:</span><span>UGX {{ number_format($this->total) }}</span></div>
                 </div>
+                <button type="submit" class="gh-btn gh-btn--dark gh-btn--block" style="margin-top:16px;">Create invoice</button>
             </div>
         </div>
     </form>
 
     @if($showCustomerModal)
         <div class="modal modal-open" role="dialog">
-            <div class="modal-box app-modal-shell">
-                <h3 class="font-bold text-lg mb-4">Quick Add Customer</h3>
-
-                <div class="space-y-3">
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Full Name *</span>
-                        </label>
-                        <input type="text" wire:model="newCustomerName" placeholder="Enter customer name" class="input input-bordered w-full" />
-                        @error('newCustomerName') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
+            <div class="modal-box gh-card gh-card--pad">
+                <div class="gh-card__title" style="margin-bottom:16px;">Quick Add Customer</div>
+                <div class="gh-stack" style="gap:12px;">
+                    <div class="gh-field">
+                        <span class="gh-label">Full name *</span>
+                        <input type="text" wire:model="newCustomerName" placeholder="Enter customer name" class="gh-input" style="width:100%;">
+                        @error('newCustomerName') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
-
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Phone Number *</span>
-                        </label>
-                        <input type="text" wire:model="newCustomerPhone" placeholder="e.g., 0700123456" class="input input-bordered w-full" />
-                        @error('newCustomerPhone') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <span class="gh-label">Phone number *</span>
+                        <input type="text" wire:model="newCustomerPhone" placeholder="e.g., 0700123456" class="gh-input" style="width:100%;">
+                        @error('newCustomerPhone') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
-
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Email</span>
-                            <span class="label-text-alt text-base-content/50">Optional</span>
-                        </label>
-                        <input type="email" wire:model="newCustomerEmail" placeholder="customer@example.com" class="input input-bordered w-full" />
-                        @error('newCustomerEmail') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
+                    <div class="gh-field">
+                        <div style="display:flex; align-items:center; justify-content:space-between;"><span class="gh-label">Email</span><span class="gh-hint">Optional</span></div>
+                        <input type="email" wire:model="newCustomerEmail" placeholder="customer@example.com" class="gh-input" style="width:100%;">
+                        @error('newCustomerEmail') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
                 </div>
-
-                <div class="modal-action app-modal-actions">
-                    <button type="button" wire:click="closeCustomerModal" class="btn btn-ghost">Cancel</button>
-                    <button type="button" wire:click="saveNewCustomer" class="btn btn-primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="saveNewCustomer">Create Customer</span>
-                        <span wire:loading wire:target="saveNewCustomer" class="loading loading-spinner loading-sm"></span>
+                <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">
+                    <button type="button" wire:click="closeCustomerModal" class="gh-btn">Cancel</button>
+                    <button type="button" wire:click="saveNewCustomer" class="gh-btn gh-btn--primary" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="saveNewCustomer">Create customer</span>
+                        <span wire:loading wire:target="saveNewCustomer">Creating…</span>
                     </button>
                 </div>
             </div>
-            <div class="modal-backdrop app-modal-backdrop" wire:click="closeCustomerModal"></div>
+            <div class="modal-backdrop" wire:click="closeCustomerModal"></div>
         </div>
     @endif
 </div>

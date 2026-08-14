@@ -1,231 +1,138 @@
-<div class="space-y-4">
-    <div class="rounded-xl border border-base-300 bg-base-100 px-4 py-3">
-        <p class="text-sm font-medium">Final Review</p>
-        <p class="text-xs text-base-content/60 mt-1">Confirm all captured details before creating the work order.</p>
+<div class="gh-stack">
+    <div class="gh-card gh-card--pad">
+        <p style="font-weight:600; font-size:13px;">Final Review</p>
+        <p class="gh-muted" style="font-size:11.5px; margin-top:4px;">Confirm all captured details before creating the work order.</p>
     </div>
-    {{-- Customer & Vehicle Summary --}}
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-lg mb-4">Customer &amp; Vehicle</h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xs text-base-content/50 uppercase mb-1">Customer</p>
-                    @if($this->selectedCustomer)
-                        <p class="font-medium">{{ $this->selectedCustomer->name }}</p>
-                        <p class="text-sm text-base-content/70">{{ $this->selectedCustomer->phone }}</p>
-                    @else
-                        <p class="text-base-content/50">—</p>
-                    @endif
-                </div>
-
-                <div>
-                    <p class="text-xs text-base-content/50 uppercase mb-1">Vehicle</p>
-                    @if($this->selectedVehicle)
-                        <p class="font-medium">{{ $this->selectedVehicle->registration_number }}</p>
-                        <p class="text-sm text-base-content/70">
-                            {{ $this->selectedVehicle->make }} {{ $this->selectedVehicle->model }}
-                            @if($this->selectedVehicle->year)
-                                ({{ $this->selectedVehicle->year }})
-                            @endif
-                        </p>
-                    @else
-                        <p class="text-base-content/50">—</p>
-                    @endif
-                </div>
-
-                @if($customer_notes)
-                    <div class="sm:col-span-2">
-                        <p class="text-xs text-base-content/50 uppercase mb-1">Customer Notes</p>
-                        <p class="text-sm">{{ $customer_notes }}</p>
-                    </div>
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Customer &amp; Vehicle</div>
+        <div class="gh-grid-2">
+            <div>
+                <p class="gh-eyebrow" style="margin-bottom:4px;">Customer</p>
+                @if($this->selectedCustomer)
+                    <p style="font-weight:600; font-size:13px;">{{ $this->selectedCustomer->name }}</p>
+                    <p class="gh-muted" style="font-size:12px;">{{ $this->selectedCustomer->phone }}</p>
+                @else
+                    <p class="gh-muted">—</p>
                 @endif
             </div>
+            <div>
+                <p class="gh-eyebrow" style="margin-bottom:4px;">Vehicle</p>
+                @if($this->selectedVehicle)
+                    <p style="font-weight:600; font-size:13px;">{{ $this->selectedVehicle->registration_number }}</p>
+                    <p class="gh-muted" style="font-size:12px;">{{ $this->selectedVehicle->make }} {{ $this->selectedVehicle->model }} @if($this->selectedVehicle->year) ({{ $this->selectedVehicle->year }}) @endif</p>
+                @else
+                    <p class="gh-muted">—</p>
+                @endif
+            </div>
+            @if($customer_notes)
+                <div style="grid-column:1/-1;">
+                    <p class="gh-eyebrow" style="margin-bottom:4px;">Customer notes</p>
+                    <p style="font-size:12.5px;">{{ $customer_notes }}</p>
+                </div>
+            @endif
         </div>
     </div>
 
-    {{-- Service Details Summary --}}
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-lg mb-4">Service Details</h2>
-
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div>
-                    <p class="text-xs text-base-content/50 uppercase mb-1">Service Type</p>
-                    <p class="font-medium capitalize">{{ $type }}</p>
-                </div>
-
-                <div>
-                    <p class="text-xs text-base-content/50 uppercase mb-1">Priority</p>
-                    <span class="badge badge-{{ match($priority) {
-                        'low' => 'ghost',
-                        'normal' => 'info',
-                        'high' => 'warning',
-                        'urgent' => 'error',
-                        default => 'ghost'
-                    } }} capitalize">
-                        {{ $priority }}
-                    </span>
-                </div>
-
-                @if($mileage_in)
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase mb-1">Mileage In</p>
-                        <p class="font-medium">{{ number_format($mileage_in) }} km</p>
-                    </div>
-                @endif
-
-                @if($service_bay_id)
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase mb-1">Service Bay</p>
-                        <p class="font-medium">
-                            {{ $this->serviceBays->firstWhere('id', $service_bay_id)?->name ?? 'N/A' }}
-                        </p>
-                    </div>
-                @endif
-
-                @if($assigned_technician_id)
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase mb-1">Technician</p>
-                        <p class="font-medium">
-                            {{ $this->technicians->firstWhere('id', $assigned_technician_id)?->name ?? 'N/A' }}
-                        </p>
-                    </div>
-                @endif
-
-                @if($estimated_completion)
-                    <div>
-                        <p class="text-xs text-base-content/50 uppercase mb-1">Est. Completion</p>
-                        <p class="font-medium">
-                            {{ \Carbon\Carbon::parse($estimated_completion)->format('M j, g:i A') }}
-                        </p>
-                    </div>
-                @endif
-
-                @if($is_combo)
-                    <div class="sm:col-span-3">
-                        <span class="badge badge-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            Combo Service (will auto-queue for wash)
-                        </span>
-                    </div>
-                @endif
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Service Details</div>
+        <div class="gh-grid-3">
+            <div>
+                <p class="gh-eyebrow" style="margin-bottom:4px;">Service type</p>
+                <p style="font-weight:600; font-size:13px; text-transform:capitalize;">{{ $type }}</p>
             </div>
+            <div>
+                <p class="gh-eyebrow" style="margin-bottom:4px;">Priority</p>
+                <span class="gh-badge {{ match($priority) { 'high','urgent' => 'gh-badge--'.($priority === 'urgent' ? 'error' : 'warning'), 'normal' => 'gh-badge--info', default => '' } }}" style="text-transform:capitalize;">{{ $priority }}</span>
+            </div>
+            @if($mileage_in)
+                <div><p class="gh-eyebrow" style="margin-bottom:4px;">Mileage in</p><p style="font-weight:600; font-size:13px;">{{ number_format($mileage_in) }} km</p></div>
+            @endif
+            @if($service_bay_id)
+                <div><p class="gh-eyebrow" style="margin-bottom:4px;">Service bay</p><p style="font-weight:600; font-size:13px;">{{ $this->serviceBays->firstWhere('id', $service_bay_id)?->name ?? 'N/A' }}</p></div>
+            @endif
+            @if($assigned_technician_id)
+                <div><p class="gh-eyebrow" style="margin-bottom:4px;">Technician</p><p style="font-weight:600; font-size:13px;">{{ $this->technicians->firstWhere('id', $assigned_technician_id)?->name ?? 'N/A' }}</p></div>
+            @endif
+            @if($estimated_completion)
+                <div><p class="gh-eyebrow" style="margin-bottom:4px;">Est. completion</p><p style="font-weight:600; font-size:13px;">{{ \Carbon\Carbon::parse($estimated_completion)->format('M j, g:i A') }}</p></div>
+            @endif
+            @if($is_combo)
+                <div style="grid-column:1/-1;"><span class="gh-badge gh-badge--primary">✓ Combo service (will auto-queue for wash)</span></div>
+            @endif
         </div>
     </div>
 
-    {{-- Items Summary --}}
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-lg mb-4">Items ({{ count($items) }})</h2>
-
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Items ({{ count($items) }})</div>
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead>
+                    <tr>
+                        <th>Type</th><th>Description</th><th style="text-align:right;">Qty</th>
+                        @if(!$this->isJobcarder())
+                            <th style="text-align:right;">Price</th><th style="text-align:right;">Total</th>
+                        @endif
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($items as $item)
                         <tr>
-                            <th>Type</th>
-                            <th>Description</th>
-                            <th class="text-right">Qty</th>
+                            <td><span class="gh-badge {{ $item['item_type'] === 'labor' ? 'gh-badge--info' : 'gh-badge--primary' }}">{{ ucfirst($item['item_type']) }}</span></td>
+                            <td>{{ $item['description'] }}</td>
+                            <td class="is-num">{{ $item['quantity'] }}</td>
                             @if(!$this->isJobcarder())
-                                <th class="text-right">Price</th>
-                                <th class="text-right">Total</th>
+                                <td class="is-num">UGX {{ number_format($item['unit_price'] ?? 0) }}</td>
+                                <td class="is-num">UGX {{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)) }}</td>
                             @endif
                         </tr>
-                    </thead>
+                    @endforeach
+                </tbody>
+                @if(!$this->isJobcarder())
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" style="text-align:right; font-weight:700; padding:10px 18px;">Subtotal:</td>
+                            <td class="is-num">UGX {{ number_format($this->subtotal) }}</td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
+        </div>
+    </div>
+
+    @if(count($vehicle_left_items) > 0)
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Items left in vehicle ({{ count($vehicle_left_items) }})</div>
+            <div class="gh-table-scroll">
+                <table class="gh-table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Reference</th><th>Description</th></tr></thead>
                     <tbody>
-                        @foreach($items as $item)
+                        @foreach($vehicle_left_items as $leftItem)
                             <tr>
-                                <td>
-                                    <span class="badge badge-sm {{ $item['item_type'] === 'labor' ? 'badge-info' : 'badge-accent' }}">
-                                        {{ ucfirst($item['item_type']) }}
-                                    </span>
-                                </td>
-                                <td>{{ $item['description'] }}</td>
-                                <td class="text-right">{{ $item['quantity'] }}</td>
-                                @if(!$this->isJobcarder())
-                                    <td class="text-right">UGX {{ number_format($item['unit_price'] ?? 0) }}</td>
-                                    <td class="text-right font-medium">
-                                        UGX {{ number_format(($item['quantity'] ?? 0) * ($item['unit_price'] ?? 0)) }}
-                                    </td>
-                                @endif
+                                <td>{{ $leftItem['item_name'] }}</td>
+                                <td>{{ $leftItem['quantity'] }}</td>
+                                <td>{{ $leftItem['reference'] ?: '—' }}</td>
+                                <td>{{ $leftItem['description'] ?: '—' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
-                    @if(!$this->isJobcarder())
-                        <tfoot>
-                            <tr class="font-bold">
-                                <td colspan="4" class="text-right">Subtotal:</td>
-                                <td class="text-right">UGX {{ number_format($this->subtotal) }}</td>
-                            </tr>
-                        </tfoot>
-                    @endif
                 </table>
-            </div>
-        </div>
-    </div>
-
-    {{-- Items Left In Vehicle Summary --}}
-    @if(count($vehicle_left_items) > 0)
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Items Left In Vehicle ({{ count($vehicle_left_items) }})</h2>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Qty</th>
-                                <th>Reference</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($vehicle_left_items as $leftItem)
-                                <tr>
-                                    <td>{{ $leftItem['item_name'] }}</td>
-                                    <td>{{ $leftItem['quantity'] }}</td>
-                                    <td>{{ $leftItem['reference'] ?: '—' }}</td>
-                                    <td>{{ $leftItem['description'] ?: '—' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     @endif
 
-    {{-- Submit Actions --}}
-    <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="font-medium">Ready to create this work order?</h3>
-                    <p class="text-sm text-base-content/60">A unique order number will be generated automatically.</p>
-                </div>
-                <div class="flex gap-2">
-                    <button
-                        type="button"
-                        wire:click="previousStep"
-                        class="btn btn-ghost"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Back
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="save"
-                        class="btn btn-primary"
-                        wire:loading.attr="disabled"
-                    >
-                        <span wire:loading.remove wire:target="save">Create Work Order</span>
-                        <span wire:loading wire:target="save" class="loading loading-spinner loading-sm"></span>
-                    </button>
-                </div>
+    <div class="gh-card gh-card--pad">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div>
+                <p style="font-weight:600; font-size:13px;">Ready to create this work order?</p>
+                <p class="gh-muted" style="font-size:12px;">A unique order number will be generated automatically.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" wire:click="previousStep" class="gh-btn">← Back</button>
+                <button type="button" wire:click="save" class="gh-btn gh-btn--primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="save">Create work order</span>
+                    <span wire:loading wire:target="save">Creating…</span>
+                </button>
             </div>
         </div>
     </div>

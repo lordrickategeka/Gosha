@@ -1,67 +1,61 @@
-<div>
-    <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('users.show', $user) }}" class="btn btn-ghost btn-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </a>
+<div class="gh-page">
+    <div style="display:flex; align-items:center; gap:14px;">
+        <a href="{{ route('users.show', $user) }}" class="gh-btn gh-btn--sm">←</a>
         <div>
-            <h1 class="text-2xl font-bold">Edit User</h1>
-            <p class="text-base-content/60">{{ $user->name }}</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Edit User</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:2px;">{{ $user->name }}</p>
         </div>
     </div>
 
-    <form wire:submit="save" class="max-w-2xl">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="form-control sm:col-span-2">
-                        <label class="label"><span class="label-text font-medium">Full Name *</span></label>
-                        <input type="text" wire:model="name" class="input input-bordered" />
-                        @error('name') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Email *</span></label>
-                        <input type="email" wire:model="email" class="input input-bordered" />
-                        @error('email') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Phone</span></label>
-                        <input type="text" wire:model="phone" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Role *</span></label>
-                        <select wire:model="role" class="select select-bordered">
-                            <option value="">Select role...</option>
-                            @foreach($this->roles as $r)
-                                <option value="{{ $r->name }}">{{ ucwords(str_replace('-', ' ', $r->name)) }}</option>
-                            @endforeach
-                        </select>
-                        @error('role') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text font-medium">Status</span></label>
-                        <label class="label cursor-pointer justify-start gap-3">
-                            <input type="checkbox" wire:model="is_active" class="toggle toggle-primary" />
-                            <span class="label-text">{{ $is_active ? 'Active' : 'Inactive' }}</span>
-                        </label>
-                    </div>
-                    <div class="form-control sm:col-span-2">
-                        <label class="label"><span class="label-text font-medium">Assign to Branches</span></label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($this->branchesList as $branch)
-                                <label class="label cursor-pointer gap-2 border border-base-300 rounded-lg px-3 py-2">
-                                    <input type="checkbox" wire:model="branches" value="{{ $branch->id }}" class="checkbox checkbox-sm checkbox-primary" />
-                                    <span class="label-text">{{ $branch->name }}</span>
-                                </label>
-                            @endforeach
-                        </div>
+    <form wire:submit="save" style="max-width:42rem;">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-grid-2">
+                <div class="gh-field" style="grid-column:1/-1;">
+                    <span class="gh-label">Full name *</span>
+                    <input type="text" wire:model="name" class="gh-input" style="width:100%;">
+                    @error('name') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Email *</span>
+                    <input type="email" wire:model="email" class="gh-input" style="width:100%;">
+                    @error('email') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Phone</span>
+                    <input type="text" wire:model="phone" class="gh-input" style="width:100%;">
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Role *</span>
+                    <select wire:model="role" class="gh-select" style="width:100%;">
+                        <option value="">Select role…</option>
+                        @foreach($this->roles as $r)
+                            <option value="{{ $r->name }}">{{ ucwords(str_replace('-', ' ', $r->name)) }}</option>
+                        @endforeach
+                    </select>
+                    @error('role') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                </div>
+                <div class="gh-field">
+                    <span class="gh-label">Status</span>
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" wire:model="is_active">
+                        <span style="font-size:12.5px;">{{ $is_active ? 'Active' : 'Inactive' }}</span>
+                    </label>
+                </div>
+                <div class="gh-field" style="grid-column:1/-1;">
+                    <span class="gh-label">Assign to branches</span>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        @foreach($this->branchesList as $branch)
+                            <label style="display:flex; align-items:center; gap:8px; border:1px solid var(--gh-base-300); border-radius:var(--gh-radius); padding:7px 12px; cursor:pointer; font-size:12.5px;">
+                                <input type="checkbox" wire:model="branches" value="{{ $branch->id }}">
+                                {{ $branch->name }}
+                            </label>
+                        @endforeach
                     </div>
                 </div>
-                <div class="card-actions justify-end mt-6">
-                    <a href="{{ route('users.show', $user) }}" class="btn btn-ghost">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:16px; margin-top:20px;">
+                <a href="{{ route('users.show', $user) }}" class="gh-btn">Cancel</a>
+                <button type="submit" class="gh-btn gh-btn--primary">Save changes</button>
             </div>
         </div>
     </form>

@@ -1,230 +1,121 @@
-<div>
-    <!-- Header -->
-    <div class="flex items-center gap-4 mb-6">
-        <a href="{{ route('wash-orders.index') }}" class="btn btn-ghost btn-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </a>
+<div class="gh-page">
+    <div style="display:flex; align-items:center; gap:14px;">
+        <a href="{{ route('wash-orders.index') }}" class="gh-btn gh-btn--sm">←</a>
         <div>
-            <h1 class="text-2xl font-bold">New Wash Order</h1>
-            <p class="text-base-content/60">Add a vehicle to the wash queue</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">New Wash Order</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:2px;">Add a vehicle to the wash queue</p>
         </div>
     </div>
 
-    <form wire:submit="save" class="space-y-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form wire:submit="save">
+        <div class="gh-split">
+            <div class="gh-stack">
+                <livewire:customer-vehicle-selector :key="'customer-selector'" />
+                @error('customer_id') <p class="gh-hint" style="color:var(--gh-error);">{{ $message }}</p> @enderror
+                @error('vehicle_id') <p class="gh-hint" style="color:var(--gh-error);">{{ $message }}</p> @enderror
 
-            <!-- ─── Main Column ─── -->
-            <div class="lg:col-span-2 space-y-6">
-
-                <!-- Customer & Vehicle Card -->
-                <livewire:customer-vehicle-selector
-                    :key="'customer-selector'" />
-                @error('customer_id')
-                    <p class="text-error text-sm -mt-3">{{ $message }}</p>
-                @enderror
-                @error('vehicle_id')
-                    <p class="text-error text-sm -mt-3">{{ $message }}</p>
-                @enderror
-
-                <!-- Wash Items Card -->
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="card-title text-lg">Wash Items</h2>
-                            <button type="button" wire:click="addItem" class="btn btn-outline btn-sm gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Add Item
-                            </button>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="table table-sm">
-                                <thead>
+                <!-- Wash Items -->
+                <div class="gh-card gh-card--flush">
+                    <div class="gh-card__head">
+                        <span class="gh-card__title">Wash Items</span>
+                        <button type="button" wire:click="addItem" class="gh-btn gh-btn--sm">+ Add item</button>
+                    </div>
+                    <div class="gh-table-scroll">
+                        <table class="gh-table">
+                            <thead><tr><th>Description</th><th style="width:150px; text-align:right;">Price (UGX)</th><th style="width:48px;"></th></tr></thead>
+                            <tbody>
+                                @forelse($items as $index => $item)
                                     <tr>
-                                        <th>Description</th>
-                                        <th class="w-36 text-right">Price (UGX)</th>
-                                        <th class="w-12"></th>
+                                        <td><input type="text" wire:model="items.{{ $index }}.description" placeholder="e.g. Exterior wash, Interior vacuum…" class="gh-input" style="width:100%;"></td>
+                                        <td><input type="number" wire:model="items.{{ $index }}.price" min="0" step="500" class="gh-input" style="width:100%; text-align:right;"></td>
+                                        <td><button type="button" wire:click="removeItem({{ $index }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);">✕</button></td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($items as $index => $item)
-                                        <tr>
-                                            <td>
-                                                <input
-                                                    type="text"
-                                                    wire:model="items.{{ $index }}.description"
-                                                    placeholder="e.g. Exterior wash, Interior vacuum..."
-                                                    class="input input-bordered input-sm w-full"
-                                                />
-                                            </td>
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    wire:model="items.{{ $index }}.price"
-                                                    min="0"
-                                                    step="500"
-                                                    class="input input-bordered input-sm w-full text-right"
-                                                />
-                                            </td>
-                                            <td>
-                                                <button type="button" wire:click="removeItem({{ $index }})" class="btn btn-ghost btn-xs text-error">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="3" class="text-center text-base-content/50 py-6">
-                                                No items yet — select a package above or add items manually.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                                @if(count($items) > 0)
-                                    <tfoot>
-                                        <tr>
-                                            <td class="text-right font-medium">Total:</td>
-                                            <td class="text-right font-bold">UGX {{ number_format($this->total) }}</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                @endif
-                            </table>
-                        </div>
+                                @empty
+                                    <tr><td colspan="3" style="text-align:center; padding:24px; color:var(--gh-ink-faint);">No items yet — select a package above or add items manually.</td></tr>
+                                @endforelse
+                            </tbody>
+                            @if(count($items) > 0)
+                                <tfoot>
+                                    <tr><td style="text-align:right; font-weight:600; padding:10px 18px;">Total:</td><td class="is-num">UGX {{ number_format($this->total) }}</td><td></td></tr>
+                                </tfoot>
+                            @endif
+                        </table>
                     </div>
                 </div>
 
-                <!-- Notes Card -->
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title text-lg mb-4">Customer Notes</h2>
-                        <textarea
-                            wire:model="customer_notes"
-                            rows="3"
-                            placeholder="Any special instructions, paint condition notes, specific requests..."
-                            class="textarea textarea-bordered w-full"
-                        ></textarea>
-                    </div>
+                <!-- Notes -->
+                <div class="gh-card gh-card--pad">
+                    <div class="gh-card__title" style="margin-bottom:10px;">Customer Notes</div>
+                    <textarea wire:model="customer_notes" rows="3" placeholder="Any special instructions, paint condition notes, specific requests…" class="gh-input" style="width:100%;"></textarea>
                 </div>
             </div>
 
-            <!-- ─── Sidebar ─── -->
-            <div class="space-y-6">
+            <div class="gh-stack">
+                <!-- Wash Details -->
+                <div class="gh-card gh-card--pad">
+                    <div class="gh-card__title" style="margin-bottom:14px;">Wash Details</div>
 
-                <!-- Wash Details Card -->
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body">
-                        <h2 class="card-title text-lg mb-4">Wash Details</h2>
+                    <div class="gh-field" style="margin-bottom:14px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between;"><span class="gh-label">Package</span><span class="gh-hint">optional</span></div>
+                        <select wire:model.live="wash_package_id" class="gh-select" style="width:100%;">
+                            <option value="">— No package —</option>
+                            @foreach($this->packages as $package)
+                                <option value="{{ $package->id }}">{{ $package->name }} @if($package->price) (UGX {{ number_format($package->price) }}) @endif</option>
+                            @endforeach
+                        </select>
+                        <span class="gh-hint">Selecting a package pre-fills the items.</span>
+                    </div>
 
-                        <!-- Wash Package -->
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text font-medium">Package</span>
-                                <span class="label-text-alt text-base-content/50">optional</span>
-                            </label>
-                            <select wire:model.live="wash_package_id" class="select select-bordered w-full">
-                                <option value="">— No package —</option>
-                                @foreach($this->packages as $package)
-                                    <option value="{{ $package->id }}">
-                                        {{ $package->name }}
-                                        @if($package->price)
-                                            (UGX {{ number_format($package->price) }})
-                                        @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            <label class="label">
-                                <span class="label-text-alt text-base-content/50">Selecting a package pre-fills the items.</span>
-                            </label>
+                    <div class="gh-field" style="margin-bottom:14px;">
+                        <span class="gh-label">Wash type *</span>
+                        <select wire:model="wash_type" class="gh-select" style="width:100%;">
+                            <option value="basic">Basic</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                            <option value="interior">Interior</option>
+                            <option value="exterior">Exterior</option>
+                            <option value="engine">Engine</option>
+                            <option value="full_detail">Full Detail</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        @error('wash_type') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="gh-field" style="margin-bottom:14px;">
+                        <span class="gh-label">Priority</span>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" wire:click="$set('priority', 'normal')" class="gh-btn gh-btn--block {{ $priority === 'normal' ? 'gh-btn--primary' : '' }}">Normal</button>
+                            <button type="button" wire:click="$set('priority', 'priority')" class="gh-btn gh-btn--block {{ $priority === 'priority' ? 'gh-btn--primary' : '' }}">Priority</button>
                         </div>
+                    </div>
 
-                        <!-- Wash Type -->
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text font-medium">Wash Type *</span>
-                            </label>
-                            <select wire:model="wash_type" class="select select-bordered w-full">
-                                <option value="basic">Basic</option>
-                                <option value="standard">Standard</option>
-                                <option value="premium">Premium</option>
-                                <option value="interior">Interior</option>
-                                <option value="exterior">Exterior</option>
-                                <option value="engine">Engine</option>
-                                <option value="full_detail">Full Detail</option>
-                                <option value="custom">Custom</option>
-                            </select>
-                            @error('wash_type') <span class="label-text-alt text-error mt-1 block">{{ $message }}</span> @enderror
-                        </div>
+                    <div class="gh-field">
+                        <span class="gh-label">Source</span>
+                        <select wire:model="source" class="gh-select" style="width:100%;">
+                            <option value="walk_in">Walk-in</option>
+                            <option value="appointment">Appointment</option>
+                            <option value="combo">Combo (with Work Order)</option>
+                        </select>
+                    </div>
+                </div>
 
-                        <!-- Priority -->
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text font-medium">Priority</span>
-                            </label>
-                            <div class="flex gap-2">
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" wire:model="priority" value="normal" class="hidden peer" />
-                                    <div class="btn btn-outline btn-sm w-full peer-checked:btn-primary peer-checked:border-primary">Normal</div>
-                                </label>
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" wire:model="priority" value="priority" class="hidden peer" />
-                                    <div class="btn btn-outline btn-sm w-full peer-checked:btn-accent peer-checked:border-accent peer-checked:text-accent-content">Priority</div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Source -->
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-medium">Source</span>
-                            </label>
-                            <select wire:model="source" class="select select-bordered w-full">
-                                <option value="walk_in">Walk-in</option>
-                                <option value="appointment">Appointment</option>
-                                <option value="combo">Combo (with Work Order)</option>
-                            </select>
+                <!-- Queue Position -->
+                <div class="gh-card gh-card--pad">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div class="gh-module-card__icon gh-module-card__icon--info"><x-icon name="washBay" class="gh-icon" /></div>
+                        <div>
+                            <p style="font-weight:600; font-size:12.5px;">Will be added to queue</p>
+                            <p class="gh-muted" style="font-size:11px;">Queue position assigned automatically</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Queue Position Card -->
-                <div class="card bg-base-100 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="font-medium text-sm">Will be added to queue</p>
-                                <p class="text-xs text-base-content/50">Queue position assigned automatically</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="btn btn-primary w-full" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add to Queue
-                    </span>
-                    <span wire:loading>
-                        <span class="loading loading-spinner loading-sm mr-2"></span>
-                        Saving...
-                    </span>
+                <button type="submit" class="gh-btn gh-btn--primary gh-btn--block" wire:loading.attr="disabled">
+                    <span wire:loading.remove>+ Add to queue</span>
+                    <span wire:loading>Saving…</span>
                 </button>
 
-                <a href="{{ route('wash-orders.index') }}" class="btn btn-ghost w-full">Cancel</a>
+                <a href="{{ route('wash-orders.index') }}" class="gh-btn gh-btn--block">Cancel</a>
             </div>
         </div>
     </form>

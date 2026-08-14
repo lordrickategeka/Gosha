@@ -1,16 +1,22 @@
-<div class="p-6 space-y-4">
-    <h1 class="text-2xl font-bold">Fulfil &mdash; {{ $purchaseOrder->po_number }}</h1>
-    <div class="alert alert-info"><span>Supplier fulfilment view is stubbed. Buyer-side goods receipt credits stock.</span></div>
-    <table class="table">
-        <thead><tr><th>Item</th><th>Ordered</th><th>Received</th></tr></thead>
-        <tbody>
-            @foreach ($purchaseOrder->items as $item)
-                <tr>
-                    <td>{{ $item->product?->name ?? $item->description }}</td>
-                    <td>{{ $item->qty_ordered }}</td>
-                    <td>{{ $item->qty_received }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+<div class="gh-page">
+    <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Fulfil — {{ $purchaseOrder->po_number }}</div>
+    <div class="gh-badge gh-badge--info" style="display:block; padding:10px 12px; font-size:12px;">
+        Supplier fulfilment view is stubbed. Buyer-side goods receipt credits stock.
+    </div>
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead><tr><th>Item</th><th>Ordered</th><th>Received</th></tr></thead>
+                <tbody>
+                    @foreach ($purchaseOrder->items as $item)
+                        <tr>
+                            <td style="font-weight:700;">{{ $item->product?->name ?? $item->description }}</td>
+                            <td class="gh-muted">{{ $item->qty_ordered }}</td>
+                            <td class="gh-muted">{{ $item->qty_received }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

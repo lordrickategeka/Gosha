@@ -1,101 +1,72 @@
-<div class="container mx-auto px-4 py-6">
-    {{-- Header Section --}}
-    <div class="bg-base-200 rounded-lg p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
+<div class="gh-page">
+    <div class="gh-card gh-card--pad">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px;">
             <div>
-                <h1 class="text-2xl font-bold">Quality Check Report</h1>
-                <p class="text-sm text-base-content/70">Work Order: {{ $qualityCheck->workOrder->order_number }}</p>
+                <div style="font-size:19px; font-weight:700; letter-spacing:-0.02em;">Quality Check Report</div>
+                <p class="gh-muted" style="font-size:12px; margin-top:2px;">Work Order: {{ $qualityCheck->workOrder->order_number }}</p>
             </div>
-            <div class="flex gap-2">
-                <div class="badge badge-lg {{ $qualityCheck->status === 'passed' ? 'badge-success' : 'badge-warning' }}">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="gh-badge {{ $qualityCheck->status === 'passed' ? 'gh-badge--success' : 'gh-badge--warning' }}">
                     {{ strtoupper(str_replace('_', ' ', $qualityCheck->status)) }}
-                </div>
+                </span>
                 @can('quality-check.download-pdf')
-                    <button wire:click="downloadPdf" class="btn btn-sm btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Download PDF
-                    </button>
+                    <button wire:click="downloadPdf" class="gh-btn gh-btn--primary gh-btn--sm">Download PDF</button>
                 @endcan
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-                <span class="font-semibold">Customer:</span> {{ $qualityCheck->customer->name }}
-            </div>
-            <div>
-                <span class="font-semibold">Vehicle:</span> {{ $qualityCheck->vehicle->model }} ({{ $qualityCheck->vehicle->registration_number }})
-            </div>
-            <div>
-                <span class="font-semibold">Mileage:</span> {{ number_format($qualityCheck->vehicle->current_mileage) }} km
-            </div>
-            <div>
-                <span class="font-semibold">VIN:</span> {{ $qualityCheck->vehicle->vin_number ?? 'N/A' }}
-            </div>
-            <div>
-                <span class="font-semibold">Inspection Date:</span> {{ $qualityCheck->inspection_date?->format('M d, Y') ?? 'N/A' }}
-            </div>
-            <div>
-                <span class="font-semibold">Inspector:</span> {{ $qualityCheck->inspector?->name ?? 'N/A' }}
-            </div>
-            <div>
-                <span class="font-semibold">Completed:</span> {{ $qualityCheck->completed_at?->format('M d, Y H:i') ?? 'In Progress' }}
-            </div>
+        <div class="gh-grid-3" style="font-size:12.5px;">
+            <div><span style="font-weight:700;">Customer:</span> {{ $qualityCheck->customer->name }}</div>
+            <div><span style="font-weight:700;">Vehicle:</span> {{ $qualityCheck->vehicle->model }} ({{ $qualityCheck->vehicle->registration_number }})</div>
+            <div><span style="font-weight:700;">Mileage:</span> {{ number_format($qualityCheck->vehicle->current_mileage) }} km</div>
+            <div><span style="font-weight:700;">VIN:</span> {{ $qualityCheck->vehicle->vin_number ?? 'N/A' }}</div>
+            <div><span style="font-weight:700;">Inspection Date:</span> {{ $qualityCheck->inspection_date?->format('M d, Y') ?? 'N/A' }}</div>
+            <div><span style="font-weight:700;">Inspector:</span> {{ $qualityCheck->inspector?->name ?? 'N/A' }}</div>
+            <div><span style="font-weight:700;">Completed:</span> {{ $qualityCheck->completed_at?->format('M d, Y H:i') ?? 'In Progress' }}</div>
         </div>
     </div>
 
-    {{-- Issues Summary (if any) --}}
     @if($qualityCheck->status === 'has_issues')
-        <div class="alert alert-warning mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <div>
-                <h3 class="font-bold">Items Requiring Attention</h3>
-                <ul class="list-disc list-inside text-sm mt-2">
-                    @foreach($qualityCheck->issues as $issue)
-                        <li>{{ $issue->item_name }}: {{ $issue->remarks }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="gh-card gh-card--pad" style="border-color:var(--gh-warning);">
+            <div style="font-weight:700; font-size:13.5px; color:var(--gh-warning);">Items Requiring Attention</div>
+            <ul style="margin-top:8px; padding-left:18px; list-style:disc; font-size:12.5px; display:flex; flex-direction:column; gap:4px;">
+                @foreach($qualityCheck->issues as $issue)
+                    <li>{{ $issue->item_name }}: {{ $issue->remarks }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
-    {{-- Checklist Results --}}
     @foreach($qualityCheck->getItemsBySection() as $section => $items)
-        <div class="bg-base-100 rounded-lg shadow mb-6">
-            <div class="bg-primary text-primary-content p-4 rounded-t-lg">
-                <h2 class="text-lg font-bold">{{ \App\Domains\ServiceConfig\Models\QualityCheckTemplate::SECTIONS[$section] ?? strtoupper($section) }}</h2>
+        <div class="gh-card" style="overflow:hidden;">
+            <div style="background:var(--gh-primary); color:var(--gh-primary-content); padding:14px 18px;">
+                <h2 style="font-size:14.5px; font-weight:700;">{{ \App\Domains\ServiceConfig\Models\QualityCheckTemplate::SECTIONS[$section] ?? strtoupper($section) }}</h2>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="table table-zebra w-full">
+            <div class="gh-table-scroll">
+                <table class="gh-table">
                     <thead>
                         <tr>
-                            <th class="w-2/5">Item</th>
-                            <th class="w-1/6 text-center">Status</th>
-                            <th class="w-1/2">Remarks</th>
+                            <th style="width:40%;">Item</th>
+                            <th style="width:16.6%; text-align:center;">Status</th>
+                            <th style="width:50%;">Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($items as $item)
                             <tr>
-                                <td>{{ $item->item_name }}</td>
-                                <td class="text-center">
+                                <td style="font-weight:600;">{{ $item->item_name }}</td>
+                                <td style="text-align:center;">
                                     @if($item->status === 'ok')
-                                        <span class="badge badge-success">OK</span>
+                                        <span class="gh-badge gh-badge--success">OK</span>
                                     @elseif($item->status === 'needs_attention')
-                                        <span class="badge badge-warning">Needs Attention</span>
+                                        <span class="gh-badge gh-badge--warning">Needs Attention</span>
                                     @else
-                                        <span class="badge badge-ghost">N/A</span>
+                                        <span class="gh-badge">N/A</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <span class="{{ $item->status === 'needs_attention' ? 'text-warning font-semibold' : '' }}">
-                                        {{ $item->remarks ?? '-' }}
-                                    </span>
+                                <td style="{{ $item->status === 'needs_attention' ? 'color:var(--gh-warning); font-weight:600;' : '' }}">
+                                    {{ $item->remarks ?? '-' }}
                                 </td>
                             </tr>
                         @endforeach
@@ -105,72 +76,51 @@
         </div>
     @endforeach
 
-    {{-- General Notes --}}
     @if($qualityCheck->general_notes)
-        <div class="bg-base-100 rounded-lg shadow mb-6 p-6">
-            <h3 class="text-lg font-bold mb-4">General Notes / Observations</h3>
-            <p class="text-base-content/80 whitespace-pre-wrap">{{ $qualityCheck->general_notes }}</p>
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:12px;">General Notes / Observations</div>
+            <p style="font-size:12.5px; white-space:pre-wrap;">{{ $qualityCheck->general_notes }}</p>
         </div>
     @endif
 
-    {{-- Signed Document Section --}}
     @can('quality-check.upload-signed')
-        <div class="bg-base-100 rounded-lg shadow p-6 mb-6">
-            <h3 class="text-lg font-bold mb-4">Signed Document</h3>
-            
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Signed Document</div>
+
             @if($qualityCheck->signed_file_path)
-                <div class="flex items-center justify-between bg-base-200 p-4 rounded-lg">
-                    <div class="flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--gh-base-200); border-radius:var(--gh-radius); padding:14px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="color:var(--gh-success); font-size:20px;">✓</span>
                         <div>
-                            <p class="font-semibold">Signed document uploaded</p>
-                            <a href="{{ Storage::url($qualityCheck->signed_file_path) }}" target="_blank" class="text-sm text-primary hover:underline">
-                                View Document
+                            <p style="font-weight:600; font-size:13px;">Signed document uploaded</p>
+                            <a href="{{ Storage::url($qualityCheck->signed_file_path) }}" target="_blank" style="font-size:11.5px; color:var(--gh-primary); text-decoration:underline;">
+                                View document
                             </a>
                         </div>
                     </div>
-                    <button wire:click="deleteSignedDocument" 
-                            wire:confirm="Are you sure you want to delete this signed document?"
-                            class="btn btn-sm btn-error btn-outline">
+                    <button wire:click="deleteSignedDocument" wire:confirm="Are you sure you want to delete this signed document?" class="gh-btn gh-btn--sm" style="color:var(--gh-error);">
                         Delete
                     </button>
                 </div>
             @else
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Upload signed quality check document (PDF, JPG, PNG - Max 5MB)</span>
-                    </label>
-                    <input type="file" 
-                           wire:model="signedDocument" 
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           class="file-input file-input-bordered w-full">
-                    @error('signedDocument') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
+                <div class="gh-field">
+                    <span class="gh-label">Upload signed quality check document (PDF, JPG, PNG - Max 5MB)</span>
+                    <input type="file" wire:model="signedDocument" accept=".pdf,.jpg,.jpeg,.png" class="gh-input" style="width:100%;">
+                    @error('signedDocument') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
 
                 @if($signedDocument)
-                    <button wire:click="uploadSignedDocument" class="btn btn-primary mt-4">
-                        Upload Document
-                    </button>
+                    <button wire:click="uploadSignedDocument" class="gh-btn gh-btn--primary" style="margin-top:14px;">Upload document</button>
                 @endif
             @endif
         </div>
     @endcan
 
-    {{-- Actions --}}
-    <div class="flex gap-4 justify-between">
-        <a href="{{ route('work-orders.show', $qualityCheck->workOrder) }}" class="btn btn-ghost">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Work Order
-        </a>
+    <div style="display:flex; justify-content:space-between; gap:8px;">
+        <a href="{{ route('work-orders.show', $qualityCheck->workOrder) }}" class="gh-btn">← Back to Work Order</a>
 
         @if($qualityCheck->isEditable())
-            <a href="{{ route('quality-checks.edit', $qualityCheck) }}" class="btn btn-primary">
-                Edit Quality Check
-            </a>
+            <a href="{{ route('quality-checks.edit', $qualityCheck) }}" class="gh-btn gh-btn--primary">Edit quality check</a>
         @endif
     </div>
 </div>

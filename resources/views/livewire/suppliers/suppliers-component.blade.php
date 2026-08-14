@@ -1,129 +1,100 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="gh-page">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
         <div>
-            <h1 class="text-2xl font-bold">Suppliers</h1>
-            <p class="text-base-content/60">Manage parts and supplies vendors</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Suppliers</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Manage parts and supplies vendors</p>
         </div>
         @can('create_suppliers')
-        <button wire:click="$set('showCreateModal', true)" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Supplier
-        </button>
+            <button wire:click="$set('showCreateModal', true)" class="gh-btn gh-btn--primary">+ Add supplier</button>
         @endcan
     </div>
 
-    <!-- Filters (in table header) -->
-    <div class="card bg-base-100 shadow-sm mb-4">
-        <div class="flex flex-wrap items-center gap-2 p-4">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..." class="input input-bordered input-sm w-44" />
-            @if($search)
-            <button wire:click="$set('search', '')" class="btn btn-xs btn-ghost" title="Clear search">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            @endif
-        </div>
+    <div class="gh-table-toolbar">
+        <label class="gh-search" style="width:220px;">⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search…"></label>
+        @if($search)
+            <button wire:click="$set('search', '')" class="gh-btn gh-btn--sm">Clear</button>
+        @endif
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Supplier</th>
-                        <th>Contact</th>
-                        <th>Phone</th>
-                        <th>Items</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead><tr><th>Supplier</th><th>Contact</th><th>Phone</th><th>Items</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                     @forelse($suppliers as $supplier)
-                        <tr class="hover">
+                        <tr data-href="{{ route('suppliers.show', $supplier) }}">
                             <td>
-                                <div class="font-bold">{{ $supplier->name }}</div>
-                                @if($supplier->address)
-                                    <p class="text-xs text-base-content/60">{{ Str::limit($supplier->address, 40) }}</p>
-                                @endif
+                                <div class="gh-cell-stack">
+                                    <b>{{ $supplier->name }}</b>
+                                    @if($supplier->address)<span>{{ Str::limit($supplier->address, 40) }}</span>@endif
+                                </div>
                             </td>
-                            <td>{{ $supplier->contact_person ?? '-' }}</td>
+                            <td>{{ $supplier->contact_person ?? '—' }}</td>
                             <td>
-                                <p>{{ $supplier->phone }}</p>
-                                @if($supplier->email)
-                                    <p class="text-xs text-base-content/60">{{ $supplier->email }}</p>
-                                @endif
+                                <div class="gh-cell-stack">
+                                    <b>{{ $supplier->phone }}</b>
+                                    @if($supplier->email)<span>{{ $supplier->email }}</span>@endif
+                                </div>
                             </td>
-                            <td><span class="badge badge-ghost">{{ $supplier->inventory_movements_count }}</span></td>
-                            <td>
-                                <span class="badge badge-{{ $supplier->is_active ? 'success' : 'error' }} badge-sm">
-                                    {{ $supplier->is_active ? 'Active' : 'Inactive' }}
-                                </span>
-                            </td>
-                            <td>
+                            <td><span class="gh-badge">{{ $supplier->inventory_movements_count }}</span></td>
+                            <td><span class="gh-badge {{ $supplier->is_active ? 'gh-badge--success' : 'gh-badge--error' }}">{{ $supplier->is_active ? 'Active' : 'Inactive' }}</span></td>
+                            <td onclick="event.stopPropagation()">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-40">
+                                    <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                    <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-40 gh-card p-2 shadow-xl">
                                         <li><a href="{{ route('suppliers.show', $supplier) }}">View</a></li>
-                                        <li>
-                                            <button wire:click="toggleStatus({{ $supplier->id }})" class="{{ $supplier->is_active ? 'text-error' : 'text-success' }}">
-                                                {{ $supplier->is_active ? 'Deactivate' : 'Activate' }}
-                                            </button>
-                                        </li>
+                                        <li><button wire:click="toggleStatus({{ $supplier->id }})" style="color:{{ $supplier->is_active ? 'var(--gh-error)' : 'var(--gh-success)' }};">{{ $supplier->is_active ? 'Deactivate' : 'Activate' }}</button></li>
                                     </ul>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-8 text-base-content/50">No suppliers found</td></tr>
+                        <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No suppliers found</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         @if($suppliers->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $suppliers->links() }}</div>
+            <div class="gh-pagination">{{ $suppliers->links() }}</div>
         @endif
     </div>
 
     <!-- Create Modal -->
     @if($showCreateModal)
         <div class="modal modal-open">
-            <div class="modal-box app-modal-shell">
-                <h3 class="font-bold text-lg mb-4">Add Supplier</h3>
+            <div class="modal-box gh-card gh-card--pad">
+                <div class="gh-card__title" style="margin-bottom:16px;">Add Supplier</div>
                 <form wire:submit="createSupplier">
-                    <div class="form-control mb-3">
-                        <label class="label"><span class="label-text">Supplier Name *</span></label>
-                        <input type="text" wire:model="name" class="input input-bordered" />
-                        @error('name') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
+                    <div class="gh-field" style="margin-bottom:12px;">
+                        <span class="gh-label">Supplier name *</span>
+                        <input type="text" wire:model="name" class="gh-input" style="width:100%;">
+                        @error('name') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
-                    <div class="form-control mb-3">
-                        <label class="label"><span class="label-text">Contact Person</span></label>
-                        <input type="text" wire:model="contact_person" class="input input-bordered" />
+                    <div class="gh-field" style="margin-bottom:12px;">
+                        <span class="gh-label">Contact person</span>
+                        <input type="text" wire:model="contact_person" class="gh-input" style="width:100%;">
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Phone *</span></label>
-                            <input type="text" wire:model="phone" class="input input-bordered" />
+                    <div class="gh-grid-2">
+                        <div class="gh-field">
+                            <span class="gh-label">Phone *</span>
+                            <input type="text" wire:model="phone" class="gh-input" style="width:100%;">
                         </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Email</span></label>
-                            <input type="email" wire:model="email" class="input input-bordered" />
+                        <div class="gh-field">
+                            <span class="gh-label">Email</span>
+                            <input type="email" wire:model="email" class="gh-input" style="width:100%;">
                         </div>
                     </div>
-                    <div class="form-control mt-3">
-                        <label class="label"><span class="label-text">Address</span></label>
-                        <textarea wire:model="address" rows="2" class="textarea textarea-bordered"></textarea>
+                    <div class="gh-field" style="margin-top:12px;">
+                        <span class="gh-label">Address</span>
+                        <textarea wire:model="address" rows="2" class="gh-input" style="width:100%;"></textarea>
                     </div>
-                    <div class="modal-action app-modal-actions">
-                        <button type="button" wire:click="$set('showCreateModal', false)" class="btn btn-ghost">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Supplier</button>
+                    <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">
+                        <button type="button" wire:click="$set('showCreateModal', false)" class="gh-btn">Cancel</button>
+                        <button type="submit" class="gh-btn gh-btn--primary">Create supplier</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-backdrop app-modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
+            <div class="modal-backdrop" wire:click="$set('showCreateModal', false)"></div>
         </div>
     @endif
 </div>

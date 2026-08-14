@@ -1,51 +1,29 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">Roles & Permissions</h1>
-            <p class="text-base-content/60">Manage what each role can do in the system</p>
-        </div>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Roles &amp; Permissions</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Manage what each role can do in the system</p>
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Role</th>
-                        <th>Permissions</th>
-                        <th>Users</th>
-                        <th></th>
-                    </tr>
-                </thead>
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
+                <thead><tr><th>Role</th><th>Permissions</th><th>Users</th><th></th></tr></thead>
                 <tbody>
                     @forelse($roles as $role)
-                        <tr class="hover">
-                            <td>
-                                <span class="font-semibold">{{ ucwords(str_replace('-', ' ', $role->name)) }}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-outline badge-sm">{{ $role->permissions_count }} permissions</span>
-                            </td>
-                            <td>
-                                <span class="text-sm text-base-content/70">{{ $role->users_count }} {{ Str::plural('user', $role->users_count) }}</span>
-                            </td>
-                            <td class="text-right">
+                        <tr>
+                            <td style="font-weight:700;">{{ ucwords(str_replace('-', ' ', $role->name)) }}</td>
+                            <td><span class="gh-badge">{{ $role->permissions_count }} permissions</span></td>
+                            <td class="gh-muted">{{ $role->users_count }} {{ Str::plural('user', $role->users_count) }}</td>
+                            <td style="text-align:right;">
                                 @if($role->name !== 'super-admin')
-                                    <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-sm btn-ghost">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        Edit Permissions
-                                    </a>
+                                    <a href="{{ route('roles.edit', $role->id) }}" class="gh-btn gh-btn--sm">Edit permissions</a>
                                 @else
-                                    <span class="text-base-content/40 text-sm">System role</span>
+                                    <span class="gh-hint">System role</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="4" class="text-center text-base-content/50 py-8">No roles found.</td>
-                        </tr>
+                        <tr><td colspan="4" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No roles found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

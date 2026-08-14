@@ -1,94 +1,64 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">Quotations</h1>
-            <p class="text-base-content/60">Track all quotations and revisions</p>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Quotations</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Track all quotations and revisions</p>
+    </div>
+
+    <div class="gh-table-toolbar">
+        <label class="gh-search" style="width:260px;">⌕ <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by quotation #, customer, or work order…"></label>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <select wire:model.live="status" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="">All status</option>
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="expired">Expired</option>
+            </select>
+            <span class="gh-hint">Show</span>
+            <select wire:model.live="perPage" class="gh-select" style="padding:6px 10px; font-size:12px;">
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Search by quotation #, customer, or work order..."
-                    class="input input-bordered input-sm"
-                />
-
-                <select wire:model.live="status" class="select select-bordered select-sm">
-                    <option value="">All Status</option>
-                    <option value="draft">Draft</option>
-                    <option value="sent">Sent</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="expired">Expired</option>
-                </select>
-
-                <select wire:model.live="perPage" class="select select-bordered select-sm">
-                    <option value="15">15 per page</option>
-                    <option value="25">25 per page</option>
-                    <option value="50">50 per page</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
                 <thead>
-                    <tr>
-                        <th>Quotation</th>
-                        <th>Customer</th>
-                        <th>Work Order</th>
-                        <th>Created By</th>
-                        <th>Status</th>
-                        <th class="text-right">Total</th>
-                        <th>Valid Until</th>
-                        <th>Created</th>
-                        <th></th>
-                    </tr>
+                    <tr><th>Quotation</th><th>Customer</th><th>Work order</th><th>Created by</th><th>Status</th><th style="text-align:right;">Total</th><th>Valid until</th><th>Created</th><th></th></tr>
                 </thead>
                 <tbody>
                     @forelse($quotations as $quotation)
-                        <tr class="hover">
-                            <td>
-                                <a href="{{ route('quotations.show', $quotation) }}" class="link link-primary font-mono text-sm">
-                                    {{ $quotation->quotation_number }}
-                                </a>
+                        <tr data-href="{{ route('quotations.show', $quotation) }}">
+                            <td class="is-ref">
+                                <a href="{{ route('quotations.show', $quotation) }}">{{ $quotation->quotation_number }}</a>
                                 @if($quotation->version > 1)
-                                    <span class="badge badge-neutral badge-xs ml-1">v{{ $quotation->version }}</span>
+                                    <span class="gh-badge" style="margin-left:4px;">v{{ $quotation->version }}</span>
                                 @endif
                                 @if($quotation->parentQuotation)
-                                    <div class="text-xs text-base-content/50 mt-1">
-                                        Revision of {{ $quotation->parentQuotation->quotation_number }}
-                                    </div>
+                                    <div class="gh-muted" style="font-size:10.5px; margin-top:2px;">Revision of {{ $quotation->parentQuotation->quotation_number }}</div>
                                 @endif
                             </td>
                             <td>{{ $quotation->customer?->name ?? '—' }}</td>
                             <td>
                                 @if($quotation->workOrder)
-                                    <a href="{{ route('work-orders.show', $quotation->workOrder) }}" class="link text-sm">
-                                        {{ $quotation->workOrder->order_number }}
-                                    </a>
+                                    <a href="{{ route('work-orders.show', $quotation->workOrder) }}">{{ $quotation->workOrder->order_number }}</a>
                                 @else
-                                    <span class="text-base-content/40">—</span>
+                                    <span class="gh-muted">—</span>
                                 @endif
                             </td>
                             <td>{{ $quotation->createdBy?->name ?? '—' }}</td>
-                            <td>
-                                <span class="badge badge-{{ $quotation->status_color }} badge-sm">{{ ucfirst($quotation->status) }}</span>
-                            </td>
-                            <td class="text-right font-medium">UGX {{ number_format((float) $quotation->total) }}</td>
-                            <td class="text-sm {{ $quotation->valid_until && $quotation->valid_until->isPast() ? 'text-error font-medium' : '' }}">
-                                {{ $quotation->valid_until?->format('d M Y') ?? '—' }}
-                            </td>
-                            <td class="text-sm">{{ $quotation->created_at->format('d M Y') }}</td>
-                            <td>
+                            <td><span class="gh-badge {{ $quotation->status_color !== 'ghost' ? 'gh-badge--'.($quotation->status_color === 'accent' ? 'primary' : $quotation->status_color) : '' }}">{{ ucfirst($quotation->status) }}</span></td>
+                            <td class="is-num">UGX {{ number_format((float) $quotation->total) }}</td>
+                            <td style="{{ $quotation->valid_until && $quotation->valid_until->isPast() ? 'color:var(--gh-error); font-weight:700;' : '' }}">{{ $quotation->valid_until?->format('d M Y') ?? '—' }}</td>
+                            <td class="gh-muted">{{ $quotation->created_at->format('d M Y') }}</td>
+                            <td onclick="event.stopPropagation()">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">⋮</label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-40">
+                                    <label tabindex="0" class="gh-btn gh-btn--sm">⋮</label>
+                                    <ul tabindex="0" class="dropdown-content menu z-[1] mt-2 w-40 gh-card p-2 shadow-xl">
                                         <li><a href="{{ route('quotations.show', $quotation) }}">View</a></li>
                                         @can('edit_quotations')
                                             <li><a href="{{ route('quotations.edit', $quotation) }}">Edit</a></li>
@@ -98,16 +68,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="9" class="text-center py-8 text-base-content/50">No quotations found</td>
-                        </tr>
+                        <tr><td colspan="9" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No quotations found</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
         @if($quotations->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $quotations->links() }}</div>
+            <div class="gh-pagination">{{ $quotations->links() }}</div>
         @endif
     </div>
 </div>

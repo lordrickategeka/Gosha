@@ -1,90 +1,51 @@
 {{-- Quick Add Vehicle Modal --}}
-<input type="checkbox" id="vehicle-modal" class="modal-toggle" @if($showVehicleModal) checked @endif />
-<div class="modal" role="dialog">
-    <div class="modal-box app-modal-shell">
-        <h3 class="font-bold text-lg mb-4">Quick Add Vehicle</h3>
+@if ($showVehicleModal)
+    <div class="modal modal-open">
+        <div class="modal-box gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:16px;">Quick Add Vehicle</div>
 
-        <div class="space-y-3">
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text">Registration Number *</span>
-                </label>
-                <input
-                    type="text"
-                    wire:model="newVehicleRegNumber"
-                    placeholder="e.g., UAH 123A"
-                    class="input input-bordered w-full uppercase"
-                />
-                @error('newVehicleRegNumber')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Make</span>
-                        <span class="label-text-alt text-base-content/50">Optional</span>
-                    </label>
-                    <input
-                        type="text"
-                        wire:model="newVehicleMake"
-                        placeholder="e.g., Toyota"
-                        class="input input-bordered w-full"
-                    />
+            <div class="gh-stack" style="gap:12px;">
+                <div class="gh-field">
+                    <span class="gh-label">Registration number *</span>
+                    <input type="text" wire:model="newVehicleRegNumber" placeholder="e.g., UAH 123A" class="gh-input" style="width:100%; text-transform:uppercase;">
+                    @error('newVehicleRegNumber') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">Model</span>
-                        <span class="label-text-alt text-base-content/50">Optional</span>
-                    </label>
-                    <input
-                        type="text"
-                        wire:model="newVehicleModel"
-                        placeholder="e.g., Corolla"
-                        class="input input-bordered w-full"
-                    />
+                <div class="gh-grid-2">
+                    <div class="gh-field">
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <span class="gh-label">Make</span>
+                            <span class="gh-hint">Optional</span>
+                        </div>
+                        <input type="text" wire:model="newVehicleMake" placeholder="e.g., Toyota" class="gh-input" style="width:100%;">
+                    </div>
+                    <div class="gh-field">
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <span class="gh-label">Model</span>
+                            <span class="gh-hint">Optional</span>
+                        </div>
+                        <input type="text" wire:model="newVehicleModel" placeholder="e.g., Corolla" class="gh-input" style="width:100%;">
+                    </div>
+                </div>
+
+                <div class="gh-field">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <span class="gh-label">Year</span>
+                        <span class="gh-hint">Optional</span>
+                    </div>
+                    <input type="number" wire:model="newVehicleYear" placeholder="e.g., 2020" min="1900" max="{{ date('Y') + 1 }}" class="gh-input" style="width:100%;">
+                    @error('newVehicleYear') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text">Year</span>
-                    <span class="label-text-alt text-base-content/50">Optional</span>
-                </label>
-                <input
-                    type="number"
-                    wire:model="newVehicleYear"
-                    placeholder="e.g., 2020"
-                    min="1900"
-                    max="{{ date('Y') + 1 }}"
-                    class="input input-bordered w-full"
-                />
-                @error('newVehicleYear')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
+            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">
+                <button type="button" wire:click="closeVehicleModal" class="gh-btn">Cancel</button>
+                <button type="button" wire:click="saveNewVehicle" class="gh-btn gh-btn--primary" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="saveNewVehicle">Add vehicle</span>
+                    <span wire:loading wire:target="saveNewVehicle">Adding…</span>
+                </button>
             </div>
         </div>
-
-        <div class="modal-action app-modal-actions">
-            <button
-                type="button"
-                wire:click="closeVehicleModal"
-                class="btn btn-ghost"
-            >
-                Cancel
-            </button>
-            <button
-                type="button"
-                wire:click="saveNewVehicle"
-                class="btn btn-primary"
-                wire:loading.attr="disabled"
-            >
-                <span wire:loading.remove wire:target="saveNewVehicle">Add Vehicle</span>
-                <span wire:loading wire:target="saveNewVehicle" class="loading loading-spinner loading-sm"></span>
-            </button>
-        </div>
+        <div class="modal-backdrop" wire:click="closeVehicleModal"></div>
     </div>
-    <label class="modal-backdrop app-modal-backdrop" for="vehicle-modal" wire:click="closeVehicleModal">Close</label>
-</div>
+@endif

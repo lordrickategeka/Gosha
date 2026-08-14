@@ -1,218 +1,150 @@
-<div class="card bg-base-100 shadow-sm border border-base-300">
-    <div class="card-body">
-        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <h2 class="card-title text-lg">Service Details</h2>
-            <p class="text-xs text-base-content/60">Define job type, assignment, timing, and custody details.</p>
+<div class="gh-card gh-card--pad">
+    <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:8px; margin-bottom:16px;">
+        <div class="gh-card__title">Service Details</div>
+        <p class="gh-muted" style="font-size:11px;">Define job type, assignment, timing, and custody details.</p>
+    </div>
+
+    <div class="gh-grid-2">
+        <div class="gh-field">
+            <span class="gh-label">Service type *</span>
+            <select wire:model="type" class="gh-select" style="width:100%;">
+                <option value="">Select service type…</option>
+                <option value="service">Service</option>
+                <option value="repair">Repair</option>
+                <option value="diagnostics">Diagnostics</option>
+                <option value="bodywork">Bodywork</option>
+                <option value="electrical">Electrical</option>
+                <option value="ac">A/C</option>
+                <option value="tyres">Tyres</option>
+                <option value="other">Other</option>
+            </select>
+            @error('type') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {{-- Service Type --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Service Type *</span>
-                </label>
-                <select wire:model="type" class="select select-bordered w-full">
-                    <option value="">Select service type...</option>
-                    <option value="service">Service</option>
-                    <option value="repair">Repair</option>
-                    <option value="diagnostics">Diagnostics</option>
-                    <option value="bodywork">Bodywork</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="ac">A/C</option>
-                    <option value="tyres">Tyres</option>
-                    <option value="other">Other</option>
-                </select>
-                @error('type')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Priority --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Priority *</span>
-                </label>
-                <select wire:model="priority" class="select select-bordered w-full">
-                    <option value="">Select priority...</option>
-                    <option value="low">Low</option>
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                </select>
-                @error('priority')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Service Bay --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Service Bay</span>
-                    <span class="label-text-alt text-base-content/50">Optional</span>
-                </label>
-                <select wire:model="service_bay_id" class="select select-bordered w-full">
-                    <option value="">Assign later...</option>
-                    @foreach($this->serviceBays as $bay)
-                        <option value="{{ $bay->id }}">{{ $bay->name }}</option>
-                    @endforeach
-                </select>
-                @if($this->serviceBays->isEmpty())
-                    <span class="text-warning text-sm mt-1">No available service bays</span>
-                @endif
-                @error('service_bay_id')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Technician --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Assign Technician</span>
-                    <span class="label-text-alt text-base-content/50">Optional</span>
-                </label>
-                <select wire:model="assigned_technician_id" class="select select-bordered w-full">
-                    <option value="">Assign later...</option>
-                    @foreach($this->technicians as $tech)
-                        <option value="{{ $tech->id }}">{{ $tech->name }}</option>
-                    @endforeach
-                </select>
-                @if($this->technicians->isEmpty())
-                    <span class="text-warning text-sm mt-1">No technicians available</span>
-                @endif
-                @error('assigned_technician_id')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Mileage In --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Mileage In</span>
-                    <span class="label-text-alt text-base-content/50">km</span>
-                </label>
-                <input
-                    type="number"
-                    wire:model="mileage_in"
-                    placeholder="Current mileage"
-                    min="0"
-                    class="input input-bordered w-full"
-                />
-                @error('mileage_in')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Estimated Completion --}}
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Estimated Completion</span>
-                    <span class="label-text-alt text-base-content/50">Now or future</span>
-                </label>
-                <input
-                    type="datetime-local"
-                    wire:model="estimated_completion"
-                    min="{{ now()->format('Y-m-d\\TH:i') }}"
-                    class="input input-bordered w-full"
-                />
-                @error('estimated_completion')
-                    <span class="text-error text-sm mt-1">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Combo Checkbox --}}
-            <div class="form-control sm:col-span-2">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input
-                        type="checkbox"
-                        wire:model="is_combo"
-                        class="checkbox checkbox-primary"
-                    />
-                    <div>
-                        <span class="label-text font-medium">Combo (Service + Wash)</span>
-                        <p class="text-xs text-base-content/60">Automatically queue vehicle for washing when service is complete</p>
-                    </div>
-                </label>
-            </div>
+        <div class="gh-field">
+            <span class="gh-label">Priority *</span>
+            <select wire:model="priority" class="gh-select" style="width:100%;">
+                <option value="">Select priority…</option>
+                <option value="low">Low</option>
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+            </select>
+            @error('priority') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
         </div>
 
-        <div class="mt-6 border-t border-base-200 pt-5">
-            <h3 class="font-medium mb-3">Items Left In Vehicle</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                <div class="form-control md:col-span-3">
-                    <label class="label py-1">
-                        <span class="label-text text-xs font-medium">Item</span>
-                    </label>
-                    <input type="text" wire:model="left_item_name" class="input input-bordered input-sm" placeholder="e.g. Car jack" />
-                </div>
-                <div class="form-control md:col-span-2">
-                    <label class="label py-1">
-                        <span class="label-text text-xs font-medium">Quantity</span>
-                    </label>
-                    <input type="number" wire:model="left_item_quantity" min="0.01" step="0.01" class="input input-bordered input-sm" />
-                </div>
-                <div class="form-control md:col-span-2">
-                    <label class="label py-1">
-                        <span class="label-text text-xs font-medium">Reference</span>
-                    </label>
-                    <input type="text" wire:model="left_item_reference" class="input input-bordered input-sm" placeholder="Optional" />
-                </div>
-                <div class="form-control md:col-span-3">
-                    <label class="label py-1">
-                        <span class="label-text text-xs font-medium">Description</span>
-                    </label>
-                    <input type="text" wire:model="left_item_description" class="input input-bordered input-sm" placeholder="Optional notes" />
-                </div>
-                <div class="form-control md:col-span-2">
-                    <button type="button" wire:click="addVehicleLeftItem" class="btn btn-primary btn-sm w-full">Add Item</button>
-                </div>
+        <div class="gh-field">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="gh-label">Service bay</span>
+                <span class="gh-hint">Optional</span>
             </div>
-
-            @if(count($vehicle_left_items) > 0)
-                <div class="mt-4 overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Qty</th>
-                                <th>Reference</th>
-                                <th>Description</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($vehicle_left_items as $index => $leftItem)
-                                <tr>
-                                    <td>{{ $leftItem['item_name'] }}</td>
-                                    <td>{{ $leftItem['quantity'] }}</td>
-                                    <td>{{ $leftItem['reference'] ?: '—' }}</td>
-                                    <td>{{ $leftItem['description'] ?: '—' }}</td>
-                                    <td class="text-right">
-                                        <button type="button" wire:click="removeVehicleLeftItem({{ $index }})" class="btn btn-ghost btn-xs text-error">Remove</button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+            <select wire:model="service_bay_id" class="gh-select" style="width:100%;">
+                <option value="">Assign later…</option>
+                @foreach($this->serviceBays as $bay)
+                    <option value="{{ $bay->id }}">{{ $bay->name }}</option>
+                @endforeach
+            </select>
+            @if($this->serviceBays->isEmpty())
+                <span class="gh-hint" style="color:var(--gh-warning);">No available service bays</span>
             @endif
+            @error('service_bay_id') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
         </div>
+
+        <div class="gh-field">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="gh-label">Assign technician</span>
+                <span class="gh-hint">Optional</span>
+            </div>
+            <select wire:model="assigned_technician_id" class="gh-select" style="width:100%;">
+                <option value="">Assign later…</option>
+                @foreach($this->technicians as $tech)
+                    <option value="{{ $tech->id }}">{{ $tech->name }}</option>
+                @endforeach
+            </select>
+            @if($this->technicians->isEmpty())
+                <span class="gh-hint" style="color:var(--gh-warning);">No technicians available</span>
+            @endif
+            @error('assigned_technician_id') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+        </div>
+
+        <div class="gh-field">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="gh-label">Mileage in</span>
+                <span class="gh-hint">km</span>
+            </div>
+            <input type="number" wire:model="mileage_in" placeholder="Current mileage" min="0" class="gh-input" style="width:100%;">
+            @error('mileage_in') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+        </div>
+
+        <div class="gh-field">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="gh-label">Estimated completion</span>
+                <span class="gh-hint">Now or future</span>
+            </div>
+            <input type="datetime-local" wire:model="estimated_completion" min="{{ now()->format('Y-m-d\TH:i') }}" class="gh-input" style="width:100%;">
+            @error('estimated_completion') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+        </div>
+
+        <div class="gh-field" style="grid-column:1/-1;">
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+                <input type="checkbox" wire:model="is_combo">
+                <span>
+                    <span style="font-weight:600; font-size:13px;">Combo (Service + Wash)</span>
+                    <p class="gh-muted" style="font-size:11.5px; margin:2px 0 0;">Automatically queue vehicle for washing when service is complete</p>
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div style="margin-top:20px; border-top:1px solid var(--gh-hairline); padding-top:16px;">
+        <div class="gh-card__title" style="margin-bottom:10px; font-size:13px;">Items left in vehicle</div>
+
+        <div style="display:grid; grid-template-columns:repeat(12,1fr); gap:10px; align-items:end;">
+            <div class="gh-field" style="grid-column:span 3;">
+                <span class="gh-label">Item</span>
+                <input type="text" wire:model="left_item_name" class="gh-input" placeholder="e.g. Car jack">
+            </div>
+            <div class="gh-field" style="grid-column:span 2;">
+                <span class="gh-label">Quantity</span>
+                <input type="number" wire:model="left_item_quantity" min="0.01" step="0.01" class="gh-input">
+            </div>
+            <div class="gh-field" style="grid-column:span 2;">
+                <span class="gh-label">Reference</span>
+                <input type="text" wire:model="left_item_reference" class="gh-input" placeholder="Optional">
+            </div>
+            <div class="gh-field" style="grid-column:span 3;">
+                <span class="gh-label">Description</span>
+                <input type="text" wire:model="left_item_description" class="gh-input" placeholder="Optional notes">
+            </div>
+            <div style="grid-column:span 2;">
+                <button type="button" wire:click="addVehicleLeftItem" class="gh-btn gh-btn--primary gh-btn--block">Add item</button>
+            </div>
+        </div>
+
+        @if(count($vehicle_left_items) > 0)
+            <div class="gh-table-scroll" style="margin-top:14px;">
+                <table class="gh-table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Reference</th><th>Description</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach($vehicle_left_items as $index => $leftItem)
+                            <tr>
+                                <td>{{ $leftItem['item_name'] }}</td>
+                                <td>{{ $leftItem['quantity'] }}</td>
+                                <td>{{ $leftItem['reference'] ?: '—' }}</td>
+                                <td>{{ $leftItem['description'] ?: '—' }}</td>
+                                <td><button type="button" wire:click="removeVehicleLeftItem({{ $index }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);">Remove</button></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     </div>
 </div>
 
-<div class="mt-5 border-t border-base-300 pt-4">
-    <div class="flex justify-between gap-2">
-        <button type="button" wire:click="previousStep" class="btn btn-ghost">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-        </button>
-        <button type="button" wire:click="nextStep" class="btn btn-primary">
-            Continue to Items
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
+<div style="border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">
+    <div style="display:flex; justify-content:space-between; gap:8px;">
+        <button type="button" wire:click="previousStep" class="gh-btn">← Back</button>
+        <button type="button" wire:click="nextStep" class="gh-btn gh-btn--primary">Continue to items →</button>
     </div>
 </div>

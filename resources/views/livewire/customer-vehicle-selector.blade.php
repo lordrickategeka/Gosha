@@ -1,54 +1,36 @@
-<div>
-    {{-- Flash Messages --}}
+<div class="gh-card gh-card--pad">
+    <div class="gh-card__title" style="margin-bottom:14px;">Customer &amp; Vehicle</div>
+
     @if (session('customer-selector-success'))
-        <div class="alert alert-success mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <span>{{ session('customer-selector-success') }}</span>
-        </div>
+        <div class="gh-note" style="margin-bottom:14px; background:var(--gh-success-bg); border-color:var(--gh-success);"><span class="gh-note__body" style="color:var(--gh-success);">{{ session('customer-selector-success') }}</span></div>
     @endif
 
     {{-- Customer Search --}}
-    <div class="form-control mb-4">
-        <label class="label">
-            <span class="label-text font-medium">Customer *</span>
+    <div class="gh-field" style="margin-bottom:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span class="gh-label">Customer *</span>
             @if($allowNewCustomer)
-                <button type="button" wire:click="toggleNewCustomerForm" class="btn btn-ghost btn-xs">
-                    {{ $showNewCustomerForm ? '× Cancel' : '+ New Customer' }}
-                </button>
+                <button type="button" wire:click="toggleNewCustomerForm" class="gh-btn gh-btn--sm">{{ $showNewCustomerForm ? '× Cancel' : '+ New customer' }}</button>
             @endif
-        </label>
+        </div>
 
-        <div class="relative"
-             x-data="{ open: @entangle('showCustomerDropdown').live }"
-             @click.outside="open = false">
-
-            <input type="text"
-                wire:model.live.debounce.300ms="customerSearch"
+        <div style="position:relative;" x-data="{ open: @entangle('showCustomerDropdown').live }" @click.outside="open = false">
+            <input type="text" wire:model.live.debounce.300ms="customerSearch"
                 @focus="if ($el.value.length >= {{ $minSearchLength }}) open = true"
-                placeholder="{{ $searchPlaceholder }}"
-                class="input input-bordered w-full @error('customerId') input-error @enderror"
-                autocomplete="off" />
+                placeholder="{{ $searchPlaceholder }}" class="gh-input" style="width:100%;" autocomplete="off">
 
-            <ul x-show="open"
-                x-cloak
-                x-transition
-                class="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <ul x-show="open" x-cloak x-transition class="gh-card" style="position:absolute; z-index:10; width:100%; margin-top:4px; max-height:15rem; overflow-y:auto; list-style:none; padding:0;">
                 @forelse($this->customers as $customer)
                     <li>
-                        <button type="button"
-                            wire:click="selectCustomer({{ $customer->id }})"
-                            @click="open = false"
-                            class="w-full px-4 py-2 text-left hover:bg-base-200 focus:bg-base-200 transition-colors">
-                            <div class="font-medium">{{ $customer->name }}</div>
-                            <div class="text-sm text-base-content/60">{{ $customer->phone }}</div>
+                        <button type="button" wire:click="selectCustomer({{ $customer->id }})" @click="open = false" style="width:100%; text-align:left; padding:8px 14px; border:0; background:transparent; cursor:pointer; border-bottom:1px solid var(--gh-hairline);">
+                            <div style="font-weight:600; font-size:12.5px;">{{ $customer->name }}</div>
+                            <div class="gh-muted" style="font-size:11px;">{{ $customer->phone }}</div>
                         </button>
                     </li>
                 @empty
-                    <li class="px-4 py-3 text-sm text-base-content/50 text-center">
+                    <li style="padding:12px 14px; font-size:12.5px; color:var(--gh-ink-faint); text-align:center;">
                         @if(strlen($customerSearch) < $minSearchLength)
-                            Type at least {{ $minSearchLength }} characters...
+                            Type at least {{ $minSearchLength }} characters…
                         @else
                             No customers found
                         @endif
@@ -58,108 +40,77 @@
         </div>
 
         @if($customerId && $this->selectedCustomer)
-            <span class="label-text-alt text-success mt-1">✓ {{ $this->selectedCustomer->name }}</span>
+            <span class="gh-hint" style="color:var(--gh-success);">✓ {{ $this->selectedCustomer->name }}</span>
         @endif
-
-        @error('customerId')
-            <span class="label-text-alt text-error">{{ $message }}</span>
-        @enderror
+        @error('customerId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
     </div>
 
     {{-- New Customer Form --}}
     @if($showNewCustomerForm)
-        <div class="bg-base-200 p-4 rounded-lg mb-4" wire:transition>
-            <h3 class="font-medium mb-3">New Customer</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div class="form-control">
-                    <input type="text"
-                        wire:model="newCustomerName"
-                        placeholder="Full Name *"
-                        class="input input-bordered input-sm @error('newCustomerName') input-error @enderror" />
-                    @error('newCustomerName')
-                        <span class="label-text-alt text-error text-xs mt-1">{{ $message }}</span>
-                    @enderror
+        <div style="background:var(--gh-base-200); padding:14px; border-radius:var(--gh-radius); margin-bottom:16px;" wire:transition>
+            <div style="font-weight:600; font-size:13px; margin-bottom:10px;">New Customer</div>
+            <div class="gh-grid-3">
+                <div class="gh-field">
+                    <input type="text" wire:model="newCustomerName" placeholder="Full name *" class="gh-input">
+                    @error('newCustomerName') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
-                <div class="form-control">
-                    <input type="text"
-                        wire:model="newCustomerPhone"
-                        placeholder="Phone Number *"
-                        class="input input-bordered input-sm @error('newCustomerPhone') input-error @enderror" />
-                    @error('newCustomerPhone')
-                        <span class="label-text-alt text-error text-xs mt-1">{{ $message }}</span>
-                    @enderror
+                <div class="gh-field">
+                    <input type="text" wire:model="newCustomerPhone" placeholder="Phone number *" class="gh-input">
+                    @error('newCustomerPhone') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
-                <div class="form-control">
-                    <input type="email"
-                        wire:model="newCustomerEmail"
-                        placeholder="Email (optional)"
-                        class="input input-bordered input-sm @error('newCustomerEmail') input-error @enderror" />
-                    @error('newCustomerEmail')
-                        <span class="label-text-alt text-error text-xs mt-1">{{ $message }}</span>
-                    @enderror
+                <div class="gh-field">
+                    <input type="email" wire:model="newCustomerEmail" placeholder="Email (optional)" class="gh-input">
+                    @error('newCustomerEmail') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
             </div>
-            <div class="flex gap-2 mt-3">
-                <button type="button" wire:click="createNewCustomer" class="btn btn-primary btn-sm">
-                    <span wire:loading.remove wire:target="createNewCustomer">Save Customer</span>
-                    <span wire:loading wire:target="createNewCustomer" class="loading loading-spinner loading-xs"></span>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button type="button" wire:click="createNewCustomer" class="gh-btn gh-btn--primary gh-btn--sm">
+                    <span wire:loading.remove wire:target="createNewCustomer">Save customer</span>
+                    <span wire:loading wire:target="createNewCustomer">Saving…</span>
                 </button>
-                <button type="button" wire:click="toggleNewCustomerForm" class="btn btn-ghost btn-sm">Cancel</button>
+                <button type="button" wire:click="toggleNewCustomerForm" class="gh-btn gh-btn--sm">Cancel</button>
             </div>
         </div>
     @endif
 
-    {{-- Vehicle Selector (Only show if customer is selected and feature is enabled) --}}
+    {{-- Vehicle Selector --}}
     @if($customerId && $showVehicleSelector)
-        <div class="form-control">
-            <label class="label">
-                <span class="label-text font-medium">Vehicle *</span>
+        <div class="gh-field">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="gh-label">Vehicle *</span>
                 @if($allowNewVehicle)
-                    <button type="button" wire:click="toggleNewVehicleForm" class="btn btn-ghost btn-xs">
-                        {{ $showNewVehicleForm ? '× Cancel' : '+ New Vehicle' }}
-                    </button>
+                    <button type="button" wire:click="toggleNewVehicleForm" class="gh-btn gh-btn--sm">{{ $showNewVehicleForm ? '× Cancel' : '+ New vehicle' }}</button>
                 @endif
-            </label>
-            <select wire:model.live="vehicleId" class="select select-bordered w-full @error('vehicleId') select-error @enderror">
-                <option value="">Select vehicle...</option>
+            </div>
+            <select wire:model.live="vehicleId" class="gh-select" style="width:100%;">
+                <option value="">Select vehicle…</option>
                 @foreach($this->vehicles as $vehicle)
-                    <option value="{{ $vehicle->id }}">
-                        {{ $vehicle->registration_number }} - {{ $vehicle->make }} {{ $vehicle->model }}
-                        @if($vehicle->year) ({{ $vehicle->year }}) @endif
-                    </option>
+                    <option value="{{ $vehicle->id }}">{{ $vehicle->registration_number }} - {{ $vehicle->make }} {{ $vehicle->model }} @if($vehicle->year) ({{ $vehicle->year }}) @endif</option>
                 @endforeach
             </select>
-            @error('vehicleId')
-                <span class="label-text-alt text-error">{{ $message }}</span>
-            @enderror
+            @error('vehicleId') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
         </div>
 
-        {{-- New Vehicle Form --}}
         @if($showNewVehicleForm)
-            <div class="bg-base-200 p-4 rounded-lg mt-4" wire:transition>
-                <h3 class="font-medium mb-3">New Vehicle</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div class="form-control">
-                        <input type="text"
-                            wire:model="newVehicleRegNumber"
-                            placeholder="Registration Number *"
-                            class="input input-bordered input-sm @error('newVehicleRegNumber') input-error @enderror" />
-                        @error('newVehicleRegNumber')
-                            <span class="label-text-alt text-error text-xs mt-1">{{ $message }}</span>
-                        @enderror
+            <div style="background:var(--gh-base-200); padding:14px; border-radius:var(--gh-radius); margin-top:14px;" wire:transition>
+                <div style="font-weight:600; font-size:13px; margin-bottom:10px;">New Vehicle</div>
+                <div class="gh-grid-3">
+                    <div class="gh-field">
+                        <input type="text" wire:model="newVehicleRegNumber" placeholder="Registration number *" class="gh-input">
+                        @error('newVehicleRegNumber') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
-                    <input type="text" wire:model="newVehicleMake" placeholder="Make" class="input input-bordered input-sm" />
-                    <input type="text" wire:model="newVehicleModel" placeholder="Model" class="input input-bordered input-sm" />
-                    <input type="number" wire:model="newVehicleYear" placeholder="Year" class="input input-bordered input-sm" />
-                    <input type="text" wire:model="newVehicleColor" placeholder="Color" class="input input-bordered input-sm" />
-                    <input type="text" wire:model="newVehicleChassisNumber" placeholder="Chassis Number" class="input input-bordered input-sm" />
+                    <input type="text" wire:model="newVehicleMake" placeholder="Make" class="gh-input">
+                    <input type="text" wire:model="newVehicleModel" placeholder="Model" class="gh-input">
+                    <input type="number" wire:model="newVehicleYear" placeholder="Year" class="gh-input">
+                    <input type="text" wire:model="newVehicleColor" placeholder="Color" class="gh-input">
+                    <input type="text" wire:model="newVehicleChassisNumber" placeholder="Chassis number" class="gh-input">
                 </div>
-                <div class="flex gap-2 mt-3">
-                    <button type="button" wire:click="createNewVehicle" class="btn btn-primary btn-sm">
-                        <span wire:loading.remove wire:target="createNewVehicle">Save Vehicle</span>
-                        <span wire:loading wire:target="createNewVehicle" class="loading loading-spinner loading-xs"></span>
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button type="button" wire:click="createNewVehicle" class="gh-btn gh-btn--primary gh-btn--sm">
+                        <span wire:loading.remove wire:target="createNewVehicle">Save vehicle</span>
+                        <span wire:loading wire:target="createNewVehicle">Saving…</span>
                     </button>
-                    <button type="button" wire:click="toggleNewVehicleForm" class="btn btn-ghost btn-sm">Cancel</button>
+                    <button type="button" wire:click="toggleNewVehicleForm" class="gh-btn gh-btn--sm">Cancel</button>
                 </div>
             </div>
         @endif

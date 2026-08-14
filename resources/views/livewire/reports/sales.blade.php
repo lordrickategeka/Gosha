@@ -1,87 +1,73 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">Sales Report</h1>
-            <p class="text-base-content/60">Revenue and payment analytics</p>
-        </div>
+<div class="gh-page">
+    <div>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Sales Report</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Revenue and payment analytics</p>
     </div>
 
     <x-reports.filters :period="$period" :showYear="true" :showStaff="true" />
 
     <x-reports.export-controls />
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Total Invoiced</div>
-            <div class="stat-value text-lg">UGX {{ number_format($this->stats['total_invoiced']) }}</div>
+    <div class="gh-grid-4" style="grid-template-columns:repeat(5,1fr);">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Total invoiced</span>
+            <span class="gh-stat__value">UGX {{ number_format($this->stats['total_invoiced']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Collected</div>
-            <div class="stat-value text-lg text-success">UGX {{ number_format($this->stats['total_collected']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Collected</span>
+            <span class="gh-stat__value" style="color:var(--gh-success);">UGX {{ number_format($this->stats['total_collected']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Pending</div>
-            <div class="stat-value text-lg text-warning">UGX {{ number_format($this->stats['pending']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Pending</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning);">UGX {{ number_format($this->stats['pending']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Invoices</div>
-            <div class="stat-value text-lg">{{ $this->stats['invoice_count'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Invoices</span>
+            <span class="gh-stat__value">{{ $this->stats['invoice_count'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Avg Invoice</div>
-            <div class="stat-value text-lg">UGX {{ number_format($this->stats['avg_invoice']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Avg invoice</span>
+            <span class="gh-stat__value">UGX {{ number_format($this->stats['avg_invoice']) }}</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Daily Revenue -->
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Daily Revenue</h2>
-                @if($this->dailyRevenue->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead><tr><th>Date</th><th class="text-right">Revenue</th></tr></thead>
-                            <tbody>
-                                @foreach($this->dailyRevenue as $day)
-                                    <tr>
-                                        <td>{{ \Carbon\Carbon::parse($day->date)->format('D, d M') }}</td>
-                                        <td class="text-right font-medium">UGX {{ number_format($day->total) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-center py-8 text-base-content/50">No data for selected period</p>
-                @endif
-            </div>
+    <div class="gh-grid-2">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Daily Revenue</div>
+            @if($this->dailyRevenue->count() > 0)
+                <div class="gh-table-scroll">
+                    <table class="gh-table">
+                        <thead><tr><th>Date</th><th style="text-align:right;">Revenue</th></tr></thead>
+                        <tbody>
+                            @foreach($this->dailyRevenue as $day)
+                                <tr><td>{{ \Carbon\Carbon::parse($day->date)->format('D, d M') }}</td><td class="is-num">UGX {{ number_format($day->total) }}</td></tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="gh-muted" style="text-align:center; padding:32px 0;">No data for selected period</p>
+            @endif
         </div>
 
-        <!-- Payment Methods -->
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Payment Methods</h2>
-                @if($this->paymentMethods->count() > 0)
-                    <div class="space-y-4">
-                        @foreach($this->paymentMethods as $method)
-                            @php
-                                $percentage = $this->stats['total_collected'] > 0 ? ($method->total / $this->stats['total_collected']) * 100 : 0;
-                            @endphp
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $method->payment_method)) }}</span>
-                                    <span>UGX {{ number_format($method->total) }} ({{ $method->count }})</span>
-                                </div>
-                                <progress class="progress progress-primary w-full" value="{{ $percentage }}" max="100"></progress>
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Payment Methods</div>
+            @if($this->paymentMethods->count() > 0)
+                <div class="gh-stack" style="gap:14px;">
+                    @foreach($this->paymentMethods as $method)
+                        @php $percentage = $this->stats['total_collected'] > 0 ? ($method->total / $this->stats['total_collected']) * 100 : 0; @endphp
+                        <div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12.5px;">
+                                <span style="font-weight:600;">{{ ucfirst(str_replace('_', ' ', $method->payment_method)) }}</span>
+                                <span>UGX {{ number_format($method->total) }} ({{ $method->count }})</span>
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-center py-8 text-base-content/50">No payments for selected period</p>
-                @endif
-            </div>
+                            <div class="gh-meter"><div class="gh-meter__fill" style="width:{{ $percentage }}%;"></div></div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="gh-muted" style="text-align:center; padding:32px 0;">No payments for selected period</p>
+            @endif
         </div>
     </div>
 </div>

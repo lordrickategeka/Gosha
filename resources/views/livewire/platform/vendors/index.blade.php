@@ -1,57 +1,46 @@
-<div>
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="gh-page">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
         <div>
-            <h1 class="text-2xl font-bold">Vendors</h1>
-            <p class="text-base-content/60">Manage all registered vendors on the platform</p>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Vendors</div>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Manage all registered vendors on the platform</p>
         </div>
-        <a href="{{ route('platform.vendors.create') }}" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Vendor
-        </a>
+        <a href="{{ route('platform.vendors.create') }}" class="gh-btn gh-btn--primary">+ Add vendor</a>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-box shadow-sm p-4">
-            <div class="stat-title text-xs">Total Vendors</div>
-            <div class="stat-value text-2xl">{{ $stats['total'] }}</div>
+    <div class="gh-grid-4">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Total vendors</span>
+            <span class="gh-stat__value">{{ $stats['total'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-box shadow-sm p-4">
-            <div class="stat-title text-xs">Active</div>
-            <div class="stat-value text-2xl text-success">{{ $stats['active'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Active</span>
+            <span class="gh-stat__value" style="color:var(--gh-success);">{{ $stats['active'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-box shadow-sm p-4">
-            <div class="stat-title text-xs">On Trial</div>
-            <div class="stat-value text-2xl text-warning">{{ $stats['trial'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">On trial</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning);">{{ $stats['trial'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-box shadow-sm p-4">
-            <div class="stat-title text-xs">Suspended</div>
-            <div class="stat-value text-2xl text-error">{{ $stats['suspended'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Suspended</span>
+            <span class="gh-stat__value" style="color:var(--gh-error);">{{ $stats['suspended'] }}</span>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card bg-base-100 shadow-sm mb-6">
-        <div class="card-body p-4">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name or email..." class="input input-bordered w-full sm:max-w-xs" />
-                <select wire:model.live="statusFilter" class="select select-bordered w-full sm:w-auto">
-                    <option value="">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="trial">Trial</option>
-                    <option value="suspended">Suspended</option>
-                </select>
-            </div>
+    <div class="gh-card gh-card--pad">
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name or email..." class="gh-input" style="flex:1; min-width:220px;">
+            <select wire:model.live="statusFilter" class="gh-select">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="trial">Trial</option>
+                <option value="suspended">Suspended</option>
+            </select>
         </div>
     </div>
 
-    <!-- Vendors Table -->
-    <div class="card bg-base-100 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table">
+    <div class="gh-card gh-card--flush">
+        <div class="gh-table-scroll">
+            <table class="gh-table">
                 <thead>
                     <tr>
                         <th>Vendor</th>
@@ -65,58 +54,48 @@
                 </thead>
                 <tbody>
                     @forelse($vendors as $vendor)
-                        <tr class="hover">
+                        <tr>
                             <td>
-                                <div class="flex items-center gap-3">
-                                    <div class="avatar placeholder">
-                                        <div class="bg-primary text-primary-content rounded-full w-10">
-                                            <span>{{ strtoupper(substr($vendor->name, 0, 2)) }}</span>
-                                        </div>
-                                    </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div class="gh-sidebar__mark" style="width:36px; height:36px; border-radius:50%; font-size:12px;">{{ strtoupper(substr($vendor->name, 0, 2)) }}</div>
                                     <div>
-                                        <a href="{{ route('platform.vendors.show', $vendor) }}" class="font-bold link link-hover">{{ $vendor->name }}</a>
-                                        <p class="text-xs text-base-content/60">{{ $vendor->slug }}</p>
+                                        <a href="{{ route('platform.vendors.show', $vendor) }}" class="is-ref" style="font-weight:700;">{{ $vendor->name }}</a>
+                                        <p class="gh-muted" style="font-size:10.5px;">{{ $vendor->slug }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td>
                                 <p>{{ $vendor->email }}</p>
                                 @if($vendor->phone)
-                                    <p class="text-xs text-base-content/60">{{ $vendor->phone }}</p>
+                                    <p class="gh-muted" style="font-size:11px;">{{ $vendor->phone }}</p>
                                 @endif
                             </td>
-                            <td>{{ $vendor->branches_count }}</td>
-                            <td>{{ $vendor->users_count }}</td>
+                            <td class="gh-muted">{{ $vendor->branches_count }}</td>
+                            <td class="gh-muted">{{ $vendor->users_count }}</td>
                             <td>
                                 @if($vendor->billingConfig)
-                                    <span class="badge badge-ghost badge-sm">{{ ucfirst(str_replace('_', ' ', $vendor->billingConfig->billing_model)) }}</span>
+                                    <span class="gh-badge">{{ ucfirst(str_replace('_', ' ', $vendor->billingConfig->billing_model)) }}</span>
                                 @else
-                                    <span class="text-base-content/40 text-sm">Not set</span>
+                                    <span class="gh-hint">Not set</span>
                                 @endif
                             </td>
                             <td>
                                 @if($vendor->status === 'active')
-                                    <span class="badge badge-success badge-sm">Active</span>
+                                    <span class="gh-badge gh-badge--success">Active</span>
                                 @elseif($vendor->status === 'trial')
-                                    <span class="badge badge-warning badge-sm">Trial</span>
+                                    <span class="gh-badge gh-badge--warning">Trial</span>
                                     @if($vendor->trial_ends_at)
-                                        <p class="text-xs text-base-content/50 mt-1">
-                                            {{ $vendor->isTrialExpired() ? 'Expired' : 'Ends ' . $vendor->trial_ends_at->diffForHumans() }}
-                                        </p>
+                                        <p class="gh-hint" style="margin-top:2px;">{{ $vendor->isTrialExpired() ? 'Expired' : 'Ends ' . $vendor->trial_ends_at->diffForHumans() }}</p>
                                     @endif
                                 @elseif($vendor->status === 'suspended')
-                                    <span class="badge badge-error badge-sm">Suspended</span>
+                                    <span class="gh-badge gh-badge--error">Suspended</span>
                                 @endif
                             </td>
-                            <td>
+                            <td style="text-align:right;">
                                 <div class="dropdown dropdown-end">
-                                    <label tabindex="0" class="btn btn-ghost btn-xs">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                        </svg>
-                                    </label>
-                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44">
-                                        <li><a href="{{ route('platform.vendors.show', $vendor) }}">View Details</a></li>
+                                    <button tabindex="0" type="button" class="gh-btn gh-btn--sm">⋯</button>
+                                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44 border border-base-300">
+                                        <li><a href="{{ route('platform.vendors.show', $vendor) }}">View details</a></li>
                                         <li>
                                             <button wire:click="toggleStatus({{ $vendor->id }})" wire:confirm="Are you sure you want to {{ $vendor->status === 'suspended' ? 'activate' : 'suspend' }} this vendor?">
                                                 {{ $vendor->status === 'suspended' ? 'Activate' : 'Suspend' }}
@@ -127,17 +106,13 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="text-center py-8 text-base-content/50">
-                                No vendors found
-                            </td>
-                        </tr>
+                        <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No vendors found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         @if($vendors->hasPages())
-            <div class="p-4 border-t border-base-200">{{ $vendors->links() }}</div>
+            <div style="padding:12px 16px; border-top:1px solid var(--gh-hairline);">{{ $vendors->links() }}</div>
         @endif
     </div>
 </div>

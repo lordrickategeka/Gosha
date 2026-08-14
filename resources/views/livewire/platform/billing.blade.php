@@ -1,140 +1,120 @@
-<div>
-    <div class="mb-6">
-        <div class="badge badge-warning mb-2">Platform Admin</div>
-        <h1 class="text-2xl font-bold">Billing Overview</h1>
-        <p class="text-base-content/60">Platform revenue and subscription metrics</p>
+<div class="gh-page">
+    <div>
+        <span class="gh-badge gh-badge--warning">Platform Admin</span>
+        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-top:8px;">Billing Overview</div>
+        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Platform revenue and subscription metrics</p>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Estimated MRR</div>
-            <div class="stat-value text-lg text-success">UGX {{ number_format($this->stats['mrr']) }}</div>
+    <div class="gh-grid-3" style="grid-template-columns:repeat(6, minmax(0,1fr));">
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Estimated MRR</span>
+            <span class="gh-stat__value" style="color:var(--gh-success); font-size:16px;">UGX {{ number_format($this->stats['mrr']) }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Active Subscriptions</div>
-            <div class="stat-value text-lg">{{ $this->stats['active_subscriptions'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Active subs</span>
+            <span class="gh-stat__value" style="font-size:16px;">{{ $this->stats['active_subscriptions'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Active Trials</div>
-            <div class="stat-value text-lg text-warning">{{ $this->stats['active_trials'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Active trials</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning); font-size:16px;">{{ $this->stats['active_trials'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Past Due</div>
-            <div class="stat-value text-lg text-error">{{ $this->stats['past_due'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Past due</span>
+            <span class="gh-stat__value" style="color:var(--gh-error); font-size:16px;">{{ $this->stats['past_due'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Total Vendors</div>
-            <div class="stat-value text-lg">{{ $this->stats['total_vendors'] }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Total vendors</span>
+            <span class="gh-stat__value" style="font-size:16px;">{{ $this->stats['total_vendors'] }}</span>
         </div>
-        <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="stat-title text-xs">Outstanding Balance</div>
-            <div class="stat-value text-lg text-warning">UGX {{ number_format($this->stats['outstanding_balance']) }}</div>
+        <div class="gh-card gh-stat">
+            <span class="gh-stat__label">Outstanding</span>
+            <span class="gh-stat__value" style="color:var(--gh-warning); font-size:16px;">UGX {{ number_format($this->stats['outstanding_balance']) }}</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Vendors by Plan -->
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Active Subscriptions by Plan</h2>
-                @if($this->vendorsByPlan->isEmpty())
-                    <p class="text-sm text-base-content/50 py-4 text-center">No active subscriptions yet</p>
-                @else
-                    @php $total = $this->vendorsByPlan->sum() ?: 1; @endphp
-                    <div class="space-y-3">
-                        @foreach($this->vendorsByPlan as $planName => $count)
-                            <div>
-                                <div class="flex justify-between mb-1 text-sm">
-                                    <span class="font-medium">{{ $planName }}</span>
-                                    <span>{{ $count }} {{ Str::plural('vendor', $count) }}</span>
-                                </div>
-                                <progress class="progress progress-primary w-full" value="{{ ($count / $total) * 100 }}" max="100"></progress>
+    <div class="gh-grid-2">
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Active Subscriptions by Plan</div>
+            @if($this->vendorsByPlan->isEmpty())
+                <p class="gh-muted" style="text-align:center; padding:24px 0; font-size:12px;">No active subscriptions yet</p>
+            @else
+                @php $total = $this->vendorsByPlan->sum() ?: 1; @endphp
+                <div class="gh-stack" style="gap:12px;">
+                    @foreach($this->vendorsByPlan as $planName => $count)
+                        <div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12.5px;">
+                                <span style="font-weight:600;">{{ $planName }}</span>
+                                <span class="gh-muted">{{ $count }} {{ Str::plural('vendor', $count) }}</span>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
+                            <div class="gh-meter"><div class="gh-meter__fill" style="width: {{ ($count / $total) * 100 }}%;"></div></div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
-        <!-- Expiring Trials -->
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-lg mb-4">Expiring Trials (7 days)</h2>
-                @if($this->expiringTrials->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead><tr><th>Vendor</th><th>Plan</th><th>Expires</th><th></th></tr></thead>
-                            <tbody>
-                                @foreach($this->expiringTrials as $sub)
-                                    <tr class="{{ $sub->trial_ends_at->diffInDays(now()) <= 3 ? 'bg-warning/10' : '' }}">
-                                        <td>
-                                            <a href="{{ route('platform.vendors.show', $sub->vendor) }}" class="link link-hover font-medium">{{ $sub->vendor->name }}</a>
-                                        </td>
-                                        <td class="text-sm text-base-content/60">{{ $sub->plan->name }}</td>
-                                        <td class="text-sm">{{ $sub->trial_ends_at->diffForHumans() }}</td>
-                                        <td>
-                                            <a href="{{ route('platform.vendors.show', $sub->vendor) }}" class="btn btn-primary btn-xs">Manage</a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-center py-8 text-base-content/50">No trials expiring soon</p>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Invoices -->
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-lg mb-4">Recent Invoices</h2>
-            @if($this->recentInvoices->count() > 0)
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Invoice #</th>
-                                <th>Vendor</th>
-                                <th>Type</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Due Date</th>
-                            </tr>
-                        </thead>
+        <div class="gh-card gh-card--pad">
+            <div class="gh-card__title" style="margin-bottom:14px;">Expiring Trials (7 days)</div>
+            @if($this->expiringTrials->count() > 0)
+                <div class="gh-table-scroll">
+                    <table class="gh-table">
+                        <thead><tr><th>Vendor</th><th>Plan</th><th>Expires</th><th></th></tr></thead>
                         <tbody>
-                            @foreach($this->recentInvoices as $invoice)
-                                <tr>
-                                    <td class="font-mono text-xs">{{ $invoice->invoice_number }}</td>
-                                    <td>
-                                        <a href="{{ route('platform.vendors.show', $invoice->vendor) }}" class="link link-hover">{{ $invoice->vendor->name }}</a>
-                                    </td>
-                                    <td><span class="badge badge-ghost badge-sm">{{ ucfirst($invoice->type) }}</span></td>
-                                    <td class="font-medium">UGX {{ number_format($invoice->total) }}</td>
-                                    <td>
-                                        <span class="badge badge-sm {{ match($invoice->status) {
-                                            'paid' => 'badge-success',
-                                            'pending' => 'badge-warning',
-                                            'overdue' => 'badge-error',
-                                            'cancelled' => 'badge-ghost',
-                                            default => 'badge-ghost'
-                                        } }}">{{ ucfirst($invoice->status) }}</span>
-                                    </td>
-                                    <td class="text-sm {{ $invoice->isOverdue() ? 'text-error font-medium' : '' }}">
-                                        {{ $invoice->due_date?->format('d M Y') ?? '—' }}
-                                    </td>
+                            @foreach($this->expiringTrials as $sub)
+                                <tr style="{{ $sub->trial_ends_at->diffInDays(now()) <= 3 ? 'background:var(--gh-warning-bg);' : '' }}">
+                                    <td><a href="{{ route('platform.vendors.show', $sub->vendor) }}" class="is-ref" style="font-weight:700;">{{ $sub->vendor->name }}</a></td>
+                                    <td class="gh-muted">{{ $sub->plan->name }}</td>
+                                    <td>{{ $sub->trial_ends_at->diffForHumans() }}</td>
+                                    <td style="text-align:right;"><a href="{{ route('platform.vendors.show', $sub->vendor) }}" class="gh-btn gh-btn--primary gh-btn--sm">Manage</a></td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             @else
-                <p class="text-center py-8 text-base-content/50">No invoices yet</p>
+                <p class="gh-muted" style="text-align:center; padding:24px 0; font-size:12px;">No trials expiring soon</p>
             @endif
         </div>
     </div>
-</div>
 
+    <div class="gh-card gh-card--pad">
+        <div class="gh-card__title" style="margin-bottom:14px;">Recent Invoices</div>
+        @if($this->recentInvoices->count() > 0)
+            <div class="gh-table-scroll">
+                <table class="gh-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Vendor</th>
+                            <th>Type</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($this->recentInvoices as $invoice)
+                            <tr>
+                                <td class="is-ref" style="font-family:monospace; font-size:11px;">{{ $invoice->invoice_number }}</td>
+                                <td><a href="{{ route('platform.vendors.show', $invoice->vendor) }}" style="color:var(--gh-ink-body);">{{ $invoice->vendor->name }}</a></td>
+                                <td><span class="gh-badge">{{ ucfirst($invoice->type) }}</span></td>
+                                <td style="font-weight:700;">UGX {{ number_format($invoice->total) }}</td>
+                                <td>
+                                    <span class="gh-badge {{ match($invoice->status) {
+                                        'paid' => 'gh-badge--success',
+                                        'pending' => 'gh-badge--warning',
+                                        'overdue' => 'gh-badge--error',
+                                        default => '',
+                                    } }}">{{ ucfirst($invoice->status) }}</span>
+                                </td>
+                                <td style="{{ $invoice->isOverdue() ? 'color:var(--gh-error); font-weight:700;' : '' }}">{{ $invoice->due_date?->format('d M Y') ?? '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="gh-muted" style="text-align:center; padding:24px 0; font-size:12px;">No invoices yet</p>
+        @endif
+    </div>
+</div>
