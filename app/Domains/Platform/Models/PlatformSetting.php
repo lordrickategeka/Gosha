@@ -29,6 +29,11 @@ class PlatformSetting extends Model
     const BILLING_AUTO_SUSPEND = 'billing_auto_suspend';
     const BILLING_SUSPEND_AFTER_DAYS = 'billing_suspend_after_days';
 
+    const BILLING_LOCKDOWN_MODE = 'billing_lockdown_mode';
+    const BILLING_LOCKDOWN_ALLOWED_ROUTES = 'billing_lockdown_allowed_routes';
+    const BILLING_LOCKDOWN_EXPORT_ENABLED = 'billing_lockdown_export_enabled';
+    const BILLING_LOCKDOWN_SUPPORT_ENABLED = 'billing_lockdown_support_enabled';
+
     const TRIAL_ENABLED = 'trial_enabled';
     const TRIAL_DEFAULT_DAYS = 'trial_default_days';
     const TRIAL_EXTEND_ALLOWED = 'trial_extend_allowed';

@@ -43,7 +43,7 @@
                     $isCurrentMonth = $day->month === $startOfMonth->month;
                     $dayEvents    = $events[$dateKey] ?? [];
                 @endphp
-                <div style="min-height:100px; padding:4px; border-right:1px solid var(--gh-hairline); border-bottom:1px solid var(--gh-hairline); {{ $isCurrentMonth ? '' : 'background:var(--gh-base-200);' }}">
+                <div class="gh-cal-cell" style="min-height:100px; padding:4px; border-right:1px solid var(--gh-hairline); border-bottom:1px solid var(--gh-hairline); {{ $isCurrentMonth ? '' : 'background:var(--gh-base-200);' }}">
                     <div style="display:flex; align-items:center; justify-content:center; margin-bottom:4px;">
                         <span style="font-size:12px; font-weight:600; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; {{ $isToday ? 'background:var(--gh-primary); color:var(--gh-primary-content);' : ($isCurrentMonth ? '' : 'color:var(--gh-ink-faint);') }}">
                             {{ $day->day }}

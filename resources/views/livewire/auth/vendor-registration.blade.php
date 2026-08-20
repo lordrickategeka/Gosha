@@ -2,14 +2,15 @@
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <h2 class="card-title text-2xl mb-1">Register Your Garage</h2>
-            <p class="text-base-content/60 mb-6">Get started with a 14-day free trial</p>
+            <p class="text-base-content/60 mb-6">Set up your business and choose a plan to get started</p>
 
             <!-- Steps -->
             <ul class="steps steps-horizontal w-full mb-6 text-xs">
                 <li class="step {{ $currentStep >= 1 ? 'step-primary' : '' }}" wire:click="goToStep(1)">Business</li>
                 <li class="step {{ $currentStep >= 2 ? 'step-primary' : '' }}" wire:click="goToStep(2)">Branch</li>
-                <li class="step {{ $currentStep >= 3 ? 'step-primary' : '' }}" wire:click="goToStep(3)">Account</li>
-                <li class="step {{ $currentStep >= 4 ? 'step-primary' : '' }}">Review</li>
+                <li class="step {{ $currentStep >= 3 ? 'step-primary' : '' }}" wire:click="goToStep(3)">Plan</li>
+                <li class="step {{ $currentStep >= 4 ? 'step-primary' : '' }}" wire:click="goToStep(4)">Account</li>
+                <li class="step {{ $currentStep >= 5 ? 'step-primary' : '' }}">Review</li>
             </ul>
 
             {{-- Step 1: Business Details --}}
@@ -65,8 +66,41 @@
                 </div>
             @endif
 
-            {{-- Step 3: Owner Account --}}
+            {{-- Step 3: Choose Plan --}}
             @if($currentStep === 3)
+                <div class="space-y-4">
+                    <p class="text-sm text-base-content/60">Pick the plan that fits your business. You can change it later.</p>
+                    @error('selectedPlanId') <p class="text-error text-sm">{{ $message }}</p> @enderror
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @foreach($this->plans as $plan)
+                            <div wire:click="selectPlan({{ $plan->id }})"
+                                 class="card border-2 cursor-pointer transition {{ $selectedPlanId === $plan->id ? 'border-primary bg-primary/5' : 'border-base-300' }}">
+                                <div class="card-body p-4">
+                                    <div class="flex items-start justify-between">
+                                        <h3 class="font-semibold">{{ $plan->name }}</h3>
+                                        @if($plan->is_featured)
+                                            <span class="badge badge-primary badge-sm">Popular</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-2xl font-bold">{{ $plan->getFormattedPriceAttribute() }}</p>
+                                    @if($plan->description)
+                                        <p class="text-xs text-base-content/60">{{ $plan->description }}</p>
+                                    @endif
+                                    @if($plan->has_trial)
+                                        <p class="text-xs text-success font-medium">{{ $plan->trial_days }}-day free trial</p>
+                                    @else
+                                        <p class="text-xs text-base-content/60">Payment required to activate</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            {{-- Step 4: Owner Account --}}
+            @if($currentStep === 4)
                 <div class="space-y-4">
                     <p class="text-sm text-base-content/60">Create your login credentials.</p>
                     <div class="form-control">
@@ -91,8 +125,9 @@
                 </div>
             @endif
 
-            {{-- Step 4: Review --}}
-            @if($currentStep === 4)
+            {{-- Step 5: Review --}}
+            @if($currentStep === 5)
+                @php($selectedPlan = $this->plans->firstWhere('id', $selectedPlanId))
                 <div class="space-y-4">
                     <p class="text-sm text-base-content/60">Review your details before creating your account.</p>
 
@@ -116,12 +151,28 @@
                         <p><span class="text-base-content/60">Email:</span> {{ $owner_email }}</p>
                     </div>
 
-                    <div class="alert alert-info">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span>You'll get a <strong>14-day free trial</strong>. No credit card required.</span>
-                    </div>
+                    @if($selectedPlan)
+                        <div class="border border-base-300 rounded-lg p-4 space-y-1 text-sm">
+                            <h3 class="font-semibold text-primary">Plan</h3>
+                            <p>{{ $selectedPlan->name }} — {{ $selectedPlan->getFormattedPriceAttribute() }}</p>
+                        </div>
+
+                        @if($selectedPlan->has_trial)
+                            <div class="alert alert-info">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>You'll get a <strong>{{ $selectedPlan->trial_days }}-day free trial</strong>. No credit card required.</span>
+                            </div>
+                        @else
+                            <div class="alert alert-warning">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                                <span>This plan has no free trial — you'll be asked to pay right after creating your account.</span>
+                            </div>
+                        @endif
+                    @endif
                 </div>
             @endif
 

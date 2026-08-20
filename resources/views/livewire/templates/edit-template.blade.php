@@ -74,7 +74,7 @@
                     </div>
 
                     {{-- Page Settings --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text">Page Size</span>
@@ -98,7 +98,7 @@
                     </div>
 
                     {{-- Colors --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text">Primary Color</span>
@@ -123,7 +123,7 @@
                     </div>
 
                     {{-- Font --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text">Font Family</span>

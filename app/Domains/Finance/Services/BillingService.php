@@ -8,6 +8,11 @@ use App\Domains\Platform\Models\PricingPlan;
 use App\Domains\Platform\Models\Vendor;
 use App\Domains\Platform\Models\VendorSubscription;
 use App\Domains\Platform\Models\VendorUsageLog;
+use App\Domains\Platform\Notifications\SubscriptionGraceStartedAlert;
+use App\Domains\Platform\Notifications\SubscriptionLockedAlert;
+use App\Domains\Platform\Notifications\SubscriptionPaymentReceivedAlert;
+use App\Domains\Platform\Services\ApiIntegrationService;
+use App\Domains\Platform\Services\FlutterwaveConnector;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -44,6 +49,13 @@ class BillingService
                 $this->generateSetupFeeInvoice($subscription);
             }
 
+            // No trial: payment for the first period is due now. Trial
+            // subscriptions get their first invoice when the trial converts
+            // (see handleTrialExpirations).
+            if (!$plan->has_trial) {
+                $this->generateSubscriptionInvoice($subscription);
+            }
+
             return $subscription;
         });
     }
@@ -66,7 +78,10 @@ class BillingService
             'period_end' => $subscription->current_period_end,
             'currency' => $subscription->plan->currency,
             'issue_date' => now(),
-            'due_date' => now()->addDays(PlatformSetting::get(PlatformSetting::BILLING_GRACE_DAYS, 7)),
+            // Due immediately: the grace period (BILLING_GRACE_DAYS) is the buffer
+            // applied *after* this date elapses unpaid, before lockdown — see
+            // handleOverdueSubscriptions().
+            'due_date' => now(),
         ]);
 
         $price = $subscription->getEffectivePrice();
@@ -201,7 +216,10 @@ class BillingService
             'period_end' => $periodEnd,
             'currency' => $subscription->plan->currency,
             'issue_date' => now(),
-            'due_date' => now()->addDays(PlatformSetting::get(PlatformSetting::BILLING_GRACE_DAYS, 7)),
+            // Due immediately: the grace period (BILLING_GRACE_DAYS) is the buffer
+            // applied *after* this date elapses unpaid, before lockdown — see
+            // handleOverdueSubscriptions().
+            'due_date' => now(),
             'metadata' => ['details' => $details, 'commission_rate' => $commissionRate],
         ]);
 
@@ -257,7 +275,10 @@ class BillingService
             'period_end' => $periodEnd,
             'currency' => $plan->currency,
             'issue_date' => now(),
-            'due_date' => now()->addDays(PlatformSetting::get(PlatformSetting::BILLING_GRACE_DAYS, 7)),
+            // Due immediately: the grace period (BILLING_GRACE_DAYS) is the buffer
+            // applied *after* this date elapses unpaid, before lockdown — see
+            // handleOverdueSubscriptions().
+            'due_date' => now(),
         ]);
 
         foreach ($usage as $log) {
@@ -355,65 +376,238 @@ class BillingService
     }
 
     /**
-     * Check and handle overdue subscriptions
+     * Move active subscriptions with an overdue invoice into their grace
+     * period, then lock the ones whose grace period has elapsed. "Locked" is
+     * a derived state (status=past_due + grace_ends_at in the past), not a
+     * separate status, so this is safe to re-run daily.
+     *
+     * @return array{0: int, 1: int} [newly past-due count, newly locked count]
      */
-    public function handleOverdueSubscriptions(): void
+    public function handleOverdueSubscriptions(): array
     {
-        $graceDays = PlatformSetting::get(PlatformSetting::BILLING_GRACE_DAYS, 7);
-        $autoSuspend = PlatformSetting::get(PlatformSetting::BILLING_AUTO_SUSPEND, true);
-        $suspendAfterDays = PlatformSetting::get(PlatformSetting::BILLING_SUSPEND_AFTER_DAYS, 14);
-
-        // Mark invoices as overdue
-        PlatformInvoice::where('status', PlatformInvoice::STATUS_PENDING)
+        VendorPlatformInvoice::where('status', VendorPlatformInvoice::STATUS_PENDING)
             ->where('due_date', '<', now())
-            ->update(['status' => PlatformInvoice::STATUS_OVERDUE]);
+            ->update(['status' => VendorPlatformInvoice::STATUS_OVERDUE]);
 
-        // Mark subscriptions as past due
-        VendorSubscription::whereHas('invoices', function ($query) {
-            $query->where('status', PlatformInvoice::STATUS_OVERDUE);
-        })
-        ->where('status', VendorSubscription::STATUS_ACTIVE)
-        ->update(['status' => VendorSubscription::STATUS_PAST_DUE]);
+        $newlyPastDue = 0;
+        $newlyLocked = 0;
 
-        // Auto-suspend if enabled
-        if ($autoSuspend) {
-            $suspendDate = now()->subDays($suspendAfterDays);
+        VendorSubscription::where('status', VendorSubscription::STATUS_ACTIVE)
+            ->whereHas('invoices', fn ($query) => $query->where('status', VendorPlatformInvoice::STATUS_OVERDUE))
+            ->with('vendor')
+            ->get()
+            ->each(function (VendorSubscription $subscription) use (&$newlyPastDue) {
+                $oldestDueDate = $subscription->invoices()
+                    ->where('status', VendorPlatformInvoice::STATUS_OVERDUE)
+                    ->min('due_date');
 
-            $toSuspend = VendorSubscription::where('status', VendorSubscription::STATUS_PAST_DUE)
-                ->whereHas('invoices', function ($query) use ($suspendDate) {
-                    $query->where('status', PlatformInvoice::STATUS_OVERDUE)
-                          ->where('due_date', '<', $suspendDate);
-                })
-                ->get();
+                $graceEndsAt = Carbon::parse($oldestDueDate)->addDays($subscription->vendor->effectiveGraceDays());
+                $subscription->markPastDue($graceEndsAt);
+                $newlyPastDue++;
 
-            foreach ($toSuspend as $subscription) {
-                $subscription->update(['status' => VendorSubscription::STATUS_PAUSED]);
-                $subscription->vendor->update(['is_active' => false]);
-            }
-        }
+                $this->notifyVendorOwners($subscription->vendor, new SubscriptionGraceStartedAlert($subscription));
+            });
+
+        VendorSubscription::where('status', VendorSubscription::STATUS_PAST_DUE)
+            ->whereNotNull('grace_ends_at')
+            ->where('grace_ends_at', '<', now())
+            ->whereNull('locked_at')
+            ->with('vendor')
+            ->get()
+            ->each(function (VendorSubscription $subscription) use (&$newlyLocked) {
+                $subscription->markLocked();
+                $newlyLocked++;
+
+                $this->notifyVendorOwners($subscription->vendor, new SubscriptionLockedAlert($subscription));
+            });
+
+        return [$newlyPastDue, $newlyLocked];
     }
 
     /**
-     * Handle trial expirations
+     * Convert trials whose trial_ends_at has passed into real billing. Free
+     * plans just activate; paid plans activate and get an invoice due now,
+     * which then flows through the normal handleOverdueSubscriptions()
+     * pipeline above if it goes unpaid.
      */
-    public function handleTrialExpirations(): void
+    public function handleTrialExpirations(): int
     {
-        $expiredTrials = VendorSubscription::where('status', VendorSubscription::STATUS_TRIAL)
+        $count = 0;
+
+        VendorSubscription::where('status', VendorSubscription::STATUS_TRIAL)
             ->where('trial_ends_at', '<', now())
-            ->get();
-
-        foreach ($expiredTrials as $subscription) {
-            // If plan is free, activate automatically
-            if ($subscription->plan->billing_model === PricingPlan::MODEL_FREE) {
+            ->with('plan')
+            ->get()
+            ->each(function (VendorSubscription $subscription) use (&$count) {
                 $subscription->activate();
-            } else {
-                // Expire the trial
-                $subscription->update(['status' => VendorSubscription::STATUS_EXPIRED]);
 
-                // Generate first subscription invoice
-                $this->generateSubscriptionInvoice($subscription);
-            }
+                if ($subscription->plan->billing_model !== PricingPlan::MODEL_FREE) {
+                    $this->generateSubscriptionInvoice($subscription);
+                }
+
+                $count++;
+            });
+
+        return $count;
+    }
+
+    /**
+     * Attempt to charge a subscription's saved Flutterwave card token for
+     * renewal. Returns false on any failure (no token, gateway down, card
+     * declined) so the caller can fall back to the normal invoice + grace
+     * flow instead — auto-renewal has no separate failure path.
+     */
+    public function attemptAutoRenewal(VendorSubscription $subscription): bool
+    {
+        if (!$subscription->flutterwave_card_token) {
+            return false;
         }
+
+        $amount = $subscription->getEffectivePrice();
+        if ($amount <= 0) {
+            return false;
+        }
+
+        $integration = app(ApiIntegrationService::class)->getIntegration('flutterwave');
+        if (!$integration || !$integration->isActive()) {
+            return false;
+        }
+
+        $txRef = 'ghq_renew_' . $subscription->id . '_' . now()->format('YmdHis');
+
+        $result = (new FlutterwaveConnector())->chargeToken(
+            $integration->credentials,
+            $subscription->flutterwave_card_token,
+            $subscription->flutterwave_customer_email ?: $subscription->vendor->email,
+            $amount,
+            $subscription->plan->currency,
+            $txRef
+        );
+
+        if (!($result['success'] ?? false)) {
+            return false;
+        }
+
+        $invoice = $this->generateSubscriptionInvoice($subscription);
+        if (!$invoice) {
+            return false;
+        }
+
+        $invoice->recordPayment($amount, 'card', [
+            'reference_number' => $txRef,
+            'transaction_id' => $result['transaction_id'] ?? null,
+        ]);
+
+        $subscription->renew();
+
+        return true;
+    }
+
+    /**
+     * Verify a Flutterwave transaction and, if it's a successful payment for
+     * a known invoice, record it and reactivate the subscription. Shared by
+     * the payment-callback redirect and the webhook so both paths reconcile
+     * the same way (idempotent — already-paid invoices are a no-op).
+     */
+    public function reconcileFlutterwaveTransaction(string $txRef, string $transactionId): array
+    {
+        $integration = app(ApiIntegrationService::class)->getIntegration('flutterwave');
+        if (!$integration || !$integration->isActive()) {
+            return ['success' => false, 'message' => 'Flutterwave is not configured.'];
+        }
+
+        $verification = (new FlutterwaveConnector())->verifyTransaction($integration->credentials, $transactionId);
+        if (!($verification['success'] ?? false)) {
+            return $verification;
+        }
+
+        if ($verification['tx_ref'] !== $txRef || $verification['status'] !== 'successful') {
+            return ['success' => false, 'message' => 'Transaction could not be verified as successful.'];
+        }
+
+        $invoice = VendorPlatformInvoice::where('metadata->tx_ref', $txRef)->first();
+        if (!$invoice) {
+            return ['success' => false, 'message' => 'No matching invoice for this transaction.'];
+        }
+
+        if ($invoice->isPaid()) {
+            return ['success' => true, 'message' => 'Invoice already paid.', 'invoice' => $invoice];
+        }
+
+        if (round((float) $verification['amount'], 2) < round((float) $invoice->balance_due, 2)
+            || strtoupper($verification['currency']) !== strtoupper($invoice->currency)) {
+            return ['success' => false, 'message' => 'Payment amount/currency does not match the amount due.'];
+        }
+
+        $paymentMethod = match (true) {
+            str_contains($verification['payment_type'], 'card') => 'card',
+            str_contains($verification['payment_type'], 'mobilemoney'), str_contains($verification['payment_type'], 'mobile_money') => 'mobile_money',
+            default => 'other',
+        };
+
+        $invoice->recordPayment((float) $verification['amount'], $paymentMethod, [
+            'reference_number' => $verification['flw_ref'],
+            'transaction_id' => $transactionId,
+        ]);
+
+        if ($subscription = $invoice->subscription) {
+            $subscription->reactivate();
+
+            if (!empty($verification['card_token'])) {
+                $subscription->update([
+                    'flutterwave_card_token' => $verification['card_token'],
+                    'flutterwave_customer_email' => $verification['customer_email'] ?: $subscription->flutterwave_customer_email,
+                ]);
+            }
+
+            $this->notifyVendorOwners($subscription->vendor, new SubscriptionPaymentReceivedAlert($invoice));
+        }
+
+        return ['success' => true, 'message' => 'Payment confirmed.', 'invoice' => $invoice];
+    }
+
+    /**
+     * Run the full daily billing cycle: convert expired trials, generate
+     * renewal invoices (attempting auto-renewal first), then enforce
+     * grace/lockdown on anything left unpaid. Safe to re-run.
+     */
+    public function runDailyBillingCycle(): array
+    {
+        $summary = [
+            'trials_converted' => 0,
+            'periods_processed' => 0,
+            'auto_renewed' => 0,
+            'newly_past_due' => 0,
+            'newly_locked' => 0,
+        ];
+
+        $summary['trials_converted'] = $this->handleTrialExpirations();
+
+        VendorSubscription::where('status', VendorSubscription::STATUS_ACTIVE)
+            ->where('current_period_end', '<=', now())
+            ->with('plan', 'vendor')
+            ->get()
+            ->each(function (VendorSubscription $subscription) use (&$summary) {
+                if ($subscription->auto_renew && $this->attemptAutoRenewal($subscription)) {
+                    $summary['auto_renewed']++;
+                    return;
+                }
+
+                $this->processBillingCycle($subscription);
+                $summary['periods_processed']++;
+            });
+
+        [$summary['newly_past_due'], $summary['newly_locked']] = $this->handleOverdueSubscriptions();
+
+        return $summary;
+    }
+
+    private function notifyVendorOwners(Vendor $vendor, $notification): void
+    {
+        $vendor->users()
+            ->whereHas('roles', fn ($query) => $query->where('name', 'vendor-owner'))
+            ->get()
+            ->each(fn ($user) => $user->notify($notification));
     }
 
     /**

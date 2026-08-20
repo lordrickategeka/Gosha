@@ -44,7 +44,7 @@ class PlatformPayment extends Model
 
     public function invoice(): BelongsTo
     {
-        return $this->belongsTo(PlatformInvoice::class, 'platform_invoice_id');
+        return $this->belongsTo(VendorPlatformInvoice::class, 'platform_invoice_id');
     }
 
     public function receivedByUser(): BelongsTo

@@ -22,9 +22,40 @@ class Show extends Component
     public $discountReason = '';
     public $waiveSetupFee = false;
 
+    public $extendGraceDays = 3;
+
     public function mount(Vendor $vendor)
     {
         $this->vendor = $vendor;
+    }
+
+    public function extendGrace()
+    {
+        $this->validate(['extendGraceDays' => 'required|integer|min:1|max:365']);
+
+        $subscription = $this->vendor->activeSubscription;
+        abort_unless($subscription, 404);
+
+        $newGraceEndsAt = ($subscription->grace_ends_at ?? now())->addDays($this->extendGraceDays);
+
+        $subscription->update([
+            'grace_ends_at' => $newGraceEndsAt,
+            'locked_at' => $newGraceEndsAt->isFuture() ? null : $subscription->locked_at,
+        ]);
+
+        $this->vendor->refresh();
+        session()->flash('success', "Grace period extended to {$newGraceEndsAt->format('d M Y')}.");
+    }
+
+    public function updateLockdownOverride(?string $mode)
+    {
+        if (!in_array($mode, [null, '', 'limited', 'total'], true)) {
+            return;
+        }
+
+        $this->vendor->update(['lockdown_mode' => $mode ?: null]);
+        $this->vendor->refresh();
+        session()->flash('success', 'Lockdown policy updated for this vendor.');
     }
 
     public function toggleStatus()

@@ -25,10 +25,8 @@ Route::get('/', function () {
 // Auth routes (Laravel Breeze or custom)
 Route::middleware('guest')->group(function () {
     Route::get('login', \App\Domains\HR\Livewire\Auth\Login::class)->name('login');
-    Route::get(' ', \App\Domains\HR\Livewire\Auth\VendorRegistration::class)->name('register');
-
-
-    });
+    Route::get('register', \App\Domains\HR\Livewire\Auth\VendorRegistration::class)->name('register');
+});
 
     // Include expense module routes
 require __DIR__.'/expenses.php'; 
@@ -241,7 +239,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // // Platform Admin Routes
-    Route::prefix('platform')->name('platform.')->group(function () {
+    Route::prefix('platform')->name('platform.')->middleware('role:super-admin|platform-support')->group(function () {
         Route::get('/vendors', \App\Domains\Platform\Livewire\Platform\Vendors\Index::class)->name('vendors.index');
         Route::get('/vendors/create', \App\Domains\Platform\Livewire\Platform\Vendors\Create::class)->name('vendors.create');
         Route::get('/vendors/{vendor}', \App\Domains\Platform\Livewire\Platform\Vendors\Show::class)->name('vendors.show');
@@ -250,7 +248,21 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // new vendor -platform -pricing
-    Route::get('/platform-pricing', \App\Domains\Platform\Livewire\Platform\PlansComponent::class)->name('platform.pricing');
+    Route::get('/platform-pricing', \App\Domains\Platform\Livewire\Platform\PlansComponent::class)
+        ->name('platform.pricing')
+        ->middleware('role:super-admin|platform-support');
+
+    // Vendor subscription & billing self-service
+    Route::prefix('billing')->name('billing.')->group(function () {
+        Route::get('/', \App\Domains\Platform\Livewire\Billing\SubscriptionComponent::class)->name('subscription');
+        Route::get('/locked', \App\Domains\Platform\Livewire\Billing\LockedComponent::class)->name('locked');
+        Route::post('/pay/{invoice}', [\App\Http\Controllers\SubscriptionPaymentController::class, 'pay'])->name('pay');
+        Route::get('/pay/callback', [\App\Http\Controllers\SubscriptionPaymentController::class, 'callback'])->name('pay.callback');
+        Route::get('/export', [\App\Http\Controllers\SubscriptionPaymentController::class, 'exportData'])->name('export');
+        Route::get('/support', function () {
+            return view('billing.support');
+        })->name('support');
+    });
 
     // Template management
     // Route::get('/templates', TemplateList::class)

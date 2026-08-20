@@ -50,7 +50,7 @@ class VendorUsageLog extends Model
 
     public function platformInvoice(): BelongsTo
     {
-        return $this->belongsTo(PlatformInvoice::class);
+        return $this->belongsTo(VendorPlatformInvoice::class, 'platform_invoice_id');
     }
 
     // Scopes

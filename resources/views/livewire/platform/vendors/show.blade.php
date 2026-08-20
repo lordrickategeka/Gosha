@@ -131,6 +131,15 @@
                             <button wire:click="showTrialEdit" class="gh-btn gh-btn--sm">Adjust trial</button>
                         @endif
                     @endif
+
+                    <div style="padding-top:10px; border-top:1px solid var(--gh-hairline);">
+                        <span class="gh-label">Lockdown policy override</span>
+                        <select wire:change="updateLockdownOverride($event.target.value)" class="gh-select" style="width:100%; margin-top:4px;">
+                            <option value="" {{ !$vendor->lockdown_mode ? 'selected' : '' }}>Use platform default</option>
+                            <option value="limited" {{ $vendor->lockdown_mode === 'limited' ? 'selected' : '' }}>Limited modules on lockdown</option>
+                            <option value="total" {{ $vendor->lockdown_mode === 'total' ? 'selected' : '' }}>Total lockdown</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -164,6 +173,27 @@
                         @if($sub->next_billing_date)
                             <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Next billing</span><span>{{ $sub->next_billing_date->format('d M Y') }}</span></div>
                         @endif
+
+                        @if($sub->isInGracePeriod())
+                            <div style="padding:8px; border-radius:8px; background:color-mix(in srgb, var(--gh-warning) 12%, transparent);">
+                                <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Grace ends</span><span style="font-weight:700; color:var(--gh-warning);">{{ $sub->grace_ends_at->format('d M Y') }} ({{ $sub->graceDaysRemaining() }}d left)</span></div>
+                            </div>
+                        @elseif($sub->isLocked())
+                            <div style="padding:8px; border-radius:8px; background:color-mix(in srgb, var(--gh-error) 12%, transparent);">
+                                <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Locked since</span><span style="font-weight:700; color:var(--gh-error);">{{ $sub->locked_at->format('d M Y') }}</span></div>
+                            </div>
+                        @endif
+
+                        @if($sub->isInGracePeriod() || $sub->isLocked())
+                            <div style="display:flex; align-items:flex-end; gap:8px; padding-top:8px; border-top:1px solid var(--gh-hairline);">
+                                <div class="gh-field" style="flex:1;">
+                                    <span class="gh-label">Extend grace by (days)</span>
+                                    <input type="number" wire:model="extendGraceDays" class="gh-input" style="width:100%;" min="1" max="365">
+                                </div>
+                                <button wire:click="extendGrace" class="gh-btn gh-btn--primary gh-btn--sm">Extend</button>
+                            </div>
+                        @endif
+
                         @if(!$sub->isCancelled())
                             <div style="padding-top:8px; border-top:1px solid var(--gh-hairline);">
                                 <button wire:click="cancelSubscription" wire:confirm="Cancel this vendor's subscription immediately?" class="gh-btn gh-btn--block gh-btn--sm" style="color:var(--gh-error);">Cancel subscription</button>

@@ -53,7 +53,7 @@
                     <div class="divider">Page Settings</div>
 
                     {{-- Page Size & Orientation --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text font-medium">Page Size</span>
@@ -79,7 +79,7 @@
                     <div class="divider">Styling</div>
 
                     {{-- Colors --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text font-medium">Primary Color</span>
@@ -120,7 +120,7 @@
                     </div>
 
                     {{-- Font --}}
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label">
                                 <span class="label-text font-medium">Font Family</span>

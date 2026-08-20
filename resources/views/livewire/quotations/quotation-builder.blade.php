@@ -24,7 +24,7 @@
                 <div class="gh-stack" style="gap:12px;">
                     @forelse($items as $index => $item)
                         <div class="gh-card gh-card--pad">
-                            <div style="display:grid; grid-template-columns:repeat(12,1fr); gap:10px;">
+                            <div class="gh-form-grid" style="display:grid; grid-template-columns:repeat(12,1fr); gap:10px;">
                                 <div class="gh-field" style="grid-column:span 2;">
                                     <span class="gh-label">Type</span>
                                     <select wire:model="items.{{ $index }}.item_type" class="gh-select" style="width:100%;">

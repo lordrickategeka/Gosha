@@ -37,19 +37,7 @@ Options: ManualEntry, OBD_Dongle, Driver_App
 
 ## Step 2: Database Migrations
 
-### 2.1 Update vehicles table
-Add new columns to existing `vehicles` table:
-- `engine_code` (VARCHAR) - Engine code like "2GD-FTV"
-- `engine_displacement` (DECIMAL) - Engine size in liters (e.g., 2.0)
-- `drivetrain_type` (ENUM) - FWD, RWD, AWD, 4WD
-- `transmission_code` (VARCHAR) - Transmission code
-- `fuel_type` (ENUM expanded) - Gasoline, Diesel, FlexFuel, HEV, PHEV, BEV
-- `transmission_type` (ENUM expanded) - Manual, Automatic, CVT, DualClutch
-- `status` (ENUM) - Active, InShop, Decommissioned, Sold
-- `in_service_date` (DATE) - When vehicle started operating
-- `acquisition_date` (DATE) - When vehicle was acquired
-- `acquisition_cost` (DECIMAL) - Purchase price
-- `ownership_status` (ENUM) - Owned, Leased, Financed, CustomerOwned
+### 2.1  Owned, Leased, Financed, CustomerOwned
 - `lease_end_date` (DATE, nullable)
 - `lease_mileage_limit` (INT, nullable)
 - `current_value` (DECIMAL) - Estimated current value

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\EnsureBranchSession::class,
             \App\Http\Middleware\EnsurePasswordChanged::class,
+            \App\Http\Middleware\EnforceSubscriptionAccess::class,
         ]);
         $middleware->alias([
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

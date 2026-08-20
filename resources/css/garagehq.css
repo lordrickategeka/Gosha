@@ -201,8 +201,16 @@
 .gh-topbar__title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
 .gh-topbar__actions { display: flex; align-items: center; gap: 9px; }
 
+/* garagehq.css loads after app.css (Tailwind), so an unconditional
+   display:flex here would always beat Tailwind's `hidden` utility on
+   source order regardless of viewport — the "hidden md:flex" classes on
+   the topbar search box would never actually hide it below md. Scope the
+   flex display to the same breakpoint Tailwind's md:flex uses instead. */
+@media (min-width: 768px) {
+  .gh-search { display: flex; }
+}
 .gh-search {
-  display: flex; align-items: center; gap: 8px;
+  align-items: center; gap: 8px;
   width: 230px;
   padding: 7px 11px;
   border: 1px solid var(--gh-base-300);
@@ -561,9 +569,15 @@
    consumes a second grid track on desktop and pushes <main> onto row 2. */
 .gh-sidebar-overlay { display: none; }
 @media (max-width: 1024px) {
-  .gh-app { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr), not 1fr: a bare 1fr track won't shrink its grid item
+     (main) below the min-content width of its widest descendant (a table,
+     the kanban board, a 12-col form grid), which was stretching the whole
+     page horizontally instead of letting each .gh-table-scroll / .gh-board
+     scroll internally as intended. */
+  .gh-app { grid-template-columns: minmax(0, 1fr); }
   .gh-sidebar {
     position: fixed; inset: 0 auto 0 0;
+    width: min(var(--gh-sidebar-w), 85vw);
     transform: translateX(-100%);
     transition: transform .2s ease;
   }
@@ -577,6 +591,66 @@
   .gh-menu-toggle { display: inline-flex !important; }
 }
 .gh-menu-toggle { display: none; }
+
+/* ---------- 15b. Kanban: horizontal scroll before columns get crushed ----------
+   .gh-board is used for the wash-bay queue; 3-4 fixed columns don't fit a
+   tablet let alone a phone, so it switches to a swipeable row instead of
+   trying to stack cards from different stages into one long list. */
+@media (max-width: 900px) {
+  .gh-board {
+    grid-template-columns: unset !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(240px, 82vw);
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    /* .gh-page is a flex column; without this a flex item won't shrink
+       below its content's intrinsic width, so the board (and the whole
+       page under it) grows wide instead of scrolling internally. */
+    min-width: 0;
+  }
+  .gh-board__col { scroll-snap-align: start; }
+}
+
+/* ---------- 15c. Phone layout ----------
+   Below 640px every multi-column layout in the design system collapses to
+   one column. Grids that set their own column count via an inline style
+   (stat rows with 5-7 tiles, etc.) are overridden with !important since an
+   inline style otherwise beats any class-based rule regardless of source
+   order. Children carrying an inline `grid-column: span N` (from repeat(12)
+   field grids) are reset to `auto` so they don't force extra implicit
+   columns once the parent is down to a single track. */
+@media (max-width: 640px) {
+  :root { --gh-page-pad: 14px 14px 32px; }
+
+  .gh-topbar { padding: 12px 14px; gap: 10px; }
+  .gh-topbar__title { font-size: 17px; }
+
+  .gh-grid-2, .gh-grid-3, .gh-grid-4, .gh-split, .gh-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .gh-grid-2 > *, .gh-grid-3 > *, .gh-grid-4 > *, .gh-split > *, .gh-form-grid > * {
+    grid-column: auto !important;
+  }
+
+  .gh-card--pad { padding: 14px; }
+  .gh-card__head { flex-wrap: wrap; row-gap: 8px; }
+
+  .gh-table-toolbar { flex-direction: column; align-items: stretch; }
+  .gh-table-toolbar__filters { width: 100%; }
+
+  .gh-pagination { flex-direction: column; gap: 10px; align-items: stretch; }
+  .gh-pagination__pages { justify-content: center; flex-wrap: wrap; }
+
+  .gh-steps { overflow-x: auto; padding-bottom: 4px; }
+
+  .gh-stat__value { font-size: 21px; }
+
+  .gh-cal-cell { min-height: 64px !important; padding: 2px !important; }
+}
+
+.gh-steps__item { flex-shrink: 0; }
 
 /* ---------- 15b. Real links ----------
    detheme drives navigation with <button data-goto> (fake SPA routing),

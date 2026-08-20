@@ -28,6 +28,8 @@
             <!-- Topbar -->
             @include('components.partials.navbar')
 
+            @include('components.billing.grace-banner')
+
             {{ $slot }}
         </main>
 

@@ -96,17 +96,17 @@ class VendorPlatformInvoice extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(PlatformInvoiceItem::class);
+        return $this->hasMany(PlatformInvoiceItem::class, 'platform_invoice_id');
     }
 
     public function payments(): HasMany
     {
-        return $this->hasMany(PlatformPayment::class);
+        return $this->hasMany(PlatformPayment::class, 'platform_invoice_id');
     }
 
     public function usageLogs(): HasMany
     {
-        return $this->hasMany(VendorUsageLog::class);
+        return $this->hasMany(VendorUsageLog::class, 'platform_invoice_id');
     }
 
     // Scopes

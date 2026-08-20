@@ -144,7 +144,8 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Registration is handled by the custom vendor-onboarding wizard
+        // (App\Domains\HR\Livewire\Auth\VendorRegistration) at /register instead.
         Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),

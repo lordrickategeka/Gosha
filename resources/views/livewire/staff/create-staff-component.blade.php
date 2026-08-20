@@ -4,7 +4,7 @@
             <div class="bg-white shadow-sm rounded-lg p-6">
                 <h2 class="text-lg font-bold mb-4">Create New Staff Member</h2>
                 <form wire:submit.prevent="createStaff">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="first_name">First Name</label>
                             <input type="text" id="first_name" wire:model="first_name" class="form-input">

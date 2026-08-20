@@ -15,7 +15,7 @@
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-2 gap-4 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div class="stat bg-base-100 rounded-lg shadow-sm p-4">
             <div class="stat-title text-xs">Today</div>
             <div class="stat-value text-lg text-error">UGX {{ number_format($totals['today']) }}</div>

@@ -2,11 +2,12 @@
 
 namespace App\Domains\HR\Livewire\Auth;
 
+use App\Domains\Finance\Services\BillingService;
 use App\Domains\Organization\Models\Branch;
 use App\Domains\Organization\Models\Setting;
 use App\Models\User;
+use App\Domains\Platform\Models\PricingPlan;
 use App\Domains\Platform\Models\Vendor;
-use App\Domains\Platform\Models\VendorBillingConfig;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,7 @@ use Livewire\Component;
 class VendorRegistration extends Component
 {
     public int $currentStep = 1;
-    public int $totalSteps = 4;
+    public int $totalSteps = 5;
 
     // Step 1: Business Details
     public $vendor_name = '';
@@ -31,11 +32,30 @@ class VendorRegistration extends Component
     public $branch_phone = '';
     public $branch_email = '';
 
-    // Step 3: Owner Account
+    // Step 3: Choose Plan
+    public $selectedPlanId = null;
+
+    // Step 4: Owner Account
     public $owner_name = '';
     public $owner_email = '';
     public $password = '';
     public $password_confirmation = '';
+
+    public function mount()
+    {
+        $this->selectedPlanId = PricingPlan::where('is_active', true)->where('is_default', true)->value('id')
+            ?? PricingPlan::where('is_active', true)->orderBy('sort_order')->value('id');
+    }
+
+    public function getPlansProperty()
+    {
+        return PricingPlan::where('is_active', true)->orderBy('sort_order')->orderBy('base_price')->get();
+    }
+
+    public function selectPlan(int $planId)
+    {
+        $this->selectedPlanId = $planId;
+    }
 
     public function nextStep()
     {
@@ -71,6 +91,9 @@ class VendorRegistration extends Component
                 'branch_email' => 'nullable|email|max:255',
             ]),
             3 => $this->validate([
+                'selectedPlanId' => 'required|exists:pricing_plans,id',
+            ]),
+            4 => $this->validate([
                 'owner_name' => 'required|string|max:255',
                 'owner_email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8|confirmed',
@@ -89,30 +112,29 @@ class VendorRegistration extends Component
         $this->currentStep = 3;
         $this->validateCurrentStep();
         $this->currentStep = 4;
+        $this->validateCurrentStep();
+        $this->currentStep = 5;
 
+        $plan = PricingPlan::findOrFail($this->selectedPlanId);
         $owner = null;
+        $subscription = null;
 
-        DB::transaction(function () use (&$owner) {
-            // 1. Create Vendor (trial, 14 days)
+        DB::transaction(function () use (&$owner, &$subscription, $plan) {
+            // 1. Create Vendor (status stays "trial" until the subscription
+            // says otherwise — the subscription is the source of truth for
+            // billing state, this flag is only used for admin manual suspend)
             $vendor = Vendor::create([
                 'name' => $this->vendor_name,
                 'email' => $this->vendor_email,
                 'phone' => $this->vendor_phone,
                 'address' => $this->vendor_address,
                 'status' => 'trial',
-                'trial_ends_at' => now()->addDays(14),
             ]);
 
-            // 2. Create default billing config (none — platform admin configures later)
-            VendorBillingConfig::create([
-                'vendor_id' => $vendor->id,
-                'billing_model' => 'none',
-            ]);
-
-            // 3. Create Default Settings
+            // 2. Create Default Settings
             Setting::createDefaultsForVendor($vendor->id);
 
-            // 4. Create Main Branch
+            // 3. Create Main Branch
             $branch = Branch::create([
                 'vendor_id' => $vendor->id,
                 'name' => $this->branch_name,
@@ -123,7 +145,7 @@ class VendorRegistration extends Component
                 'is_main' => true,
             ]);
 
-            // 5. Create Owner User
+            // 4. Create Owner User
             $owner = User::create([
                 'vendor_id' => $vendor->id,
                 'name' => $this->owner_name,
@@ -134,6 +156,16 @@ class VendorRegistration extends Component
 
             $owner->assignRole('vendor-owner');
             $owner->branches()->attach($branch->id, ['is_primary' => true]);
+
+            // 5. Subscribe to the chosen plan (trial or billed immediately,
+            // handled by BillingService::createSubscription)
+            $subscription = app(BillingService::class)->createSubscription($vendor, $plan);
+
+            if ($subscription->isTrialing()) {
+                $vendor->update(['status' => 'trial', 'trial_ends_at' => $subscription->trial_ends_at]);
+            } else {
+                $vendor->update(['status' => 'active']);
+            }
         });
 
         // Auto-login
@@ -147,9 +179,15 @@ class VendorRegistration extends Component
 
         session()->regenerate();
 
-        session()->flash('success', 'Welcome! Your account has been created. You have a 14-day free trial.');
+        if ($subscription->isTrialing()) {
+            session()->flash('success', "Welcome! Your account has been created. You have a {$plan->trial_days}-day free trial.");
 
-        return redirect()->route('dashboard');
+            return redirect()->route('dashboard');
+        }
+
+        session()->flash('success', 'Welcome! Your account has been created. Complete payment below to activate your subscription.');
+
+        return redirect()->route('billing.subscription');
     }
 
     public function render()

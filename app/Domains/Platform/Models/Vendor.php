@@ -35,6 +35,8 @@ class Vendor extends Model
         'status',
         'trial_ends_at',
         'pricing_plan_id',
+        'lockdown_mode',
+        'grace_days_override',
     ];
 
     protected $casts = [
@@ -170,5 +172,22 @@ class Vendor extends Model
     public function getDefaultVatRate(): float
     {
         return (float) ($this->default_vat_rate ?? 0);
+    }
+
+    // Billing / lockdown
+
+    public function effectiveGraceDays(): int
+    {
+        return (int) ($this->grace_days_override ?? PlatformSetting::get(PlatformSetting::BILLING_GRACE_DAYS, 3));
+    }
+
+    public function effectiveLockdownMode(): string
+    {
+        return (string) ($this->lockdown_mode ?? PlatformSetting::get(PlatformSetting::BILLING_LOCKDOWN_MODE, 'limited'));
+    }
+
+    public function isLockedOut(): bool
+    {
+        return (bool) $this->activeSubscription?->isLocked();
     }
 }

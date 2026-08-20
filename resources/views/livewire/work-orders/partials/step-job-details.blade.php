@@ -99,7 +99,7 @@
     <div style="margin-top:20px; border-top:1px solid var(--gh-hairline); padding-top:16px;">
         <div class="gh-card__title" style="margin-bottom:10px; font-size:13px;">Items left in vehicle</div>
 
-        <div style="display:grid; grid-template-columns:repeat(12,1fr); gap:10px; align-items:end;">
+        <div class="gh-form-grid" style="display:grid; grid-template-columns:repeat(12,1fr); gap:10px; align-items:end;">
             <div class="gh-field" style="grid-column:span 3;">
                 <span class="gh-label">Item</span>
                 <input type="text" wire:model="left_item_name" class="gh-input" placeholder="e.g. Car jack">

@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
         $this->call(DemoDataSeeder::class);
         $this->call(QualityCheckTemplateSeeder::class);
         $this->call(InventoryCategorySeeder::class);
+        $this->call(PlatformSettingsSeeder::class);
+        $this->call(PricingPlanSeeder::class);
 
     }
 }

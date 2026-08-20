@@ -15,3 +15,5 @@ Route::prefix('job-cards')->group(function () {
     Route::get('/search-customers', [JobCardController::class, 'searchCustomers']);
     Route::get('/search-vehicles', [JobCardController::class, 'searchVehicles']);
 });
+
+Route::post('/webhooks/flutterwave', [\App\Http\Controllers\FlutterwaveWebhookController::class, 'handle']);

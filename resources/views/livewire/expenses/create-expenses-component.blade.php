@@ -20,7 +20,7 @@
                     @error('description') <span class="label-text-alt text-error">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="form-control">
                         <label class="label"><span class="label-text font-medium">Amount (UGX) *</span></label>
                         <input type="number" wire:model="amount" class="input input-bordered" min="0" />

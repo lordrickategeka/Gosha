@@ -115,7 +115,7 @@
             <!-- Items Left In Vehicle -->
             <div class="gh-card gh-card--pad">
                 <div class="gh-card__title" style="margin-bottom:14px;">Items Left In Vehicle</div>
-                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+                <div class="gh-form-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
                     <div class="gh-field" style="grid-column:span 2;">
                         <span class="gh-label">Item</span>
                         <input type="text" wire:model="left_item_name" class="gh-input" placeholder="e.g. Wheel spanner">
@@ -165,7 +165,7 @@
                     <div class="gh-card gh-card--pad" style="position:relative; margin-bottom:12px;">
                         <button type="button" wire:click="removeItem({{ $index }})" class="gh-btn gh-btn--sm" style="position:absolute; top:10px; right:10px; color:var(--gh-error);" title="Remove item">✕</button>
 
-                        <div style="display:grid; grid-template-columns:repeat(12,1fr); gap:12px; align-items:start;">
+                        <div class="gh-form-grid" style="display:grid; grid-template-columns:repeat(12,1fr); gap:12px; align-items:start;">
                             <div class="gh-field" style="grid-column:span 2;">
                                 <span class="gh-label">Type</span>
                                 <select wire:model="items.{{ $index }}.item_type" class="gh-select" style="width:100%;">
