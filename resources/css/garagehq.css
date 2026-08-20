@@ -226,10 +226,14 @@
 
 /* ---------- 5. Page + layout helpers ---------- */
 .gh-page { padding: var(--gh-page-pad); display: flex; flex-direction: column; gap: var(--gh-gap-lg); }
-.gh-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gh-gap-lg); align-items: start; }
-.gh-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gh-gap); }
-.gh-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gh-gap); }
-.gh-split  { display: grid; grid-template-columns: 1.55fr 1fr; gap: var(--gh-gap-lg); align-items: start; }
+/* minmax(0, Nfr), not a bare Nfr: an fr track's base size is its content's
+   min-content width unless clamped, so a wide child (a table, a nested
+   12-col form grid) would otherwise force the whole row wider than its
+   container instead of scrolling/wrapping inside itself. */
+.gh-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gh-gap-lg); align-items: start; }
+.gh-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gh-gap); }
+.gh-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gh-gap); }
+.gh-split  { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: var(--gh-gap-lg); align-items: start; }
 .gh-stack  { display: flex; flex-direction: column; gap: var(--gh-gap-lg); }
 
 /* ---------- 6. Cards ---------- */
@@ -482,7 +486,7 @@
 .gh-meter__fill { height: 6px; border-radius: 4px; background: var(--gh-primary); }
 
 /* ---------- 12. Kanban (wash bay board) ---------- */
-.gh-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gh-gap); align-items: start; }
+.gh-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gh-gap); align-items: start; }
 .gh-board__col {
   display: flex; flex-direction: column; gap: 10px;
   min-height: 240px;
@@ -620,7 +624,12 @@
    inline style otherwise beats any class-based rule regardless of source
    order. Children carrying an inline `grid-column: span N` (from repeat(12)
    field grids) are reset to `auto` so they don't force extra implicit
-   columns once the parent is down to a single track. */
+   columns once the parent is down to a single track.
+   minmax(0, 1fr), not a bare 1fr: the same track-sizing gotcha as .gh-app
+   above — a lone 1fr track still won't shrink below the min-content width
+   of whatever's inside it (a table, another nested grid), so a wide child
+   was pushing the whole grid container wider than its own box and
+   overflowing the page since nothing between here and <body> clips it. */
 @media (max-width: 640px) {
   :root { --gh-page-pad: 14px 14px 32px; }
 
@@ -628,7 +637,7 @@
   .gh-topbar__title { font-size: 17px; }
 
   .gh-grid-2, .gh-grid-3, .gh-grid-4, .gh-split, .gh-form-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
   }
   .gh-grid-2 > *, .gh-grid-3 > *, .gh-grid-4 > *, .gh-split > *, .gh-form-grid > * {
     grid-column: auto !important;
