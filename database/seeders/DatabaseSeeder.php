@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(BasicEntitiesSeeder::class);
         // $this->call(UserSeeder::class);
         $this->call(RolesAndPermissionsSeeder::class);
+        $this->call(MarketplaceRolesSeeder::class);
         $this->call(DemoDataSeeder::class);
         $this->call(QualityCheckTemplateSeeder::class);
         $this->call(InventoryCategorySeeder::class);

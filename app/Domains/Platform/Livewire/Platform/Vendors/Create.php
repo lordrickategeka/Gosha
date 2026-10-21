@@ -24,6 +24,7 @@ class Create extends Component
     public $vendor_email = '';
     public $vendor_phone = '';
     public $vendor_address = '';
+    public string $vendor_type = 'garage';
 
     // Step 2: Main Branch
     public $branch_name = '';
@@ -44,32 +45,58 @@ class Create extends Component
     public $commission_percent = '';
     public $trial_days = 14;
 
+    /** Suppliers get no branch and no billing config — steps 2 and 4 don't apply to them. */
+    protected function isSupplierType(): bool
+    {
+        return $this->vendor_type === 'supplier';
+    }
+
+    /** @return int[] */
+    protected function skippedSteps(): array
+    {
+        return $this->isSupplierType() ? [2, 4] : [];
+    }
+
     public function nextStep()
     {
         $this->validateCurrentStep();
-        $this->currentStep = min($this->currentStep + 1, $this->totalSteps);
+
+        $next = min($this->currentStep + 1, $this->totalSteps);
+        while (in_array($next, $this->skippedSteps(), true) && $next < $this->totalSteps) {
+            $next++;
+        }
+        $this->currentStep = $next;
     }
 
     public function previousStep()
     {
-        $this->currentStep = max($this->currentStep - 1, 1);
+        $prev = max($this->currentStep - 1, 1);
+        while (in_array($prev, $this->skippedSteps(), true) && $prev > 1) {
+            $prev--;
+        }
+        $this->currentStep = $prev;
     }
 
     public function goToStep(int $step)
     {
-        if ($step < $this->currentStep) {
+        if ($step < $this->currentStep && ! in_array($step, $this->skippedSteps(), true)) {
             $this->currentStep = $step;
         }
     }
 
     protected function validateCurrentStep()
     {
+        if (in_array($this->currentStep, $this->skippedSteps(), true)) {
+            return;
+        }
+
         match ($this->currentStep) {
             1 => $this->validate([
                 'vendor_name' => 'required|string|max:255',
                 'vendor_email' => 'required|email|unique:vendors,email',
                 'vendor_phone' => 'nullable|string|max:50',
                 'vendor_address' => 'nullable|string|max:500',
+                'vendor_type' => 'required|in:garage,car_wash,supplier,hybrid',
             ]),
             2 => $this->validate([
                 'branch_name' => 'required|string|max:255',
@@ -108,43 +135,50 @@ class Create extends Component
         $this->currentStep = 5;
 
         $generatedPassword = Str::random(12);
+        $isSupplier = $this->isSupplierType();
 
-        DB::transaction(function () use ($generatedPassword) {
+        DB::transaction(function () use ($generatedPassword, $isSupplier) {
             // 1. Create Vendor
             $vendor = Vendor::create([
                 'name' => $this->vendor_name,
                 'email' => $this->vendor_email,
                 'phone' => $this->vendor_phone,
                 'address' => $this->vendor_address,
-                'status' => 'trial',
-                'trial_ends_at' => $this->trial_days > 0 ? now()->addDays($this->trial_days) : null,
+                'status' => $isSupplier ? 'active' : 'trial',
+                'trial_ends_at' => (! $isSupplier && $this->trial_days > 0) ? now()->addDays($this->trial_days) : null,
+                'vendor_type' => $this->vendor_type,
+                'is_verified_supplier' => false,
             ]);
 
-            // 2. Create Billing Config
-            VendorBillingConfig::create([
-                'vendor_id' => $vendor->id,
-                'billing_model' => $this->billing_model,
-                'subscription_amount' => $this->subscription_amount ?: null,
-                'subscription_interval' => $this->subscription_interval,
-                'transaction_fee_percent' => $this->transaction_fee_percent ?: null,
-                'transaction_fee_flat' => $this->transaction_fee_flat ?: null,
-                'commission_percent' => $this->commission_percent ?: null,
-                'next_billing_date' => $this->billing_model !== 'none' ? now()->addDays($this->trial_days > 0 ? $this->trial_days : 30) : null,
-            ]);
+            $branch = null;
 
-            // 3. Create Default Settings
-            Setting::createDefaultsForVendor($vendor->id);
+            if (! $isSupplier) {
+                // 2. Create Billing Config
+                VendorBillingConfig::create([
+                    'vendor_id' => $vendor->id,
+                    'billing_model' => $this->billing_model,
+                    'subscription_amount' => $this->subscription_amount ?: null,
+                    'subscription_interval' => $this->subscription_interval,
+                    'transaction_fee_percent' => $this->transaction_fee_percent ?: null,
+                    'transaction_fee_flat' => $this->transaction_fee_flat ?: null,
+                    'commission_percent' => $this->commission_percent ?: null,
+                    'next_billing_date' => $this->billing_model !== 'none' ? now()->addDays($this->trial_days > 0 ? $this->trial_days : 30) : null,
+                ]);
 
-            // 4. Create Main Branch
-            $branch = Branch::create([
-                'vendor_id' => $vendor->id,
-                'name' => $this->branch_name,
-                'address' => $this->branch_address,
-                'phone' => $this->branch_phone,
-                'email' => $this->branch_email,
-                'is_active' => true,
-                'is_main' => true,
-            ]);
+                // 3. Create Default Settings
+                Setting::createDefaultsForVendor($vendor->id);
+
+                // 4. Create Main Branch
+                $branch = Branch::create([
+                    'vendor_id' => $vendor->id,
+                    'name' => $this->branch_name,
+                    'address' => $this->branch_address,
+                    'phone' => $this->branch_phone,
+                    'email' => $this->branch_email,
+                    'is_active' => true,
+                    'is_main' => true,
+                ]);
+            }
 
             // 5. Create Owner User
             $owner = User::create([
@@ -156,8 +190,11 @@ class Create extends Component
                 'must_change_password' => true,
             ]);
 
-            $owner->assignRole('vendor-owner');
-            $owner->branches()->attach($branch->id, ['is_primary' => true]);
+            $owner->assignRole($isSupplier ? 'supplier_admin' : 'vendor-owner');
+
+            if ($branch) {
+                $owner->branches()->attach($branch->id, ['is_primary' => true]);
+            }
 
             // 6. Send Welcome Email
             Mail::to($owner->email)->send(new VendorWelcomeMail($vendor, $owner, $generatedPassword));

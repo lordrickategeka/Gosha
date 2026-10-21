@@ -120,6 +120,10 @@ class CreateInvoicesComponent extends Component
             'email' => $this->newCustomerEmail,
         ]);
 
+        if (session('current_branch_id')) {
+            $customer->branches()->attach(session('current_branch_id'), ['is_primary' => true]);
+        }
+
         $this->customer_id = $customer->id;
         $this->closeCustomerModal();
 

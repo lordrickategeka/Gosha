@@ -8,6 +8,7 @@ use App\Domains\Expenses\Models\ExpenseCategory;
 use App\Domains\Inventory\Models\InventoryCategory;
 use App\Domains\Inventory\Models\InventoryItem;
 use App\Domains\Inventory\Models\Supplier;
+use App\Domains\Marketplace\Models\MarketplaceListing;
 use App\Domains\Organization\Models\Branch;
 use App\Domains\Organization\Models\Setting;
 use App\Domains\ServiceConfig\Models\ServiceTemplate;
@@ -37,10 +38,21 @@ class Vendor extends Model
         'pricing_plan_id',
         'lockdown_mode',
         'grace_days_override',
+        'vendor_type',
+        'is_verified_supplier',
+        'supplier_rating_avg',
+        'supplier_rating_count',
+        'vat_registered',
+        'vat_number',
+        'default_vat_rate',
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'is_verified_supplier' => 'boolean',
+        'supplier_rating_avg' => 'decimal:2',
+        'vat_registered' => 'boolean',
+        'default_vat_rate' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -137,10 +149,21 @@ class Vendor extends Model
         return $this->hasMany(Setting::class);
     }
 
+    public function marketplaceListings(): HasMany
+    {
+        return $this->hasMany(MarketplaceListing::class, 'supplier_vendor_id');
+    }
+
     // Helpers
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /** True only for a supplier/hybrid vendor that a platform admin has verified. */
+    public function isVerifiedSupplier(): bool
+    {
+        return in_array($this->vendor_type, ['supplier', 'hybrid'], true) && $this->is_verified_supplier;
     }
 
     public function isTrial(): bool

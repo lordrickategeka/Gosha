@@ -206,4 +206,8 @@
         Already have an account?
         <a href="{{ route('login') }}" class="link link-primary font-medium">Sign in</a>
     </p>
+    <p class="text-center text-sm text-base-content/60 mt-1">
+        Selling parts, not running a garage?
+        <a href="{{ route('supplier.register') }}" class="link link-primary font-medium">Register as a supplier</a>
+    </p>
 </div>

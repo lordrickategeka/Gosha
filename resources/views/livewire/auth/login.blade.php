@@ -68,6 +68,10 @@
                 Don't have an account?
                 <a href="{{ route('register') }}" class="link link-primary font-medium">Contact us</a>
             </p>
+            <p class="text-center text-sm text-base-content/60 mt-1">
+                Selling parts?
+                <a href="{{ route('supplier.register') }}" class="link link-primary font-medium">Register as a supplier</a>
+            </p>
         </div>
     </div>
 

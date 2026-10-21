@@ -2,6 +2,7 @@
 
 namespace App\Domains\Marketplace\Services;
 
+use App\Domains\Marketplace\Enums\PaymentStatus;
 use App\Domains\Marketplace\Enums\PurchaseOrderStatus;
 use App\Domains\Marketplace\Models\MarketplaceListing;
 use App\Domains\Marketplace\Models\PurchaseOrder;
@@ -85,6 +86,24 @@ class PurchaseOrderService
             'tax_total' => round($tax, 2),
             'total' => round($subtotal + $tax, 2),
         ])->save();
+    }
+
+    /**
+     * Record a payment against a PO's invoice and derive payment_status from the running
+     * total — unpaid/partial/paid rather than a status the caller has to keep in sync by hand.
+     */
+    public function markPaid(PurchaseOrder $po, float $amount): void
+    {
+        $amountPaid = round(min((float) $po->amount_paid + $amount, (float) $po->total), 2);
+
+        $po->update([
+            'amount_paid' => $amountPaid,
+            'payment_status' => match (true) {
+                $amountPaid <= 0 => PaymentStatus::Unpaid,
+                $amountPaid < (float) $po->total => PaymentStatus::Partial,
+                default => PaymentStatus::Paid,
+            },
+        ]);
     }
 
     public function nextPoNumber(): string

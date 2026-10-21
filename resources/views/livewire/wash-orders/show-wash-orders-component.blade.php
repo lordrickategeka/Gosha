@@ -33,6 +33,9 @@
                 @if($washOrder->canComplete())
                     <button wire:click="complete" class="gh-btn gh-btn--primary">Complete wash</button>
                 @endif
+                @if($washOrder->canReverse())
+                    <button wire:click="reverseToQueue" wire:confirm="Unassign this order and send it back to the waiting queue?" class="gh-btn">Return to queue</button>
+                @endif
                 @if($washOrder->status === 'queued')
                     <button wire:click="cancel" class="gh-btn" style="color:var(--gh-error);">Cancel</button>
                 @endif

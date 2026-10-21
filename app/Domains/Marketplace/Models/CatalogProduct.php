@@ -2,6 +2,7 @@
 
 namespace App\Domains\Marketplace\Models;
 
+use App\Domains\Platform\Models\Vendor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +33,11 @@ class CatalogProduct extends Model
     public function listings(): HasMany
     {
         return $this->hasMany(MarketplaceListing::class);
+    }
+
+    public function proposer(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class, 'created_by_vendor_id');
     }
 
     public function compatibleVariants(): BelongsToMany

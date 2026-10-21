@@ -22,9 +22,17 @@ class CustomersComponent extends Component
 
 public function render()
     {
+        $branchId = session('current_branch_id');
+
         $customers = Customer::withCount(['vehicles', 'workOrders', 'washOrders'])
             ->withSum('invoices', 'total')
-            ->with('branch')
+            ->with('branches')
+            ->when($branchId, function ($query) use ($branchId) {
+                $query->where(function ($sub) use ($branchId) {
+                    $sub->whereHas('branches', fn ($bq) => $bq->where('branches.id', $branchId))
+                        ->orWhereDoesntHave('branches');
+                });
+            })
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', "%{$this->search}%")
                       ->orWhere('phone', 'like', "%{$this->search}%")

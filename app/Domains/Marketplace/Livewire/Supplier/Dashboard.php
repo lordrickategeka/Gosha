@@ -9,6 +9,7 @@ use App\Domains\Marketplace\Models\MarketplaceListing;
 use App\Domains\Marketplace\Models\PurchaseOrder;
 use App\Domains\Marketplace\Models\Quote;
 use App\Domains\Marketplace\Models\Rfq;
+use App\Domains\Platform\Models\Vendor;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -16,6 +17,7 @@ class Dashboard extends Component
     public function render()
     {
         $vendorId = session('current_vendor_id') ?? auth()->user()->vendor_id;
+        $vendor = Vendor::find($vendorId);
 
         $openRfqs = Rfq::query()
             ->where('status', RfqStatus::Published)
@@ -26,6 +28,7 @@ class Dashboard extends Component
             ->count();
 
         return view('livewire.marketplace.supplier.dashboard', [
+            'isVerifiedSupplier' => $vendor?->isVerifiedSupplier() ?? false,
             'activeListings' => MarketplaceListing::ownedBySupplier($vendorId)->where('is_active', true)->count(),
             'openRfqs' => $openRfqs,
             'pendingQuotes' => Quote::asSupplier($vendorId)->where('status', QuoteStatus::Submitted)->count(),

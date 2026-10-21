@@ -1,8 +1,16 @@
 <div class="gh-page">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
         <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">My Listings</div>
-        <button class="gh-btn gh-btn--primary" wire:click="openCreate">+ New listing</button>
+        @if($isVerifiedSupplier)
+            <button class="gh-btn gh-btn--primary" wire:click="openCreate">+ New listing</button>
+        @endif
     </div>
+
+    @unless($isVerifiedSupplier)
+        <div class="gh-badge gh-badge--warning" style="display:block; padding:10px 12px; font-size:12px;">
+            Your supplier account is pending verification — you'll be able to create and activate listings once a platform admin verifies your account.
+        </div>
+    @endunless
 
     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search product / part no." class="gh-input" style="max-width:22rem;">
 
@@ -84,7 +92,9 @@
                             </td>
                             <td style="text-align:right; white-space:nowrap;">
                                 <button class="gh-btn gh-btn--sm" wire:click="edit({{ $listing->id }})">Edit</button>
-                                <button class="gh-btn gh-btn--sm" wire:click="toggle({{ $listing->id }})">Toggle</button>
+                                @if($isVerifiedSupplier)
+                                    <button class="gh-btn gh-btn--sm" wire:click="toggle({{ $listing->id }})">Toggle</button>
+                                @endif
                             </td>
                         </tr>
                     @empty

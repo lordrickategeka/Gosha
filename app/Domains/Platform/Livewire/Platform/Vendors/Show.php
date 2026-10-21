@@ -58,6 +58,16 @@ class Show extends Component
         session()->flash('success', 'Lockdown policy updated for this vendor.');
     }
 
+    public function toggleSupplierVerification()
+    {
+        $this->authorize('verify_catalog_products');
+
+        $this->vendor->update(['is_verified_supplier' => ! $this->vendor->is_verified_supplier]);
+        $this->vendor->refresh();
+
+        session()->flash('success', "Vendor has been " . ($this->vendor->is_verified_supplier ? 'verified' : 'unverified') . ' as a supplier.');
+    }
+
     public function toggleStatus()
     {
         $newStatus = $this->vendor->status === 'suspended' ? 'active' : 'suspended';

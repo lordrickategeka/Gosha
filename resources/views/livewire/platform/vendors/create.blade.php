@@ -7,6 +7,9 @@
             4 => ['title' => 'Billing', 'note' => 'Pricing model'],
             5 => ['title' => 'Review', 'note' => 'Confirm and create'],
         ];
+        if ($vendor_type === 'supplier') {
+            unset($wizardSteps[2], $wizardSteps[4]);
+        }
         $progress = (int) round(($currentStep / $totalSteps) * 100);
     @endphp
 
@@ -44,6 +47,19 @@
         @if($currentStep === 1)
             <div class="gh-card__title" style="margin-bottom:14px;">Business Details</div>
             <div class="gh-grid-2">
+                <div class="gh-field" style="grid-column:1/-1;">
+                    <span class="gh-label">Vendor type *</span>
+                    <select wire:model="vendor_type" class="gh-select" style="width:100%;">
+                        <option value="garage">Garage</option>
+                        <option value="car_wash">Car wash</option>
+                        <option value="supplier">Supplier (marketplace seller)</option>
+                        <option value="hybrid">Hybrid (garage that also sells)</option>
+                    </select>
+                    @error('vendor_type') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                    @if($vendor_type === 'supplier')
+                        <span class="gh-hint" style="display:block; margin-top:4px;">Suppliers skip the branch and billing steps — they sell on the marketplace, they don't run a garage.</span>
+                    @endif
+                </div>
                 <div class="gh-field" style="grid-column:1/-1;">
                     <span class="gh-label">Business name *</span>
                     <input type="text" wire:model="vendor_name" class="gh-input" style="width:100%;" placeholder="e.g. AutoCare Garage">
@@ -198,6 +214,7 @@
                     </dl>
                 </div>
 
+                @if($vendor_type !== 'supplier')
                 <div style="border:1px solid var(--gh-hairline); border-radius:var(--gh-radius); padding:14px;">
                     <p style="font-weight:700; font-size:13px; margin-bottom:8px;">Main Branch</p>
                     <dl class="gh-stack" style="gap:5px; font-size:12.5px;">
@@ -207,6 +224,7 @@
                         @if($branch_address)<div style="display:flex; justify-content:space-between;"><dt class="gh-muted">Address</dt><dd>{{ $branch_address }}</dd></div>@endif
                     </dl>
                 </div>
+                @endif
 
                 <div style="border:1px solid var(--gh-hairline); border-radius:var(--gh-radius); padding:14px;">
                     <p style="font-weight:700; font-size:13px; margin-bottom:8px;">Owner Account</p>
@@ -217,6 +235,7 @@
                     </dl>
                 </div>
 
+                @if($vendor_type !== 'supplier')
                 <div style="border:1px solid var(--gh-hairline); border-radius:var(--gh-radius); padding:14px;">
                     <p style="font-weight:700; font-size:13px; margin-bottom:8px;">Billing</p>
                     <dl class="gh-stack" style="gap:5px; font-size:12.5px;">
@@ -233,6 +252,15 @@
                         @endif
                     </dl>
                 </div>
+                @else
+                <div style="border:1px solid var(--gh-hairline); border-radius:var(--gh-radius); padding:14px;">
+                    <p style="font-weight:700; font-size:13px; margin-bottom:8px;">Marketplace</p>
+                    <dl class="gh-stack" style="gap:5px; font-size:12.5px;">
+                        <div style="display:flex; justify-content:space-between;"><dt class="gh-muted">Type</dt><dd style="font-weight:600;">Supplier</dd></div>
+                        <div style="display:flex; justify-content:space-between;"><dt class="gh-muted">Verification</dt><dd>Pending — verify from the vendor page after creation</dd></div>
+                    </dl>
+                </div>
+                @endif
             </div>
         @endif
 

@@ -20,13 +20,32 @@
                             <td style="font-weight:700;">{{ number_format($po->total) }} {{ $po->currency }}</td>
                             <td><span class="gh-badge {{ str_replace('badge-', 'gh-badge--', $po->status->badge()) }}">{{ $po->status->label() }}</span></td>
                             <td><span class="gh-badge {{ str_replace('badge-', 'gh-badge--', $po->payment_status->badge()) }}">{{ $po->payment_status->label() }}</span></td>
-                            <td style="text-align:right;">
+                            <td style="text-align:right; white-space:nowrap;">
                                 @if ($po->status->value === 'sent')
                                     <button class="gh-btn gh-btn--primary gh-btn--sm" wire:click="accept({{ $po->id }})">Accept</button>
                                 @endif
+                                @if ($po->payment_status->value !== 'paid')
+                                    <button class="gh-btn gh-btn--sm" wire:click="openMarkPaid({{ $po->id }})">Record payment</button>
+                                @endif
+                                <button class="gh-btn gh-btn--sm" wire:click="downloadInvoicePdf({{ $po->id }})">Invoice</button>
                                 <a class="gh-btn gh-btn--sm" href="{{ route('supplier.orders.fulfill', $po) }}">View</a>
                             </td>
                         </tr>
+                        @if ($markingPaidId === $po->id)
+                            <tr>
+                                <td colspan="6" style="background:var(--gh-surface-muted, #f7f7f5); padding:14px 16px;">
+                                    <div style="display:flex; align-items:end; gap:10px; flex-wrap:wrap;">
+                                        <div class="gh-field">
+                                            <span class="gh-label">Amount received ({{ $po->currency }})</span>
+                                            <input type="number" step="0.01" min="0.01" class="gh-input" wire:model="paymentAmount">
+                                            @error('paymentAmount') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
+                                        </div>
+                                        <button class="gh-btn gh-btn--primary gh-btn--sm" wire:click="markPaid">Save payment</button>
+                                        <button class="gh-btn gh-btn--sm" wire:click="$set('markingPaidId', null)">Cancel</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     @empty
                         <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No orders.</td></tr>
                     @endforelse

@@ -35,6 +35,13 @@
                 <option value="trial">Trial</option>
                 <option value="suspended">Suspended</option>
             </select>
+            <select wire:model.live="typeFilter" class="gh-select">
+                <option value="">All Types</option>
+                <option value="garage">Garage</option>
+                <option value="car_wash">Car wash</option>
+                <option value="supplier">Supplier</option>
+                <option value="hybrid">Hybrid</option>
+            </select>
         </div>
     </div>
 
@@ -45,6 +52,7 @@
                     <tr>
                         <th>Vendor</th>
                         <th>Contact</th>
+                        <th>Type</th>
                         <th>Branches</th>
                         <th>Users</th>
                         <th>Billing</th>
@@ -68,6 +76,16 @@
                                 <p>{{ $vendor->email }}</p>
                                 @if($vendor->phone)
                                     <p class="gh-muted" style="font-size:11px;">{{ $vendor->phone }}</p>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="gh-badge">{{ ucfirst(str_replace('_', ' ', $vendor->vendor_type ?? 'garage')) }}</span>
+                                @if(in_array($vendor->vendor_type, ['supplier', 'hybrid']))
+                                    @if($vendor->is_verified_supplier)
+                                        <p class="gh-hint" style="color:var(--gh-success); margin-top:2px;">Verified</p>
+                                    @else
+                                        <p class="gh-hint" style="color:var(--gh-warning); margin-top:2px;">Pending verification</p>
+                                    @endif
                                 @endif
                             </td>
                             <td class="gh-muted">{{ $vendor->branches_count }}</td>
@@ -96,6 +114,15 @@
                                     <button tabindex="0" type="button" class="gh-btn gh-btn--sm">⋯</button>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-44 border border-base-300">
                                         <li><a href="{{ route('platform.vendors.show', $vendor) }}">View details</a></li>
+                                        @can('verify_catalog_products')
+                                            @if(in_array($vendor->vendor_type, ['supplier', 'hybrid']))
+                                                <li>
+                                                    <button wire:click="toggleSupplierVerification({{ $vendor->id }})">
+                                                        {{ $vendor->is_verified_supplier ? 'Unverify supplier' : 'Verify supplier' }}
+                                                    </button>
+                                                </li>
+                                            @endif
+                                        @endcan
                                         <li>
                                             <button wire:click="toggleStatus({{ $vendor->id }})" wire:confirm="Are you sure you want to {{ $vendor->status === 'suspended' ? 'activate' : 'suspend' }} this vendor?">
                                                 {{ $vendor->status === 'suspended' ? 'Activate' : 'Suspend' }}
@@ -106,7 +133,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No vendors found.</td></tr>
+                        <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No vendors found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

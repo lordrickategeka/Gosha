@@ -31,6 +31,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Local dev safety net: a stale `php artisan config:cache` run silently freezes
+        // config values (e.g. DB_CONNECTION) even after .env is edited, causing confusing
+        // "wrong driver/database" errors. Auto-clear it so the next request picks up .env.
+        if ($this->app->environment('local') && $this->app->configurationIsCached()) {
+            @unlink($this->app->getCachedConfigPath());
+        }
+
         Schema::defaultStringLength(191);
 
         \Illuminate\Support\Facades\Blade::component('layouts.dash-layout', 'layouts.dash-layout');

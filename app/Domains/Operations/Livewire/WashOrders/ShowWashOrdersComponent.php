@@ -40,6 +40,20 @@ class ShowWashOrdersComponent extends Component
         session()->flash('success', 'Wash order cancelled.');
     }
 
+    public function reverseToQueue()
+    {
+        $this->authorize('change_wash_order_status');
+
+        if (! $this->washOrder->canReverse()) {
+            session()->flash('error', 'Only an order currently being washed can be sent back to the queue.');
+            return;
+        }
+
+        $this->washOrder->reverseToQueue();
+        $this->washOrder->refresh();
+        session()->flash('success', 'Order unassigned and moved back to the waiting queue.');
+    }
+
     public function getAvailableBaysProperty()
     {
         return WashBay::where('branch_id', $this->washOrder->branch_id)->where('status', 'available')->get();

@@ -44,10 +44,17 @@ class MarketplaceListing extends Model
         return $this->hasMany(ListingPriceTier::class)->orderBy('min_qty');
     }
 
-    /** Buyer-facing: all active listings, ownership ignored. */
+    /**
+     * Buyer-facing: all active listings, ownership ignored — but the underlying catalog
+     * product must be platform-verified and active. Without this, a supplier-proposed
+     * product pending moderation could still surface on the public storefront the moment
+     * a listing is created against it.
+     */
     public function scopeBrowsable(Builder $q): Builder
     {
-        return $q->where('is_active', true)->where('stock_qty', '>', 0);
+        return $q->where('is_active', true)
+            ->where('stock_qty', '>', 0)
+            ->whereHas('product', fn (Builder $p) => $p->where('is_verified', true)->where('is_active', true));
     }
 
     /** Supplier-facing: only the current (or given) vendor's listings. */

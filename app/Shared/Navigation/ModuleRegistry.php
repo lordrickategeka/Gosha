@@ -139,8 +139,12 @@ class ModuleRegistry
                 'permission' => ['browse_marketplace', 'view_quotes', 'view_listings', 'view_rfqs', 'view_purchase_orders'],
                 'patterns' => ['supplier.*', 'marketplace.*'],
                 'items' => [
+                    ['label' => 'Dashboard', 'route' => 'supplier.dashboard', 'icon' => 'shop', 'permission' => ['view_quotes', 'view_listings']],
                     ['label' => 'Quote inbox', 'route' => 'supplier.quotes.inbox', 'icon' => 'shop', 'permission' => 'view_quotes'],
                     ['label' => 'My listings', 'route' => 'supplier.listings.index', 'icon' => 'shop', 'permission' => 'view_listings'],
+                    // Gated on view_listings, not view_catalog: garage buyers also hold view_catalog (for RFQ
+                    // product pickers), and this link is supplier-only. Both supplier roles hold view_listings.
+                    ['label' => 'My catalog', 'route' => 'supplier.catalog.index', 'icon' => 'shop', 'permission' => 'view_listings'],
                     ['label' => 'My orders', 'route' => 'supplier.orders.index', 'icon' => 'shop', 'permission' => 'view_purchase_orders'],
                     ['label' => 'Browse listings', 'route' => 'marketplace.browse', 'icon' => 'browse', 'permission' => 'browse_marketplace'],
                     ['label' => 'RFQs', 'route' => 'marketplace.rfqs.index', 'icon' => 'browse', 'permission' => 'view_rfqs'],
@@ -156,6 +160,7 @@ class ModuleRegistry
                 'patterns' => ['platform.*'],
                 'items' => [
                     ['label' => 'Vendors', 'route' => 'platform.vendors.index', 'icon' => 'branches', 'permission' => null],
+                    ['label' => 'Catalog', 'route' => 'platform.catalog.index', 'icon' => 'shop', 'permission' => 'manage_catalog'],
                     ['label' => 'Billing', 'route' => 'platform.billing', 'icon' => 'billing', 'permission' => null],
                     ['label' => 'Integrations', 'route' => 'platform.integrations.index', 'icon' => 'integrations', 'permission' => null],
                 ],

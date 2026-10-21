@@ -237,6 +237,29 @@
                     <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Created</span><span style="font-weight:600;">{{ $vendor->created_at->diffForHumans() }}</span></div>
                 </div>
             </div>
+
+            @if(in_array($vendor->vendor_type, ['supplier', 'hybrid']))
+                <div class="gh-card gh-card--pad">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <div class="gh-card__title">Marketplace</div>
+                        @if($vendor->is_verified_supplier)
+                            <span class="gh-badge gh-badge--success">Verified</span>
+                        @else
+                            <span class="gh-badge gh-badge--warning">Pending verification</span>
+                        @endif
+                    </div>
+                    <div class="gh-stack" style="gap:8px; font-size:12.5px;">
+                        <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Rating</span><span style="font-weight:600;">{{ $vendor->supplier_rating_count > 0 ? number_format($vendor->supplier_rating_avg, 1) . ' (' . $vendor->supplier_rating_count . ')' : 'No ratings yet' }}</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Listings</span><span style="font-weight:600;">{{ $vendor->marketplaceListings()->count() }}</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Catalog products proposed</span><span style="font-weight:600;">{{ \App\Domains\Marketplace\Models\CatalogProduct::where('created_by_vendor_id', $vendor->id)->count() }}</span></div>
+                    </div>
+                    @can('verify_catalog_products')
+                        <button wire:click="toggleSupplierVerification" wire:confirm="Are you sure?" class="gh-btn gh-btn--sm {{ $vendor->is_verified_supplier ? '' : 'gh-btn--primary' }}" style="width:100%; margin-top:12px;">
+                            {{ $vendor->is_verified_supplier ? 'Revoke verification' : 'Verify supplier' }}
+                        </button>
+                    @endcan
+                </div>
+            @endif
         </div>
     </div>
 

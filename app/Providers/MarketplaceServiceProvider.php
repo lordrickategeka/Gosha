@@ -39,6 +39,9 @@ class MarketplaceServiceProvider extends ServiceProvider
         Livewire::component('marketplace.buyer.rfq.create', \App\Domains\Marketplace\Livewire\Buyer\Rfq\Create::class);
         Livewire::component('marketplace.supplier.dashboard', \App\Domains\Marketplace\Livewire\Supplier\Dashboard::class);
         Livewire::component('marketplace.supplier.listings.index', \App\Domains\Marketplace\Livewire\Supplier\Listings\Index::class);
+        Livewire::component('marketplace.supplier.catalog.index', \App\Domains\Marketplace\Livewire\Supplier\Catalog\Index::class);
+        Livewire::component('marketplace.supplier.catalog.create', \App\Domains\Marketplace\Livewire\Supplier\Catalog\Create::class);
+        Livewire::component('marketplace.platform.catalog.index', \App\Domains\Marketplace\Livewire\Platform\Catalog\Index::class);
         Livewire::component('marketplace.supplier.orders.index', \App\Domains\Marketplace\Livewire\Supplier\Orders\Index::class);
         Livewire::component('marketplace.supplier.orders.fulfill', \App\Domains\Marketplace\Livewire\Supplier\Orders\Fulfill::class);
         Livewire::component('marketplace.supplier.quotes.inbox', \App\Domains\Marketplace\Livewire\Supplier\Quotes\Inbox::class);
@@ -46,5 +49,8 @@ class MarketplaceServiceProvider extends ServiceProvider
 
         // Public storefront (no auth required)
         Livewire::component('marketplace.storefront.index', \App\Domains\Marketplace\Livewire\Storefront\Index::class);
+        Livewire::component('marketplace.storefront.suppliers.index', \App\Domains\Marketplace\Livewire\Storefront\Suppliers\Index::class);
+        Livewire::component('marketplace.storefront.suppliers.show', \App\Domains\Marketplace\Livewire\Storefront\Suppliers\Show::class);
+        Livewire::component('marketplace.supplier.registration.register', \App\Domains\Marketplace\Livewire\Supplier\Registration\Register::class);
     }
 }

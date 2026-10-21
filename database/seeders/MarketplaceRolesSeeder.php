@@ -49,7 +49,7 @@ class MarketplaceRolesSeeder extends Seeder
         ]);
 
         // Buyer-side permissions attach to existing garage roles.
-        foreach (['garage_admin', 'branch_manager'] as $roleName) {
+        foreach (['vendor-owner', 'branch-manager'] as $roleName) {
             if ($role = Role::where('name', $roleName)->where('guard_name', $guard)->first()) {
                 $role->givePermissionTo([
                     'browse_marketplace', 'place_marketplace_orders',
@@ -60,15 +60,17 @@ class MarketplaceRolesSeeder extends Seeder
             }
         }
 
-        // Platform admin sees commission ledger + can verify catalog.
-        if ($pa = Role::where('name', 'platform_admin')->where('guard_name', $guard)->first()) {
-            $pa->givePermissionTo([
-                'view_marketplace_transactions',
-                'verify_catalog_products',
-                'manage_catalog',
-                // allow platform admins to view supplier listings
-                'view_listings',
-            ]);
+        // Platform admins see the commission ledger and can verify/moderate the catalog.
+        foreach (['super-admin', 'platform-support'] as $roleName) {
+            if ($role = Role::where('name', $roleName)->where('guard_name', $guard)->first()) {
+                $role->givePermissionTo([
+                    'view_marketplace_transactions',
+                    'verify_catalog_products',
+                    'manage_catalog',
+                    // allow platform admins to view supplier listings
+                    'view_listings',
+                ]);
+            }
         }
     }
 }

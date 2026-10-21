@@ -11,7 +11,8 @@ use App\Domains\Vehicles\Models\Vehicle;
 use App\Domains\Operations\Models\Appointment;
 use App\Domains\Operations\Models\WashOrder;
 use App\Domains\Operations\Models\WorkOrder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Domains\Organization\Models\Branch;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -21,7 +22,6 @@ class Customer extends Model
 
 protected $fillable = [
         'vendor_id',
-        'branch_id',
         'is_active',
         'name',
         'email',
@@ -44,9 +44,17 @@ protected $fillable = [
     ];
 
 // Relationships
-    public function branch(): BelongsTo
+    public function branches(): BelongsToMany
     {
-        return $this->belongsTo(\App\Domains\Organization\Models\Branch::class);
+        return $this->belongsToMany(Branch::class)
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    public function primaryBranch(): ?Branch
+    {
+        return $this->branches()->wherePivot('is_primary', true)->first()
+            ?? $this->branches()->first();
     }
 
     public function vehicles(): HasMany

@@ -17,6 +17,8 @@ class WashOrdersComponent extends Component
     public $source = '';
     public $perPage = 6;
     public $view = 'queue'; // queue, list
+    public $boardLayout = 'table'; // table, cards — layout used within the queue view
+    public $queueTab = 'waiting'; // bays, waiting, washing, completed — active tab when boardLayout is table
 
     // Assign-bay modal state
     public $showAssignBayModal = false;
@@ -30,6 +32,8 @@ class WashOrdersComponent extends Component
         'source' => ['except' => ''],
         'perPage' => ['except' => 6],
         'view'   => ['except' => 'queue'],
+        'boardLayout' => ['except' => 'table'],
+        'queueTab' => ['except' => 'waiting'],
     ];
 
     public function updatingSearch()
@@ -107,6 +111,19 @@ class WashOrdersComponent extends Component
             $washOrder->complete();
             session()->flash('success', 'Wash completed.');
         }
+    }
+
+    public function reverseToQueue(WashOrder $washOrder)
+    {
+        $this->authorize('change_wash_order_status');
+
+        if (! $washOrder->canReverse()) {
+            session()->flash('error', 'Only an order currently being washed can be sent back to the queue.');
+            return;
+        }
+
+        $washOrder->reverseToQueue();
+        session()->flash('success', 'Order unassigned and moved back to the waiting queue.');
     }
 
     public function prioritize(WashOrder $washOrder)

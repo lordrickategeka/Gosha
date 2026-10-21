@@ -243,6 +243,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendors', \App\Domains\Platform\Livewire\Platform\Vendors\Index::class)->name('vendors.index');
         Route::get('/vendors/create', \App\Domains\Platform\Livewire\Platform\Vendors\Create::class)->name('vendors.create');
         Route::get('/vendors/{vendor}', \App\Domains\Platform\Livewire\Platform\Vendors\Show::class)->name('vendors.show');
+        Route::get('/catalog', \App\Domains\Marketplace\Livewire\Platform\Catalog\Index::class)->name('catalog.index');
         Route::get('/billing', \App\Domains\Platform\Livewire\Platform\Billing::class)->name('billing');
         Route::get('/integrations', \App\Domains\Platform\Livewire\Platform\ApiIntegrationsComponent::class)->name('integrations.index');
     });

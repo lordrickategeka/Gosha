@@ -12,6 +12,7 @@ class Index extends Component
 
     public $search = '';
     public $statusFilter = '';
+    public $typeFilter = '';
 
     public function updatingSearch()
     {
@@ -23,6 +24,11 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatingTypeFilter()
+    {
+        $this->resetPage();
+    }
+
     public function toggleStatus(Vendor $vendor)
     {
         $vendor->update([
@@ -30,6 +36,15 @@ class Index extends Component
         ]);
 
         session()->flash('success', "Vendor {$vendor->name} has been " . ($vendor->status === 'suspended' ? 'suspended' : 'activated') . '.');
+    }
+
+    public function toggleSupplierVerification(Vendor $vendor)
+    {
+        $this->authorize('verify_catalog_products');
+
+        $vendor->update(['is_verified_supplier' => ! $vendor->is_verified_supplier]);
+
+        session()->flash('success', "Vendor {$vendor->name} has been " . ($vendor->is_verified_supplier ? 'verified' : 'unverified') . ' as a supplier.');
     }
 
     public function render()
@@ -46,6 +61,10 @@ class Index extends Component
 
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);
+        }
+
+        if ($this->typeFilter) {
+            $query->where('vendor_type', $this->typeFilter);
         }
 
         $vendors = $query->latest()->paginate(10);

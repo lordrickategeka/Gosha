@@ -39,11 +39,11 @@
                                 </div>
                             </td>
                             <td>
-                                @if($customer->branch)
-                                    <span class="gh-badge">{{ $customer->branch->name }}</span>
-                                @else
+                                @forelse($customer->branches as $branch)
+                                    <span class="gh-badge">{{ $branch->name }}</span>
+                                @empty
                                     <span class="gh-muted">—</span>
-                                @endif
+                                @endforelse
                             </td>
                             <td>
                                 <div class="gh-cell-stack">

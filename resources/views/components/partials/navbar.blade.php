@@ -17,6 +17,56 @@
             ⌕ <input type="search" placeholder="Search…">
         </label>
 
+        <!-- Quick module switcher -->
+        @auth
+            @php
+                $quickAccessModules = collect(\App\Shared\Navigation\ModuleRegistry::visibleModules())
+                    ->map(fn ($module) => $module + ['visibleItems' => \App\Shared\Navigation\ModuleRegistry::visibleItems($module)])
+                    ->filter(fn ($module) => count($module['visibleItems']) > 0)
+                    ->values();
+            @endphp
+            @if($quickAccessModules->count())
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="gh-btn gh-btn--sm gh-modules-trigger">
+                        <x-icon name="modules" class="gh-icon" style="width:15px; height:15px;" />
+                        <span class="hidden md:inline">Modules</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px; height:13px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        <span class="gh-modules-trigger__dot"></span>
+                    </label>
+                    <div tabindex="0" class="dropdown-content gh-card gh-mega-menu shadow-xl mt-2">
+                        <div class="gh-mega-menu__accent"></div>
+                        <div class="gh-mega-menu__head">
+                            <span class="gh-eyebrow">Quick access</span>
+                            <span class="gh-mega-menu__count">{{ $quickAccessModules->count() }} modules</span>
+                        </div>
+                        @php($tileTones = ['', 'info', 'success', 'warning', 'error', 'violet', 'teal'])
+                        <div class="gh-mega-menu__grid">
+                            @foreach($quickAccessModules as $module)
+                                @php($tone = $tileTones[$loop->index % count($tileTones)])
+                                <div class="gh-mega-menu__tile">
+                                    <a href="{{ route($module['visibleItems'][0]['route']) }}" class="gh-mega-menu__tile-head">
+                                        <span class="gh-mega-menu__tile-icon {{ $tone ? 'gh-mega-menu__tile-icon--' . $tone : '' }}">
+                                            <x-icon :name="$module['icon']" class="gh-icon" style="width:15px; height:15px;" />
+                                        </span>
+                                        <span class="gh-mega-menu__tile-name">{{ $module['name'] }}</span>
+                                    </a>
+                                    <div class="gh-mega-menu__tile-links">
+                                        @foreach(array_slice($module['visibleItems'], 0, 4) as $item)
+                                            <a href="{{ route($item['route']) }}" class="gh-mega-menu__chip {{ request()->routeIs($item['route']) ? 'active' : '' }}">
+                                                {{ $item['label'] }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endauth
+
         <!-- Branch selector -->
         @if(auth()->check() && auth()->user() && auth()->user()->branches && auth()->user()->branches->count() >= 1)
             <div class="dropdown dropdown-end">

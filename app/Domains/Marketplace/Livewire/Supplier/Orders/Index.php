@@ -4,6 +4,8 @@ namespace App\Domains\Marketplace\Livewire\Supplier\Orders;
 
 use App\Domains\Marketplace\Enums\PurchaseOrderStatus;
 use App\Domains\Marketplace\Models\PurchaseOrder;
+use App\Domains\Marketplace\Services\PurchaseOrderService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,6 +14,10 @@ class Index extends Component
     use WithPagination;
 
     public string $statusFilter = '';
+
+    public ?int $markingPaidId = null;
+
+    public $paymentAmount = null;
 
     private function getVendorId(): ?int
     {
@@ -45,6 +51,43 @@ class Index extends Component
         // Transition into Accepted triggers commission metering via PurchaseOrderObserver.
         $po->update(['status' => PurchaseOrderStatus::Accepted]);
         $this->dispatch('toast', message: "PO {$po->po_number} accepted.");
+    }
+
+    public function downloadInvoicePdf(int $id)
+    {
+        $this->authorize('view_purchase_orders');
+
+        $po = PurchaseOrder::asSupplier($this->getVendorId())
+            ->with(['items.product', 'buyer', 'supplier'])
+            ->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.marketplace-invoice', ['po' => $po]);
+
+        return response()->streamDownload(fn () => print($pdf->output()), "Invoice-{$po->po_number}.pdf");
+    }
+
+    public function openMarkPaid(int $id): void
+    {
+        $po = PurchaseOrder::asSupplier($this->getVendorId())->findOrFail($id);
+        $this->markingPaidId = $po->id;
+        $this->paymentAmount = round((float) $po->total - (float) $po->amount_paid, 2);
+    }
+
+    public function markPaid(PurchaseOrderService $poService): void
+    {
+        $this->authorize('manage_purchase_orders');
+
+        $po = PurchaseOrder::asSupplier($this->getVendorId())->findOrFail($this->markingPaidId);
+
+        $this->validate([
+            'paymentAmount' => 'required|numeric|min:0.01',
+        ]);
+
+        $poService->markPaid($po, (float) $this->paymentAmount);
+
+        $this->markingPaidId = null;
+        $this->paymentAmount = null;
+        $this->dispatch('toast', message: "Payment recorded for PO {$po->po_number}.");
     }
 
     public function render()

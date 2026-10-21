@@ -4,6 +4,7 @@ namespace App\Domains\Marketplace\Livewire\Supplier\Listings;
 
 use App\Domains\Marketplace\Models\CatalogProduct;
 use App\Domains\Marketplace\Models\MarketplaceListing;
+use App\Domains\Platform\Models\Vendor;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -92,6 +93,10 @@ class Index extends Component
     public function save(): void
     {
         $this->authorize('manage_listings');
+
+        $vendor = Vendor::find($this->getVendorId());
+        abort_unless($vendor?->isVerifiedSupplier(), 403, 'Your supplier account must be verified before you can create or edit listings.');
+
         $data = $this->validate();
         $data['supplier_vendor_id'] = $this->getVendorId();
         $data['currency'] = config('marketplace.default_currency', 'UGX');
@@ -111,6 +116,10 @@ class Index extends Component
     public function toggle(int $id): void
     {
         $this->authorize('manage_listings');
+
+        $vendor = Vendor::find($this->getVendorId());
+        abort_unless($vendor?->isVerifiedSupplier(), 403, 'Your supplier account must be verified before you can activate listings.');
+
         $listing = MarketplaceListing::ownedBySupplier($this->getVendorId())->findOrFail($id);
         $listing->update(['is_active' => ! $listing->is_active]);
     }
@@ -133,6 +142,8 @@ class Index extends Component
             ->latest()
             ->paginate(15);
 
-        return view('livewire.marketplace.supplier.listings.index', compact('listings'));
+        $isVerifiedSupplier = Vendor::find($vendorId)?->isVerifiedSupplier() ?? false;
+
+        return view('livewire.marketplace.supplier.listings.index', compact('listings', 'isVerifiedSupplier'));
     }
 }

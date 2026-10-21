@@ -11,6 +11,7 @@ use App\Domains\Operations\Models\ServiceBay;
 use App\Domains\Operations\Models\WashBay;
 use App\Domains\Operations\Models\WashOrder;
 use App\Domains\Operations\Models\WorkOrder;
+use App\Domains\CRM\Models\Customer;
 use App\Models\User;
 use App\Shared\Traits\BelongsToVendor;
 use App\Shared\Traits\HasAuditLog;
@@ -43,6 +44,13 @@ class Branch extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    public function customers(): BelongsToMany
+    {
+        return $this->belongsToMany(Customer::class)
             ->withPivot('is_primary')
             ->withTimestamps();
     }

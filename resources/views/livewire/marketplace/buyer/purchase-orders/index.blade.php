@@ -27,6 +27,7 @@
                                 @if ($po->status->isReceivable())
                                     <a class="gh-btn gh-btn--sm" href="{{ route('marketplace.purchase-orders.receive', $po) }}">Receive</a>
                                 @endif
+                                <button class="gh-btn gh-btn--sm" wire:click="downloadInvoicePdf({{ $po->id }})">Invoice</button>
                             </td>
                         </tr>
                     @empty

@@ -49,6 +49,10 @@ class CreateCustomersComponent extends Component
             'notes' => $this->notes,
         ]);
 
+        if (session('current_branch_id')) {
+            $customer->branches()->attach(session('current_branch_id'), ['is_primary' => true]);
+        }
+
         session()->flash('success', 'Customer created successfully.');
         return redirect()->route('customers.show', $customer);
     }

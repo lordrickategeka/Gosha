@@ -288,8 +288,8 @@ class CreateWorkOrder extends Component
 
              ->when($branchId, function ($q) use ($branchId) {
                 $q->where(function ($sub) use ($branchId) {
-                    $sub->whereHas('workOrders', fn($wq) => $wq->where('branch_id', $branchId))
-                        ->orWhereHas('washOrders', fn($wq) => $wq->where('branch_id', $branchId));
+                    $sub->whereHas('branches', fn($bq) => $bq->where('branches.id', $branchId))
+                        ->orWhereDoesntHave('branches');
                 });
             });
 
@@ -355,6 +355,10 @@ class CreateWorkOrder extends Component
             'email' => $this->newCustomerEmail,
             'is_active' => true,
         ]);
+
+        if (session('current_branch_id')) {
+            $customer->branches()->attach(session('current_branch_id'), ['is_primary' => true]);
+        }
 
         $this->customer_id = $customer->id;
         $this->loadCustomers();

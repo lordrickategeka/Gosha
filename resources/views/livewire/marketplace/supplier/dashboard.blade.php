@@ -1,6 +1,12 @@
 <div class="gh-page">
     <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Supplier Dashboard</div>
 
+    @unless($isVerifiedSupplier)
+        <div class="gh-badge gh-badge--warning" style="display:block; padding:10px 12px; font-size:12px;">
+            Your supplier account is pending verification. You can browse the catalog, but creating listings or proposing new products is unlocked once a platform admin verifies your account.
+        </div>
+    @endunless
+
     <div class="gh-grid-4">
         <div class="gh-card gh-stat">
             <span class="gh-stat__label">Active listings</span>

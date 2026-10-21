@@ -11,6 +11,12 @@
                 <button wire:click="$set('view', 'queue')" class="{{ $view === 'queue' ? 'is-active' : '' }}">Queue view</button>
                 <button wire:click="$set('view', 'list')" class="{{ $view === 'list' ? 'is-active' : '' }}">List view</button>
             </div>
+            @if($view === 'queue')
+                <div class="gh-segmented">
+                    <button wire:click="$set('boardLayout', 'table')" class="{{ $boardLayout === 'table' ? 'is-active' : '' }}">Table</button>
+                    <button wire:click="$set('boardLayout', 'cards')" class="{{ $boardLayout === 'cards' ? 'is-active' : '' }}">Cards</button>
+                </div>
+            @endif
             @can('create_wash_orders')
                 <a href="{{ route('wash-orders.create') }}" class="gh-btn gh-btn--primary">+ New wash</a>
             @endcan
@@ -37,92 +43,239 @@
     </div>
 
     @if($view === 'queue')
-        <span class="gh-hint">Wash bays</span>
-        <div class="gh-grid-3">
-            @foreach($this->washBays as $bay)
-                @php
-                    $tone = $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->value : $bay->status;
-                @endphp
-                <div class="gh-bay {{ $tone === 'occupied' ? 'is-occupied' : ($tone === 'maintenance' ? 'is-maintenance' : '') }}">
-                    <div style="display:flex; align-items:center; justify-content:space-between;">
-                        <span class="gh-bay__name">{{ $bay->name }}</span>
-                        <span class="gh-badge {{ $tone === 'available' ? 'gh-badge--success' : ($tone === 'occupied' ? 'gh-badge--warning' : 'gh-badge--error') }}">
-                            {{ $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
-                        </span>
-                    </div>
-                    @if($bay->currentWashOrder)
-                        <span class="gh-muted" style="font-size:11px;">{{ $bay->currentWashOrder->vehicle->registration_number }} · {{ ucfirst($bay->currentWashOrder->wash_type) }}</span>
-                        <button wire:click="completeWash({{ $bay->currentWashOrder->id }})" class="gh-btn gh-btn--sm gh-btn--block" style="margin-top:6px;">Complete</button>
-                    @else
-                        <span class="gh-bay__state">Ready for next vehicle</span>
-                    @endif
+        @if($boardLayout === 'table')
+            @php
+                $queueTabs = [
+                    'bays' => ['label' => 'Wash bays', 'count' => $this->washBays->count()],
+                    'waiting' => ['label' => 'Waiting', 'count' => $this->queue->count()],
+                    'washing' => ['label' => 'Washing', 'count' => $this->inProgress->count()],
+                    'completed' => ['label' => 'Completed today', 'count' => $this->completedTodayList->count()],
+                ];
+            @endphp
+            <div class="gh-segmented">
+                @foreach($queueTabs as $key => $tab)
+                    <button wire:click="$set('queueTab', '{{ $key }}')" class="{{ $queueTab === $key ? 'is-active' : '' }}">
+                        {{ $tab['label'] }} <span class="gh-board__count">{{ $tab['count'] }}</span>
+                    </button>
+                @endforeach
+            </div>
+
+            <div class="gh-card gh-card--flush">
+                <div class="gh-table-scroll">
+                    <table class="gh-table">
+                        @if($queueTab === 'bays')
+                            <thead>
+                                <tr><th>Bay</th><th>Type</th><th>Status</th><th>Current vehicle</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                @forelse($this->washBays as $bay)
+                                    @php
+                                        $tone = $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->value : $bay->status;
+                                    @endphp
+                                    <tr>
+                                        <td><b>{{ $bay->name }}</b></td>
+                                        <td>{{ $bay->bay_type instanceof \App\Domains\Operations\Enums\WashBayType ? $bay->bay_type->label() : ucfirst($bay->bay_type) }}</td>
+                                        <td>
+                                            <span class="gh-badge {{ $tone === 'available' ? 'gh-badge--success' : ($tone === 'occupied' ? 'gh-badge--warning' : 'gh-badge--error') }}">
+                                                {{ $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if($bay->currentWashOrder)
+                                                <b>{{ $bay->currentWashOrder->vehicle->registration_number }}</b>
+                                                <span class="gh-muted"> · {{ ucfirst($bay->currentWashOrder->wash_type) }}</span>
+                                            @else
+                                                <span class="gh-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td onclick="event.stopPropagation()">
+                                            @if($bay->currentWashOrder)
+                                                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                                                    <button wire:click="completeWash({{ $bay->currentWashOrder->id }})" class="gh-btn gh-btn--sm gh-btn--primary">Complete</button>
+                                                    <button wire:click="reverseToQueue({{ $bay->currentWashOrder->id }})" wire:confirm="Unassign this order and send it back to the waiting queue?" class="gh-btn gh-btn--sm" title="Unassign &amp; return to queue">↩</button>
+                                                </div>
+                                            @else
+                                                <span class="gh-muted" style="font-size:11px;">Ready for next vehicle</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--gh-ink-faint);">No wash bays configured</td></tr>
+                                @endforelse
+                            </tbody>
+                        @elseif($queueTab === 'waiting')
+                            <thead>
+                                <tr><th>#</th><th>Vehicle</th><th>Customer</th><th>Type · Source</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                @forelse($this->queue as $order)
+                                    <tr>
+                                        <td class="is-index">{{ $order->queue_position }}</td>
+                                        <td>
+                                            <b>{{ $order->vehicle->registration_number }}</b>
+                                            @if($order->priority === 'priority')
+                                                <span class="gh-badge gh-badge--warning">PRIORITY</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $order->customer->name }}</td>
+                                        <td><span class="gh-badge">{{ ucfirst($order->wash_type) }} · {{ $order->source_badge }}</span></td>
+                                        <td onclick="event.stopPropagation()">
+                                            <div style="display:flex; gap:6px; justify-content:flex-end;">
+                                                @if($this->availableBays->isNotEmpty())
+                                                    <button wire:click="openAssignBayModal({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary">Assign &amp; start</button>
+                                                @else
+                                                    <button class="gh-btn gh-btn--sm" disabled>No bay available</button>
+                                                @endif
+                                                @if($order->priority !== 'priority')
+                                                    <button wire:click="prioritize({{ $order->id }})" class="gh-btn gh-btn--sm" title="Prioritize">↑</button>
+                                                @endif
+                                                <button wire:click="cancel({{ $order->id }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);" title="Cancel">✕</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--gh-ink-faint);">Queue is empty</td></tr>
+                                @endforelse
+                            </tbody>
+                        @elseif($queueTab === 'washing')
+                            <thead>
+                                <tr><th>Vehicle</th><th>Type</th><th>Bay</th><th>Attendant</th><th>Started</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                @forelse($this->inProgress as $order)
+                                    <tr>
+                                        <td><b>{{ $order->vehicle->registration_number }}</b></td>
+                                        <td>{{ ucfirst($order->wash_type) }}</td>
+                                        <td>{{ $order->washBay?->name ?? 'No bay' }}</td>
+                                        <td>{{ $order->assignedAttendant?->name ?? 'Unassigned' }}</td>
+                                        <td class="gh-muted">{{ $order->started_at?->diffForHumans() }}</td>
+                                        <td onclick="event.stopPropagation()">
+                                            <div style="display:flex; gap:6px; justify-content:flex-end;">
+                                                <button wire:click="completeWash({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary">Complete</button>
+                                                <button wire:click="reverseToQueue({{ $order->id }})" wire:confirm="Unassign this order and send it back to the waiting queue?" class="gh-btn gh-btn--sm" title="Unassign &amp; return to queue">↩ Unassign</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--gh-ink-faint);">Nothing washing right now</td></tr>
+                                @endforelse
+                            </tbody>
+                        @else
+                            <thead>
+                                <tr><th>Vehicle</th><th>Customer</th><th>Bay</th><th>Completed at</th></tr>
+                            </thead>
+                            <tbody>
+                                @forelse($this->completedTodayList as $order)
+                                    <tr data-href="{{ route('wash-orders.show', $order) }}">
+                                        <td><b>{{ $order->vehicle->registration_number }}</b></td>
+                                        <td>{{ $order->customer->name }}</td>
+                                        <td>{{ $order->washBay?->name ?? '—' }}</td>
+                                        <td class="gh-muted">{{ $order->completed_at?->format('H:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" style="text-align:center; padding:24px; color:var(--gh-ink-faint);">None yet today</td></tr>
+                                @endforelse
+                            </tbody>
+                        @endif
+                    </table>
                 </div>
-            @endforeach
-        </div>
+            </div>
+        @else
+            <span class="gh-hint">Wash bays</span>
+            <div class="gh-grid-3">
+                @foreach($this->washBays as $bay)
+                    @php
+                        $tone = $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->value : $bay->status;
+                    @endphp
+                    <div class="gh-bay {{ $tone === 'occupied' ? 'is-occupied' : ($tone === 'maintenance' ? 'is-maintenance' : '') }}">
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <span class="gh-bay__name">{{ $bay->name }}</span>
+                            <span class="gh-badge {{ $tone === 'available' ? 'gh-badge--success' : ($tone === 'occupied' ? 'gh-badge--warning' : 'gh-badge--error') }}">
+                                {{ $bay->status instanceof \App\Domains\Operations\Enums\WashBayStatus ? $bay->status->label() : ucfirst($bay->status) }}
+                            </span>
+                        </div>
+                        @if($bay->currentWashOrder)
+                            <span class="gh-muted" style="font-size:11px;">{{ $bay->currentWashOrder->vehicle->registration_number }} · {{ ucfirst($bay->currentWashOrder->wash_type) }}</span>
+                            <div style="display:flex; gap:6px; margin-top:6px;">
+                                <button wire:click="completeWash({{ $bay->currentWashOrder->id }})" class="gh-btn gh-btn--sm gh-btn--block">Complete</button>
+                                <button wire:click="reverseToQueue({{ $bay->currentWashOrder->id }})" wire:confirm="Unassign this order and send it back to the waiting queue?" class="gh-btn gh-btn--sm" title="Unassign &amp; return to queue">↩</button>
+                            </div>
+                        @else
+                            <span class="gh-bay__state">Ready for next vehicle</span>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
-        <span class="gh-hint">Click Assign &amp; start to move a vehicle into a bay. Click Complete to release it.</span>
-        <div class="gh-board" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="gh-board__col gh-board__col--waiting">
-                <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Waiting</span><span class="gh-board__count">{{ $this->queue->count() }}</span></div>
-                @forelse($this->queue as $order)
-                    <div class="gh-board__card gh-board__card--waiting">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
+        @if($boardLayout === 'cards')
+            <span class="gh-hint">Click Assign &amp; start to move a vehicle into a bay. Click Complete to release it.</span>
+            <div class="gh-board" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="gh-board__col gh-board__col--waiting">
+                    <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Waiting</span><span class="gh-board__count">{{ $this->queue->count() }}</span></div>
+                    @forelse($this->queue as $order)
+                        <div class="gh-board__card gh-board__card--waiting">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <b>{{ $order->vehicle->registration_number }}</b>
+                                @if($order->priority === 'priority')
+                                    <span class="gh-badge gh-badge--warning">PRIORITY</span>
+                                @endif
+                            </div>
+                            <span style="font-size:12px;">{{ $order->customer->name }}</span>
+                            <div class="gh-board__meta"><span>{{ ucfirst($order->wash_type) }} · {{ $order->source_badge }}</span><span>Queue pos. {{ $order->queue_position }}</span></div>
+                            <div style="display:flex; gap:6px; margin-top:4px;">
+                                @if($this->availableBays->isNotEmpty())
+                                    <button wire:click="openAssignBayModal({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary" style="flex:1;">Assign &amp; start</button>
+                                @else
+                                    <button class="gh-btn gh-btn--sm" style="flex:1;" disabled>No bay available</button>
+                                @endif
+                                @if($order->priority !== 'priority')
+                                    <button wire:click="prioritize({{ $order->id }})" class="gh-btn gh-btn--sm" title="Prioritize">↑</button>
+                                @endif
+                                <button wire:click="cancel({{ $order->id }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);" title="Cancel">✕</button>
+                            </div>
+                        </div>
+                    @empty
+                        <span class="gh-muted" style="font-size:12px;">Queue is empty</span>
+                    @endforelse
+                </div>
+
+                <div class="gh-board__col gh-board__col--active">
+                    <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Washing</span><span class="gh-board__count">{{ $this->inProgress->count() }}</span></div>
+                    @forelse($this->inProgress as $order)
+                        <div class="gh-board__card gh-board__card--active">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <b>{{ $order->vehicle->registration_number }}</b>
+                            </div>
+                            <span style="font-size:12px;">{{ ucfirst($order->wash_type) }} · {{ $order->washBay?->name ?? 'No bay' }}</span>
+                            <div class="gh-board__meta">
+                                <span>{{ $order->assignedAttendant?->name ?? 'Unassigned' }}</span>
+                                <span>{{ $order->started_at?->diffForHumans() }}</span>
+                            </div>
+                            <div style="display:flex; gap:6px; margin-top:4px;">
+                                <button wire:click="completeWash({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary" style="flex:1;">Complete</button>
+                                <button wire:click="reverseToQueue({{ $order->id }})" wire:confirm="Unassign this order and send it back to the waiting queue?" class="gh-btn gh-btn--sm" title="Unassign &amp; return to queue">↩ Unassign</button>
+                            </div>
+                        </div>
+                    @empty
+                        <span class="gh-muted" style="font-size:12px;">Nothing washing right now</span>
+                    @endforelse
+                </div>
+
+                <div class="gh-board__col gh-board__col--done">
+                    <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Completed today</span><span class="gh-board__count">{{ $this->completedTodayList->count() }}</span></div>
+                    @forelse($this->completedTodayList as $order)
+                        <div class="gh-board__card gh-board__card--done">
                             <b>{{ $order->vehicle->registration_number }}</b>
-                            @if($order->priority === 'priority')
-                                <span class="gh-badge gh-badge--warning">PRIORITY</span>
-                            @endif
+                            <span style="font-size:12px;">{{ $order->customer->name }}</span>
+                            <div class="gh-board__meta"><span>{{ $order->washBay?->name ?? '—' }}</span><span>{{ $order->completed_at?->format('H:i') }}</span></div>
                         </div>
-                        <span style="font-size:12px;">{{ $order->customer->name }}</span>
-                        <div class="gh-board__meta"><span>{{ ucfirst($order->wash_type) }} · {{ $order->source_badge }}</span><span>Queue pos. {{ $order->queue_position }}</span></div>
-                        <div style="display:flex; gap:6px; margin-top:4px;">
-                            @if($this->availableBays->isNotEmpty())
-                                <button wire:click="openAssignBayModal({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary" style="flex:1;">Assign &amp; start</button>
-                            @else
-                                <button class="gh-btn gh-btn--sm" style="flex:1;" disabled>No bay available</button>
-                            @endif
-                            @if($order->priority !== 'priority')
-                                <button wire:click="prioritize({{ $order->id }})" class="gh-btn gh-btn--sm" title="Prioritize">↑</button>
-                            @endif
-                            <button wire:click="cancel({{ $order->id }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                @empty
-                    <span class="gh-muted" style="font-size:12px;">Queue is empty</span>
-                @endforelse
+                    @empty
+                        <span class="gh-muted" style="font-size:12px;">None yet today</span>
+                    @endforelse
+                </div>
             </div>
-
-            <div class="gh-board__col gh-board__col--active">
-                <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Washing</span><span class="gh-board__count">{{ $this->inProgress->count() }}</span></div>
-                @forelse($this->inProgress as $order)
-                    <div class="gh-board__card gh-board__card--active">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <b>{{ $order->vehicle->registration_number }}</b>
-                        </div>
-                        <span style="font-size:12px;">{{ ucfirst($order->wash_type) }} · {{ $order->washBay?->name ?? 'No bay' }}</span>
-                        <div class="gh-board__meta">
-                            <span>{{ $order->assignedAttendant?->name ?? 'Unassigned' }}</span>
-                            <span>{{ $order->started_at?->diffForHumans() }}</span>
-                        </div>
-                        <button wire:click="completeWash({{ $order->id }})" class="gh-btn gh-btn--sm gh-btn--primary" style="margin-top:4px;">Complete</button>
-                    </div>
-                @empty
-                    <span class="gh-muted" style="font-size:12px;">Nothing washing right now</span>
-                @endforelse
-            </div>
-
-            <div class="gh-board__col gh-board__col--done">
-                <div class="gh-board__head"><span style="display:flex; align-items:center; gap:8px;"><span class="gh-board__dot"></span>Completed today</span><span class="gh-board__count">{{ $this->completedTodayList->count() }}</span></div>
-                @forelse($this->completedTodayList as $order)
-                    <div class="gh-board__card gh-board__card--done">
-                        <b>{{ $order->vehicle->registration_number }}</b>
-                        <span style="font-size:12px;">{{ $order->customer->name }}</span>
-                        <div class="gh-board__meta"><span>{{ $order->washBay?->name ?? '—' }}</span><span>{{ $order->completed_at?->format('H:i') }}</span></div>
-                    </div>
-                @empty
-                    <span class="gh-muted" style="font-size:12px;">None yet today</span>
-                @endforelse
-            </div>
-        </div>
+        @endif
     @else
         <div class="gh-table-toolbar">
             <div class="gh-table-toolbar__filters">
@@ -190,6 +343,9 @@
                                             @endif
                                             @if($order->canComplete())
                                                 <li><button wire:click="completeWash({{ $order->id }})">Complete</button></li>
+                                            @endif
+                                            @if($order->canReverse())
+                                                <li><button wire:click="reverseToQueue({{ $order->id }})" wire:confirm="Unassign this order and send it back to the waiting queue?">Return to queue</button></li>
                                             @endif
                                         </ul>
                                     </div>

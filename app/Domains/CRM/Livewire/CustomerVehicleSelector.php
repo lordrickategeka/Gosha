@@ -113,6 +113,10 @@ class CustomerVehicleSelector extends Component
             'email'     => $this->newCustomerEmail,
         ]);
 
+        if (session('current_branch_id')) {
+            $customer->branches()->attach(session('current_branch_id'), ['is_primary' => true]);
+        }
+
         $this->customerId = $customer->id;
         $this->customerSearch = $customer->name . ' - ' . $customer->phone;
         $this->showNewCustomerForm = false;
@@ -192,8 +196,8 @@ class CustomerVehicleSelector extends Component
         return Customer::where('vendor_id', $vendorId)
             ->when($branchId, function ($q) use ($branchId) {
                 $q->where(function ($sub) use ($branchId) {
-                    $sub->whereHas('workOrders', fn($wq) => $wq->where('branch_id', $branchId))
-                        ->orWhereHas('washOrders', fn($wq) => $wq->where('branch_id', $branchId));
+                    $sub->whereHas('branches', fn ($bq) => $bq->where('branches.id', $branchId))
+                        ->orWhereDoesntHave('branches');
                 });
             })
             ->where(function ($q) {

@@ -7,6 +7,11 @@
         </div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <div class="flex justify-end mb-6">
+                <a href="{{ route('storefront.suppliers.index') }}" class="text-sm text-white/80 hover:text-white transition-colors">
+                    Browse suppliers →
+                </a>
+            </div>
             <div class="text-center">
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
                     GarageHQ Marketplace
@@ -182,7 +187,7 @@
                 List your products, receive RFQs, and grow your business.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('register') }}" class="btn btn-primary btn-lg">
+                <a href="{{ route('supplier.register') }}" class="btn btn-primary btn-lg">
                     Register as Supplier
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-outline btn-lg">
@@ -247,10 +252,6 @@
                     &copy; {{ date('Y') }} GarageHQ. All rights reserved.
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('terms') }}" class="text-sm hover:text-primary transition-colors">Terms</a>
-                    <a href="{{ route('policy') }}" class="text-sm hover:text-primary transition-colors">Privacy</a>
-                </div>
             </div>
         </div>
     </footer>

@@ -26,7 +26,7 @@ class PurchaseOrder extends Model
     protected $fillable = [
         'po_number', 'buyer_vendor_id', 'supplier_vendor_id', 'branch_id', 'created_by',
         'source_type', 'source_id', 'subtotal', 'tax_total', 'total', 'currency',
-        'status', 'payment_status', 'notes',
+        'status', 'payment_status', 'amount_paid', 'notes',
     ];
 
     protected $casts = [
@@ -35,6 +35,7 @@ class PurchaseOrder extends Model
         'subtotal' => 'decimal:2',
         'tax_total' => 'decimal:2',
         'total' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
     ];
 
     public function items(): HasMany

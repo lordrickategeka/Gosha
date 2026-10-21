@@ -199,6 +199,11 @@ class WashOrder extends Model
         return $this->status === WashOrderStatus::InProgress;
     }
 
+    public function canReverse(): bool
+    {
+        return $this->status === WashOrderStatus::InProgress;
+    }
+
     public function start(?WashBay $bay = null): void
     {
         \Illuminate\Support\Facades\DB::transaction(function () use ($bay) {
@@ -231,6 +236,25 @@ class WashOrder extends Model
             }
 
             $this->generateInvoice();
+        });
+    }
+
+    public function reverseToQueue(): void
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            if ($this->washBay) {
+                $this->washBay->markAsAvailable();
+            }
+
+            $this->update([
+                'status'                => WashOrderStatus::Queued,
+                'wash_bay_id'           => null,
+                'assigned_attendant_id' => null,
+                'started_at'            => null,
+                'queue_position'        => static::getNextQueuePosition($this->branch_id),
+            ]);
+
+            $this->reorderQueue();
         });
     }
 
