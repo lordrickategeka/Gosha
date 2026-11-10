@@ -221,6 +221,533 @@
           }
         }
       }
+    },
+    "/api/admin/providers": {
+      "get": {
+        "summary": "List selectable AI providers",
+        "operationId": "listAssistantProviders",
+        "tags": [
+          "Provider administration"
+        ],
+        "description": "A configured flag does not prove inference readiness or account balance. Self-hosted localhost refers to the machine running Cot. Credentials and model-server URLs are operator-managed environment settings, not browser-supplied values.",
+        "responses": {
+          "200": {
+            "description": "Provider labels, descriptions, default model suggestions and configuration flags. Contains no keys or server addresses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "providers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "enum": [
+                              "ollama_cloud",
+                              "groq",
+                              "ollama_local"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "defaultModel": {
+                            "type": "string"
+                          },
+                          "configured": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/models": {
+      "get": {
+        "summary": "List models from a provider",
+        "operationId": "listAssistantProviderModels",
+        "tags": [
+          "Provider administration"
+        ],
+        "description": "Omitting provider selects the current tenant's saved provider. Groq identifiers can contain a namespace slash. Known cloud aliases are excluded from the self-hosted list. Model listing does not establish available credits or inference readiness.",
+        "responses": {
+          "200": {
+            "description": "Available model identifiers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "models": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Provider catalog unavailable or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Provider not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ollama_cloud",
+                "groq",
+                "ollama_local"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/model-test": {
+      "post": {
+        "summary": "Test an unsaved provider and model",
+        "operationId": "testAssistantModel",
+        "tags": [
+          "Provider administration"
+        ],
+        "description": "Sends one fixed short prompt to the selected provider. May consume quota or incur charges under the operator's provider plan. Does not save settings or silently switch providers. Provider response bodies and credentials are not returned.",
+        "responses": {
+          "200": {
+            "description": "A short completion succeeded; no tenant settings were changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider or model.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Administrative test limit or provider token/request limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Inference failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Provider configuration, access or billing/credit failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "description": "Same origin as Cot, required for writes, e.g. https://cot.loganate.cc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ollama_cloud",
+                      "groq",
+                      "ollama_local"
+                    ]
+                  },
+                  "model": {
+                    "type": "string",
+                    "maxLength": 150
+                  }
+                },
+                "required": [
+                  "provider",
+                  "model"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings": {
+      "get": {
+        "summary": "Read tenant assistant settings",
+        "operationId": "getAssistantTenantSettings",
+        "tags": [
+          "Provider administration"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Current branding, provider/model and other tenant settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "ollama_cloud",
+                            "groq",
+                            "ollama_local"
+                          ]
+                        },
+                        "model": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "tenant": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Save tenant provider/model selection",
+        "operationId": "saveAssistantTenantSettings",
+        "tags": [
+          "Provider administration"
+        ],
+        "description": "Accepts partial updates of recognized tenant settings. Selection applies to that tenant's chat, streaming answers, code explanations and mapped partner systems. Other tenants are unaffected. Existing tenants retain their saved model and default to Ollama Cloud. Provider keys and URLs cannot be saved here. There is no automatic paid-provider fallback.",
+        "responses": {
+          "200": {
+            "description": "Updated tenant settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "settings": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid settings, unsupported fields or selected provider not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "description": "Same origin as Cot, required for writes, e.g. https://cot.loganate.cc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ollama_cloud",
+                      "groq",
+                      "ollama_local"
+                    ]
+                  },
+                  "model": {
+                    "type": "string",
+                    "maxLength": 150
+                  }
+                },
+                "additionalProperties": true
+              },
+              "example": {
+                "provider": "groq",
+                "model": "openai/gpt-oss-120b"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -229,6 +756,12 @@
         "type": "http",
         "scheme": "bearer",
         "description": "Dedicated key paired with system in SUPPORT_AGENT_API_KEYS_JSON."
+      },
+      "adminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-agent_session",
+        "description": "Cot production session for an active platform administrator. Local development uses agent_session. Partner bearer keys do not authorize these administration endpoints."
       }
     },
     "schemas": {
