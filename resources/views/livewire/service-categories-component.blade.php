@@ -2,11 +2,17 @@
     <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
         <div>
             <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Service Categories</div>
-            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Group services into a clean naming structure for scheduling and reporting.</p>
+            <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Define broad, recognisable groups for the kinds of work your garage offers.</p>
         </div>
         <button wire:click="openCreateForm" class="gh-btn gh-btn--primary">+ New category</button>
     </div>
 
+    <section class="gh-card gh-card--pad">
+        <h2 class="gh-card__title">What should you add here?</h2>
+        <p class="gh-muted" style="margin:8px 0;line-height:1.8;">Use a short category name and describe the work it covers. Start with a few broad groups your team understands, then add more when there is a clear need. Service types hold individual service prices and times; service templates hold reusable labour and parts lines.</p>
+        <div class="gh-table-scroll"><table class="gh-table"><caption class="sr-only">Examples of service categories</caption><thead><tr><th>Example category</th><th>Example description</th></tr></thead><tbody><tr><td>Routine maintenance</td><td>Oil and filter changes, periodic inspections and scheduled servicing.</td></tr><tr><td>Brakes and suspension</td><td>Brake servicing, shock absorbers, steering and suspension work.</td></tr><tr><td>Electrical and diagnostics</td><td>Fault finding, battery checks and electrical repairs.</td></tr><tr><td>Cleaning and detailing</td><td>Exterior cleaning, interior care, polishing and detailing.</td></tr></tbody></table></div>
+        <p class="gh-hint" style="margin-top:12px;">These are examples, not records added for you. Categories are currently a shared reference list. Check for an existing name before adding one. Templates use their own built-in group choices; adding a category here does not create a priced service or template.</p>
+    </section>
     <div class="gh-card gh-card--flush">
         <div class="gh-table-scroll">
             <table class="gh-table">
@@ -57,7 +63,7 @@
                     <div class="gh-grid-2">
                         <div class="gh-field">
                             <span class="gh-label">Category name *</span>
-                            <input type="text" wire:model.defer="name" class="gh-input" style="width:100%;">
+                            <input type="text" wire:model.defer="name" placeholder="For example, Routine maintenance" class="gh-input" style="width:100%;">
                             @error('name') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                         </div>
                         <div style="display:flex; align-items:center;">
@@ -69,7 +75,7 @@
                     </div>
                     <div class="gh-field" style="margin-top:12px;">
                         <span class="gh-label">Description</span>
-                        <textarea wire:model.defer="description" rows="3" class="gh-input" style="width:100%;"></textarea>
+                        <textarea wire:model.defer="description" rows="3" placeholder="Describe the work in this group, for example oil and filter changes and scheduled servicing." class="gh-input" style="width:100%;"></textarea>
                         @error('description') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                     </div>
                     <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--gh-hairline); padding-top:14px; margin-top:16px;">

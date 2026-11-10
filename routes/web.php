@@ -208,6 +208,9 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('can:edit_branches');
     });
 
+    Route::get('/master-data', \App\Domains\Organization\Livewire\Settings\MasterDataComponent::class)->name('master-data.index');
+    Route::get('/master-data/inventory-groups', \App\Domains\Organization\Livewire\Settings\TaxonomyComponent::class)->name('master-data.taxonomy')->middleware('can:view_settings');
+
     // // Templates (Service Templates & Wash Packages)
     Route::prefix('templates')->name('templates.')->middleware('can:view_service_templates')->group(function () {
         Route::get('/', \App\Domains\ServiceConfig\Livewire\Templates\TemplatesComponent::class)->name('index');

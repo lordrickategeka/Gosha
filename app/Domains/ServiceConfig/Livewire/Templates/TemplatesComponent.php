@@ -2,37 +2,67 @@
 
 namespace App\Domains\ServiceConfig\Livewire\Templates;
 
-use Livewire\Component;
 use App\Domains\ServiceConfig\Models\QualityCheckTemplate;
 use App\Domains\ServiceConfig\Models\ServiceTemplate;
 use App\Domains\ServiceConfig\Models\WashPackage;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class TemplatesComponent extends Component
 {
+    #[\Livewire\Attributes\Url]
     public $tab = 'service';
+
     public $showServiceModal = false;
+
     public $showWashModal = false;
+
     public $showQualityModal = false;
 
     // Service Template fields
     public $serviceName = '';
+
     public $serviceType = 'service';
+
     public $serviceDescription = '';
+
     public $serviceItems = [];
 
     // Wash Package fields
     public $washName = '';
+
     public $washType = 'basic';
+
     public $washPrice = 0;
+
+    public $washDuration = 30;
+
     public $washServices = [];
 
     // Quality Checklist Template fields
     public $qualitySection = 'exterior';
+
     public $qualityCustomSection = '';
+
     public $qualityItemName = '';
+
     public $qualityCustomItemName = '';
+
     public $qualitySortOrder = 0;
+
+    public function mount(): void
+    {
+        if (! in_array($this->tab, ['service', 'wash', 'quality'], true)) {
+            $this->tab = 'service';
+        }
+    }
+
+    public function updatedTab(): void
+    {
+        if (! in_array($this->tab, ['service', 'wash', 'quality'], true)) {
+            $this->tab = 'service';
+        }
+    }
 
     public function openQualityModal(): void
     {
@@ -62,20 +92,28 @@ class TemplatesComponent extends Component
     {
         $this->validate([
             'serviceName' => 'required|string|max:255',
-            'serviceType' => 'required',
+            'serviceType' => 'required|in:service,repair,diagnostics,bodywork,electrical,ac,tyres,other',
+            'serviceDescription' => 'nullable|string|max:2000',
+            'serviceItems' => 'required|array|min:1|max:100',
+            'serviceItems.*.item_type' => 'required|in:labor,part',
+            'serviceItems.*.description' => 'required|string|max:255',
+            'serviceItems.*.quantity' => 'required|numeric|gt:0',
+            'serviceItems.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $template = ServiceTemplate::create([
-            'vendor_id' => Auth::user()?->vendor_id,
-            'name' => $this->serviceName,
-            'type' => $this->serviceType,
-            'description' => $this->serviceDescription,
-            'is_active' => true,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            $template = ServiceTemplate::create([
+                'vendor_id' => Auth::user()?->vendor_id,
+                'name' => $this->serviceName,
+                'category' => $this->serviceType,
+                'description' => $this->serviceDescription,
+                'is_active' => true,
+            ]);
 
-        foreach ($this->serviceItems as $item) {
-            $template->items()->create($item);
-        }
+            foreach ($this->serviceItems as $item) {
+                $template->items()->create(\Illuminate\Support\Arr::only($item, ['item_type', 'description', 'quantity', 'unit_price']));
+            }
+        });
 
         $this->reset(['serviceName', 'serviceType', 'serviceDescription', 'serviceItems', 'showServiceModal']);
         session()->flash('success', 'Service template created.');
@@ -83,7 +121,7 @@ class TemplatesComponent extends Component
 
     public function addWashService()
     {
-        $this->washServices[] = ['name' => '', 'price' => 0];
+        $this->washServices[] = ['name' => ''];
     }
 
     public function removeWashService($index)
@@ -97,6 +135,10 @@ class TemplatesComponent extends Component
         $this->validate([
             'washName' => 'required|string|max:255',
             'washPrice' => 'required|numeric|min:0',
+            'washDuration' => 'required|integer|min:5',
+            'washType' => 'required|in:basic,standard,premium,interior,exterior,engine,full_detail,custom',
+            'washServices' => 'required|array|min:1|max:100',
+            'washServices.*.name' => 'required|string|max:255',
         ]);
 
         WashPackage::create([
@@ -104,22 +146,25 @@ class TemplatesComponent extends Component
             'name' => $this->washName,
             'wash_type' => $this->washType,
             'price' => $this->washPrice,
-            'services' => $this->washServices,
+            'estimated_duration_minutes' => $this->washDuration,
+            'includes' => array_column($this->washServices, 'name'),
             'is_active' => true,
         ]);
 
-        $this->reset(['washName', 'washType', 'washPrice', 'washServices', 'showWashModal']);
+        $this->reset(['washName', 'washType', 'washPrice', 'washDuration', 'washServices', 'showWashModal']);
         session()->flash('success', 'Wash package created.');
     }
 
     public function toggleServiceStatus(ServiceTemplate $template)
     {
-        $template->update(['is_active' => !$template->is_active]);
+        abort_unless($template->vendor_id === Auth::user()?->vendor_id, 403);
+        $template->update(['is_active' => ! $template->is_active]);
     }
 
     public function toggleWashStatus(WashPackage $package)
     {
-        $package->update(['is_active' => !$package->is_active]);
+        abort_unless($package->vendor_id === Auth::user()?->vendor_id, 403);
+        $package->update(['is_active' => ! $package->is_active]);
     }
 
     public function createQualityTemplate()
@@ -142,11 +187,13 @@ class TemplatesComponent extends Component
 
         if ($section === '') {
             $this->addError('qualityCustomSection', 'Please enter a custom section name.');
+
             return;
         }
 
         if ($itemName === '') {
             $this->addError('qualityCustomItemName', 'Please enter a custom checklist item name.');
+
             return;
         }
 
@@ -178,6 +225,7 @@ class TemplatesComponent extends Component
     {
         if ($value === '__custom__') {
             $this->qualityItemName = '__custom__';
+
             return;
         }
 
@@ -195,6 +243,7 @@ class TemplatesComponent extends Component
         $section = trim((string) $value);
         if ($section === '') {
             $this->qualityItemName = '__custom__';
+
             return;
         }
 
@@ -206,16 +255,18 @@ class TemplatesComponent extends Component
     {
         if ($template->vendor_id !== Auth::user()?->vendor_id) {
             session()->flash('error', 'You can only update your own quality checklist template items.');
+
             return;
         }
 
-        $template->update(['is_active' => !$template->is_active]);
+        $template->update(['is_active' => ! $template->is_active]);
     }
 
     public function deleteQualityTemplate(QualityCheckTemplate $template)
     {
         if ($template->vendor_id !== Auth::user()?->vendor_id) {
             session()->flash('error', 'You can only delete your own quality checklist template items.');
+
             return;
         }
 
@@ -225,7 +276,7 @@ class TemplatesComponent extends Component
 
     public function getServiceTemplatesProperty()
     {
-        return ServiceTemplate::withCount('items')->orderBy('name')->get();
+        return ServiceTemplate::with('items')->withCount('items')->orderBy('name')->get();
     }
 
     public function getWashPackagesProperty()

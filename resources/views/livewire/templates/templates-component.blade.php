@@ -1,137 +1,50 @@
 <div class="gh-page">
-    <div>
-        <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Templates &amp; Packages</div>
-        <p class="gh-muted" style="font-size:12.5px; margin-top:4px;">Pre-configured services and wash packages</p>
+    <div><div class="gh-eyebrow">Master data</div><h1 style="font-size:24px;font-weight:700;">Templates, packages and quality checks</h1><p class="gh-muted" style="font-size:13px;margin-top:6px;">Prepare reusable job content, customer offers and inspection prompts. Choose a tab to see what belongs in each list.</p></div>
+    @if($errors->any())<div class="alert alert-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+    @if(session('success'))<p role="status" class="alert alert-success">{{ session('success') }}</p>@endif
+    <div style="display:flex;flex-wrap:wrap;gap:8px;" aria-label="Template lists">
+        <button type="button" wire:click="$set('tab', 'service')" class="gh-chip gh-chip--round {{ $tab === 'service' ? 'is-active' : '' }}" aria-pressed="{{ $tab === 'service' ? 'true' : 'false' }}">Service templates</button>
+        <button type="button" wire:click="$set('tab', 'wash')" class="gh-chip gh-chip--round {{ $tab === 'wash' ? 'is-active' : '' }}" aria-pressed="{{ $tab === 'wash' ? 'true' : 'false' }}">Wash packages</button>
+        <button type="button" wire:click="$set('tab', 'quality')" class="gh-chip gh-chip--round {{ $tab === 'quality' ? 'is-active' : '' }}" aria-pressed="{{ $tab === 'quality' ? 'true' : 'false' }}">Quality checklist</button>
     </div>
-
-    <div style="display:flex; flex-wrap:wrap; gap:8px;">
-        <button wire:click="$set('tab', 'service')" class="gh-chip gh-chip--round {{ $tab === 'service' ? 'is-active' : '' }}">Service Templates</button>
-        <button wire:click="$set('tab', 'wash')" class="gh-chip gh-chip--round {{ $tab === 'wash' ? 'is-active' : '' }}">Wash Packages</button>
-        <button wire:click="$set('tab', 'quality')" class="gh-chip gh-chip--round {{ $tab === 'quality' ? 'is-active' : '' }}">Quality Checklist</button>
-    </div>
-
+    <x-service-configuration-help :topic="$tab" />
     @if($tab === 'service')
-        <div style="display:flex; justify-content:flex-end;">
-            <button wire:click="$set('showServiceModal', true)" class="gh-btn gh-btn--primary gh-btn--sm">+ Add template</button>
-        </div>
-
-        <div class="gh-grid-3">
-            @foreach($this->serviceTemplates as $template)
-                <div class="gh-card gh-card--pad" style="{{ $template->is_active ? 'border-color:var(--gh-success);' : 'opacity:.75;' }}">
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-                        <div>
-                            <div style="font-weight:700; font-size:13.5px;">{{ $template->name }}</div>
-                            <span class="gh-badge" style="margin-top:4px;">{{ ucfirst($template->type) }}</span>
-                        </div>
-                        <button type="button" wire:click="toggleServiceStatus({{ $template->id }})" class="gh-badge {{ $template->is_active ? 'gh-badge--success' : 'gh-badge--error' }}" style="cursor:pointer; border:none;">
-                            {{ $template->is_active ? 'Active' : 'Inactive' }}
-                        </button>
-                    </div>
-                    @if($template->description)
-                        <p class="gh-muted" style="font-size:11.5px; margin-top:8px;">{{ $template->description }}</p>
-                    @endif
-                    <p style="font-size:12px; margin-top:8px;">{{ $template->items_count }} items</p>
-                </div>
-            @endforeach
-        </div>
+        <div style="display:flex;justify-content:flex-end;"><button type="button" wire:click="$set('showServiceModal', true)" class="gh-btn gh-btn--primary gh-btn--sm">+ Add template</button></div>
+        <div class="gh-card gh-card--flush"><div class="gh-table-scroll"><table class="gh-table"><caption class="sr-only">Service templates</caption><thead><tr><th>Template</th><th>Group</th><th>Saved items</th><th>Lines total (UGX)</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        @forelse($this->serviceTemplates as $template)<tr wire:key="service-{{ $template->id }}"><td style="max-width:420px;white-space:normal;"><strong>{{ $template->name }}</strong><p class="gh-muted" style="margin-top:4px;">{{ $template->description ?: 'Add a clear description when preparing your next template.' }}</p></td><td>{{ ucfirst($template->category) }}</td><td>{{ $template->items_count }} labour / part lines</td><td>{{ number_format($template->total_price, 2) }}</td><td><span class="gh-badge {{ $template->is_active ? 'gh-badge--success' : 'gh-badge--warning' }}">{{ $template->is_active ? 'Active' : 'Inactive' }}</span></td><td><button type="button" wire:click="toggleServiceStatus({{ $template->id }})" class="gh-btn gh-btn--sm" aria-label="{{ $template->is_active ? 'Deactivate' : 'Activate' }} {{ $template->name }}">{{ $template->is_active ? 'Deactivate' : 'Activate' }}</button></td></tr>
+        @empty<tr><td colspan="6" style="padding:32px;">No service templates yet. Add a repeat job such as an oil service, with its labour and parts lines.</td></tr>@endforelse
+        </tbody></table></div></div>
     @elseif($tab === 'wash')
-        <div style="display:flex; justify-content:flex-end;">
-            <button wire:click="$set('showWashModal', true)" class="gh-btn gh-btn--primary gh-btn--sm">+ Add package</button>
-        </div>
-
-        <div class="gh-grid-3">
-            @foreach($this->washPackages as $package)
-                <div class="gh-card gh-card--pad" style="{{ $package->is_active ? 'border-color:var(--gh-success);' : 'opacity:.75;' }}">
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-                        <div>
-                            <div style="font-weight:700; font-size:13.5px;">{{ $package->name }}</div>
-                            <span class="gh-badge" style="margin-top:4px;">{{ ucfirst($package->wash_type) }}</span>
-                        </div>
-                        <button type="button" wire:click="toggleWashStatus({{ $package->id }})" class="gh-badge {{ $package->is_active ? 'gh-badge--success' : 'gh-badge--error' }}" style="cursor:pointer; border:none;">
-                            {{ $package->is_active ? 'Active' : 'Inactive' }}
-                        </button>
-                    </div>
-                    <p style="font-size:15px; font-weight:800; margin-top:8px;">UGX {{ number_format($package->price) }}</p>
-                    @if($package->services)
-                        <ul class="gh-muted" style="font-size:11.5px; margin-top:6px; display:flex; flex-direction:column; gap:2px;">
-                            @foreach($package->services as $service)
-                                <li>• {{ $service['name'] ?? 'Service' }}</li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
-            @endforeach
-        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;"><a href="{{ route('packages.index') }}" class="gh-btn gh-btn--sm">Manage prices, time and inclusions</a><button type="button" wire:click="$set('showWashModal', true)" class="gh-btn gh-btn--primary gh-btn--sm">+ Add package</button></div>
+        <div class="gh-card gh-card--flush"><div class="gh-table-scroll"><table class="gh-table"><caption class="sr-only">Wash packages</caption><thead><tr><th>Package</th><th>Type</th><th>Included tasks</th><th>Price (UGX)</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        @forelse($this->washPackages as $package)<tr wire:key="wash-{{ $package->id }}"><td><strong>{{ $package->name }}</strong></td><td>{{ ucfirst(str_replace('_', ' ', $package->wash_type)) }}</td><td style="max-width:350px;white-space:normal;">{{ implode(', ', $package->includes_list) ?: 'No inclusions recorded' }}</td><td>{{ number_format($package->price, 2) }}</td><td><span class="gh-badge {{ $package->is_active ? 'gh-badge--success' : 'gh-badge--warning' }}">{{ $package->is_active ? 'Active' : 'Inactive' }}</span></td><td><button type="button" wire:click="toggleWashStatus({{ $package->id }})" class="gh-btn gh-btn--sm" aria-label="{{ $package->is_active ? 'Deactivate' : 'Activate' }} {{ $package->name }}">{{ $package->is_active ? 'Deactivate' : 'Activate' }}</button></td></tr>
+        @empty<tr><td colspan="6" style="padding:32px;">No wash packages yet. Start with one clearly described offer and its total price.</td></tr>@endforelse
+        </tbody></table></div></div>
     @else
-        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
-            <p class="gh-muted" style="font-size:12px;">Manage quality checklist items used in quality inspections.</p>
-            <button wire:click="openQualityModal" class="gh-btn gh-btn--primary gh-btn--sm">+ Add checklist item</button>
-        </div>
-
-        <div class="gh-card gh-card--flush">
-            <div class="gh-table-scroll">
-                <table class="gh-table">
-                    <thead>
-                        <tr>
-                            <th>Section</th>
-                            <th>Checklist Item</th>
-                            <th>Order</th>
-                            <th>Source</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($this->qualityTemplates as $template)
-                            <tr style="{{ !$template->is_active ? 'opacity:.65;' : '' }}">
-                                <td><span class="gh-badge">{{ $this->qualitySections[$template->section] ?? ucfirst(str_replace('_', ' ', $template->section)) }}</span></td>
-                                <td style="font-weight:600;">{{ $template->item_name }}</td>
-                                <td class="gh-muted">{{ $template->sort_order }}</td>
-                                <td>
-                                    @if(is_null($template->vendor_id))
-                                        <span class="gh-badge gh-badge--info">System Default</span>
-                                    @else
-                                        <span class="gh-badge gh-badge--success">My Template</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="gh-badge {{ $template->is_active ? 'gh-badge--success' : 'gh-badge--warning' }}">{{ $template->is_active ? 'Active' : 'Inactive' }}</span>
-                                </td>
-                                <td style="text-align:right;">
-                                    @if($template->vendor_id === auth()->user()->vendor_id)
-                                        <button wire:click="toggleQualityStatus({{ $template->id }})" class="gh-btn gh-btn--sm">{{ $template->is_active ? 'Disable' : 'Enable' }}</button>
-                                        <button wire:click="deleteQualityTemplate({{ $template->id }})" wire:confirm="Delete this checklist item?" class="gh-btn gh-btn--sm" style="color:var(--gh-error);">Delete</button>
-                                    @else
-                                        <span class="gh-hint">Read only</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--gh-ink-faint);">No quality checklist templates found.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <div style="display:flex;justify-content:flex-end;"><button type="button" wire:click="openQualityModal" class="gh-btn gh-btn--primary gh-btn--sm">+ Add checklist item</button></div>
+        <div class="gh-card gh-card--flush"><div class="gh-table-scroll"><table class="gh-table"><caption class="sr-only">Quality checklist items</caption><thead><tr><th>Section</th><th>Check to perform</th><th>Order</th><th>Source</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        @forelse($this->qualityTemplates as $template)<tr wire:key="quality-{{ $template->id }}"><td>{{ $this->qualitySections[$template->section] ?? ucfirst(str_replace('_', ' ', $template->section)) }}</td><td style="white-space:normal;">{{ $template->item_name }}</td><td>{{ $template->sort_order }}</td><td>{{ is_null($template->vendor_id) ? 'System default' : 'Your business' }}</td><td><span class="gh-badge {{ $template->is_active ? 'gh-badge--success' : 'gh-badge--warning' }}">{{ $template->is_active ? 'Active' : 'Inactive' }}</span></td><td>@if($template->vendor_id === auth()->user()->vendor_id)<button type="button" wire:click="toggleQualityStatus({{ $template->id }})" class="gh-btn gh-btn--sm">{{ $template->is_active ? 'Disable' : 'Enable' }}</button> <button type="button" wire:click="deleteQualityTemplate({{ $template->id }})" wire:confirm="Delete this checklist item?" class="gh-btn gh-btn--sm">Delete</button>@else<span class="gh-hint">Read only</span>@endif</td></tr>
+        @empty<tr><td colspan="6" style="padding:32px;">No checklist items available. Add observable checks, such as lights working or no visible leaks.</td></tr>@endforelse
+        </tbody></table></div></div>
     @endif
 
     <!-- Service Template Modal -->
     @if($showServiceModal)
         <div class="modal modal-open">
             <div class="modal-box gh-card gh-card--pad" style="max-width:42rem;">
-                <div class="gh-card__title" style="margin-bottom:16px;">Create Service Template</div>
-                <form wire:submit="createServiceTemplate">
+                <div class="gh-card__title" style="margin-bottom:16px;">Create Service Template</div><p class="gh-muted" style="margin:8px 0 16px;">Add the labour and parts that should be copied to a new job. Quantities and prices can be reviewed on that job.</p>
+                <form wire:submit="createServiceTemplate">@if($errors->any())<div class="alert alert-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
                     <div class="gh-grid-2" style="margin-bottom:14px;">
                         <div class="gh-field" style="grid-column:1/-1;">
-                            <span class="gh-label">Template name *</span>
+                            <span class="gh-label">Template name * (for example, Small-car oil service)</span>
                             <input type="text" wire:model="serviceName" class="gh-input" style="width:100%;">
                         </div>
                         <div class="gh-field">
-                            <span class="gh-label">Type</span>
+                            <span class="gh-label">Built-in template group</span>
                             <select wire:model="serviceType" class="gh-select" style="width:100%;">
                                 <option value="service">Service</option>
                                 <option value="repair">Repair</option>
-                                <option value="diagnostics">Diagnostics</option>
+                                <option value="diagnostics">Diagnostics</option><option value="bodywork">Bodywork</option><option value="electrical">Electrical</option><option value="ac">Air conditioning</option><option value="tyres">Tyres</option><option value="other">Other</option>
                             </select>
                         </div>
                     </div>
@@ -139,7 +52,7 @@
                         <span class="gh-label">Description</span>
                         <textarea wire:model="serviceDescription" rows="2" class="gh-input" style="width:100%;"></textarea>
                     </div>
-                    <div class="gh-eyebrow" style="margin-bottom:8px;">Items</div>
+                    <div class="gh-eyebrow" style="margin-bottom:8px;">Labour and parts ? add at least one line</div>
                     <div class="gh-table-scroll" style="margin-bottom:8px;">
                         <table class="gh-table">
                             <thead><tr><th>Type</th><th>Description</th><th>Qty</th><th>Price</th><th></th></tr></thead>
@@ -172,7 +85,7 @@
         <div class="modal modal-open">
             <div class="modal-box gh-card gh-card--pad">
                 <div class="gh-card__title" style="margin-bottom:16px;">Create Wash Package</div>
-                <form wire:submit="createWashPackage">
+                <form wire:submit="createWashPackage"><div class="gh-field" style="margin-bottom:12px;"><label for="wash-duration" class="gh-label">Estimated time (minutes)</label><input id="wash-duration" type="number" wire:model="washDuration" min="5" class="gh-input" /></div>@if($errors->any())<div class="alert alert-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif<p class="gh-muted" style="margin-bottom:12px;">The price covers the whole package. Add included task names below; they are descriptions, without separate charges.</p>
                     <div class="gh-field" style="margin-bottom:14px;">
                         <span class="gh-label">Package name *</span>
                         <input type="text" wire:model="washName" class="gh-input" style="width:100%;">
@@ -181,10 +94,10 @@
                         <div class="gh-field">
                             <span class="gh-label">Wash type</span>
                             <select wire:model="washType" class="gh-select" style="width:100%;">
-                                <option value="basic">Basic</option>
-                                <option value="full">Full</option>
+                                <option value="basic">Basic</option><option value="standard">Standard</option><option value="interior">Interior</option><option value="exterior">Exterior</option><option value="engine">Engine</option><option value="full_detail">Full detail</option><option value="custom">Custom</option>
+
                                 <option value="premium">Premium</option>
-                                <option value="detailing">Detailing</option>
+
                             </select>
                         </div>
                         <div class="gh-field">
@@ -195,7 +108,7 @@
                     <div class="gh-eyebrow" style="margin-bottom:8px;">Included services</div>
                     @foreach($washServices as $index => $service)
                         <div style="display:flex; gap:8px; margin-bottom:8px;">
-                            <input type="text" wire:model="washServices.{{ $index }}.name" class="gh-input" style="flex:1;" placeholder="Service name">
+                            <input type="text" placeholder="Included task, e.g. Interior vacuum" wire:model="washServices.{{ $index }}.name" class="gh-input" style="flex:1;">
                             <button type="button" wire:click="removeWashService({{ $index }})" class="gh-btn gh-btn--sm" style="color:var(--gh-error);">×</button>
                         </div>
                     @endforeach

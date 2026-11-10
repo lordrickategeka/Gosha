@@ -54,7 +54,7 @@
                                     </a>
                                     <div class="gh-mega-menu__tile-links">
                                         @foreach(array_slice($module['visibleItems'], 0, 4) as $item)
-                                            <a href="{{ route($item['route']) }}" class="gh-mega-menu__chip {{ request()->routeIs($item['route']) ? 'active' : '' }}">
+                                            <a href="{{ route($item['route'], $item['parameters'] ?? []) }}" class="gh-mega-menu__chip {{ request()->routeIs($item['route']) ? 'active' : '' }}">
                                                 {{ $item['label'] }}
                                             </a>
                                         @endforeach

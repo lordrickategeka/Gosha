@@ -2,7 +2,7 @@
     <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:20px;">
         <div>
             <div class="gh-eyebrow">Workspace configuration</div>
-            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-top:4px;">Settings</div>
+            <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; margin-top:4px;">Business preferences</div>
             <p class="gh-muted" style="font-size:12.5px; max-width:560px; margin:6px 0 0;">Control business details, invoicing defaults, notification preferences, and operational taxonomies from a single workspace.</p>
         </div>
         <div class="gh-card gh-card--pad" style="width:100%; max-width:22rem;">

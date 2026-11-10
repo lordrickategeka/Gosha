@@ -1,4 +1,5 @@
 <div class="gh-page">
+    <x-garage-setup />
     <p class="gh-muted" style="font-size:13px; max-width:600px; margin:0;">
         Every part of the garage is its own module with its own dashboard. Open one to work inside it — the sidebar follows the module you are in.
     </p>

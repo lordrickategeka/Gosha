@@ -2,11 +2,11 @@
 
 namespace App\Domains\Organization\Livewire\Settings;
 
-use App\Shared\Helpers\NumberGeneratorHelper;
 use App\Domains\Inventory\Models\InventoryCategory;
 use App\Domains\Inventory\Models\InventoryType;
 use App\Domains\ServiceConfig\Models\ServiceCategory;
 use App\Domains\ServiceConfig\Models\ServiceType;
+use App\Shared\Helpers\NumberGeneratorHelper;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,28 +15,54 @@ class TaxonomyComponent extends Component
 {
     use WithPagination;
 
+    #[\Livewire\Attributes\Url]
     public string $section = 'inventory_categories';
 
+    #[\Livewire\Attributes\Locked]
+    public bool $standalone = false;
+
+    public function mount(): void
+    {
+        $this->standalone = request()->routeIs('master-data.taxonomy');
+        if (! in_array($this->section, ['inventory_categories', 'inventory_types', 'service_types', 'service_categories'], true)) {
+            $this->section = 'inventory_categories';
+        }
+    }
+
     public ?int $inventoryCategoryId = null;
+
     public string $inventoryCategoryName = '';
+
     public string $inventoryCategoryType = 'service_parts';
+
     public string $inventoryCategoryCode = '';
+
     public string $inventoryCategoryDescription = '';
+
     public ?int $inventoryCategoryParentId = null;
+
     public bool $inventoryCategoryIsActive = true;
 
     public ?int $inventoryTypeId = null;
+
     public string $inventoryTypeName = '';
+
     public ?int $inventoryTypeCategoryId = null;
 
     public ?int $serviceTypeId = null;
+
     public string $serviceTypeName = '';
+
     public float $serviceTypePrice = 0;
+
     public int $serviceTypeEstimatedDuration = 30;
 
     public ?int $serviceCategoryId = null;
+
     public string $serviceCategoryName = '';
+
     public string $serviceCategoryDescription = '';
+
     public bool $serviceCategoryIsActive = true;
 
     public function setSection(string $section): void
@@ -144,11 +170,13 @@ class TaxonomyComponent extends Component
 
         if ($category->items()->exists()) {
             session()->flash('message', 'Remove or reassign inventory items before deleting this category.');
+
             return;
         }
 
         if ($category->children()->exists()) {
             session()->flash('message', 'Delete child categories before removing this category.');
+
             return;
         }
 
@@ -208,7 +236,7 @@ class TaxonomyComponent extends Component
                     ->ignore($this->inventoryTypeId)
                     ->where(fn ($query) => $query->where('inventory_category_id', $this->inventoryTypeCategoryId)),
             ],
-            'inventoryTypeCategoryId' => 'required|exists:inventory_categories,id',
+            'inventoryTypeCategoryId' => ['required', Rule::exists('inventory_categories', 'id')->where('vendor_id', auth()->user()->vendor_id)],
         ];
     }
 
@@ -219,7 +247,7 @@ class TaxonomyComponent extends Component
 
     public function editInventoryType(int $id): void
     {
-        $type = InventoryType::findOrFail($id);
+        $type = InventoryType::whereHas('category', fn ($q) => $q->where('vendor_id', auth()->user()->vendor_id))->findOrFail($id);
 
         $this->inventoryTypeId = $type->id;
         $this->inventoryTypeName = $type->name;
@@ -236,7 +264,7 @@ class TaxonomyComponent extends Component
         ];
 
         if ($this->inventoryTypeId) {
-            InventoryType::findOrFail($this->inventoryTypeId)->update($data);
+            InventoryType::whereHas('category', fn ($q) => $q->where('vendor_id', auth()->user()->vendor_id))->findOrFail($this->inventoryTypeId)->update($data);
             $message = 'Inventory type updated successfully.';
         } else {
             InventoryType::create($data);
@@ -249,7 +277,7 @@ class TaxonomyComponent extends Component
 
     public function deleteInventoryType(int $id): void
     {
-        InventoryType::findOrFail($id)->delete();
+        InventoryType::whereHas('category', fn ($q) => $q->where('vendor_id', auth()->user()->vendor_id))->findOrFail($id)->delete();
         session()->flash('message', 'Inventory type deleted successfully.');
     }
 
@@ -397,7 +425,7 @@ class TaxonomyComponent extends Component
                 ->where('vendor_id', $vendorId)
                 ->latest()
                 ->paginate(10),
-            'inventoryTypes' => InventoryType::with('category')
+            'inventoryTypes' => InventoryType::with('category')->whereHas('category', fn ($q) => $q->where('vendor_id', $vendorId))
                 ->orderBy('name')
                 ->get(),
             'serviceTypes' => ServiceType::orderBy('name')->get(),
@@ -410,6 +438,6 @@ class TaxonomyComponent extends Component
             'inventoryTypeCategories' => InventoryCategory::where('vendor_id', $vendorId)
                 ->orderBy('name')
                 ->get(),
-        ]);
+        ])->layout('components.layouts.app', ['title' => 'Master data categories and types']);
     }
 }

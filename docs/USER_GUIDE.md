@@ -78,14 +78,46 @@ If a screen is missing or an action returns **403 / forbidden**, ask your admini
 
 Before recording live jobs, complete a short setup pass:
 
-1. Open [Business settings](/settings). Review the business details, currency, timezone, invoice presentation and applicable tax settings. Use settings appropriate to your business rather than relying on a default tax rate.
+1. Open [Master data](/master-data) to see the setup directory and missing recommended records. In **Business preferences**, review business details, currency, timezone, invoice presentation and applicable tax settings. Use settings appropriate to your business rather than relying on a default tax rate.
 2. Open [Branches](/branches) and confirm the main branch name and location. Add further branches only if your plan allows them.
 3. Open [Staff and users](/users). Create the accounts and roles needed for reception, technical work, washing and finance. Assign branch access where provided.
 4. Configure [Service types](/service-types), [Service categories](/service-categories), [Service templates](/templates) and [Wash packages](/packages). Review descriptions and prices before using a template on a customer job.
 5. Check [Bay status](/bays) and the bay configuration available to your role. Confirm the correct service or wash bay before assigning work.
 6. Add stock records and suppliers before issuing parts to jobs.
 
-The dashboard setup links are shortcuts into these screens. A plan limit can stop additional branches, users or records; review Billing before creating duplicate businesses as a workaround.
+The **Start here** banner uses saved records rather than a registration-session flag. It remains after signing in again, removes completed recommendations, and reappears if recommended records are missing. Garage setup includes service types/categories, service templates, quality checklist items and service bays; car-wash setup includes wash packages and wash bays. Bay checks use the selected branch, with a valid business-branch fallback. Wash setup becomes recommended for a garage that has wash packages or wash bays. Optional items remain listed in Master data without forcing a repair-only business to set up a wash operation. These checks guide setup and do not block orders. A plan limit can stop additional branches, users or records; review Billing before creating duplicate businesses as a workaround.
+
+## Master data, templates and quality checklists
+<!-- audience: garage,staff -->
+
+Open [Master data](/master-data) from Modules or the module switcher. The directory lists business profile, branches, service categories, service types, service templates, wash packages, quality checklist items, service bays, wash bays, inventory categories, inventory types, inventory items, supplier contacts, staff access and commission rules. It shows current availability, examples and permitted setup links. Business preferences and Roles and permissions are linked separately. Supplier contacts are the businesses you buy from; becoming a marketplace seller uses the separate Supplier module.
+
+| Record | What it describes | Example |
+| --- | --- | --- |
+| Service category | A broad service label in the shared reference list | Routine maintenance: oil/filter changes and periodic servicing |
+| Service type | An individual service with a price and estimated time | Oil change: enter your approved price and 45 minutes |
+| Service template | Reusable labour and parts lines for a repair job | Oil-service labour, engine oil and an oil filter |
+| Wash package | A customer offer with a whole-bundle price, inclusions and time | Standard wash: body wash, wheel cleaning and vacuum |
+| Quality checklist item | An observable inspection prompt | Exterior: all lights working |
+
+Service categories and service types are currently shared reference lists. Check existing names before creating another. Creating a category does not create a service, change a template's built-in group options or add job lines. Choose a broad name such as Maintenance, Brakes and suspension, or Electrical and diagnostics; describe the work included. Avoid customer names and individual job numbers in category names.
+
+Inventory categories and types are available through [Master data inventory groups](/master-data/inventory-groups). For example, use Filters as a category and Oil filters/Air filters as types within it. These inventory records belong to your business. A reference-list count shows available configuration, not a confirmation that prices, stock balances or inspection results have been reviewed.
+
+## Service templates and repeat jobs
+<!-- audience: garage,staff -->
+
+At [Templates](/templates), choose **Service templates**, **Wash packages** or **Quality checklist**. Each tab explains its purpose and shows a table. Service templates show group, saved item count, saved line total and status. To add one, name the repeat job, select its built-in group and enter at least one valid labour/part line with quantity and unit price. Applying it to a repair work order copies those lines; review them for the particular vehicle. Deactivating an old template keeps it out of the active selection without rewriting existing jobs.
+
+## Wash packages and bundle pricing
+<!-- audience: garage,staff -->
+
+At [Wash packages](/packages), compare price, included tasks, duration and status in the table. Search and filter by type or active status, then create or edit the offer. The simplified Wash packages tab in Templates saves to the same list. The whole package price is applied once when selected on a new wash order; included task descriptions are copied without additional charges. Review any extra manually added charges before saving the order. Examples are illustrative; enter your own business prices.
+
+## Quality checklist setup
+<!-- audience: garage,staff -->
+
+At [Quality checklist](/templates?tab=quality), review active system defaults before adding business-specific checks. Group checks by section and write observable statements such as Lights working or No visible leaks. System defaults are read-only. Your own items can be disabled or deleted. Active defaults and your business's active items populate a new, empty work-order inspection; changing the setup does not rewrite an existing inspection or automatically mark any check passed. The Road Test section is only populated when the work order contains a road-test line. Inspectors must record results separately.
 
 ## Customers and vehicles
 <!-- audience: garage,staff -->

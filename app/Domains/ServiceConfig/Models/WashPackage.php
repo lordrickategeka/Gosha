@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WashPackage extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToVendor;
+    use BelongsToVendor, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'vendor_id',
@@ -51,7 +51,7 @@ class WashPackage extends Model
     // Helpers
     public function getDurationDisplayAttribute(): string
     {
-        if (!$this->estimated_duration_minutes) {
+        if (! $this->estimated_duration_minutes) {
             return 'N/A';
         }
 
@@ -63,12 +63,13 @@ class WashPackage extends Model
         } elseif ($hours > 0) {
             return "{$hours}h";
         }
+
         return "{$minutes}m";
     }
 
     public function getIncludesListAttribute(): array
     {
-        return $this->includes ?? [];
+        return collect($this->includes ?? [])->map(fn ($item) => is_array($item) ? (string) ($item['name'] ?? $item['description'] ?? '') : (string) $item)->filter()->values()->all();
     }
 
     // Apply to wash order

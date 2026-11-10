@@ -38,7 +38,7 @@
             </div>
 
             @foreach (\App\Shared\Navigation\ModuleRegistry::visibleItems($currentModule) as $item)
-                <a href="{{ route($item['route']) }}" class="gh-nav-item {{ request()->routeIs($item['route']) ? 'is-active' : '' }}">
+                <a href="{{ route($item['route'], $item['parameters'] ?? []) }}" class="gh-nav-item {{ request()->routeIs($item['route']) && (!isset($item['parameters']['tab']) || request('tab', 'service') === $item['parameters']['tab']) ? 'is-active' : '' }}">
                     <span class="gh-nav-item__label"><x-icon :name="$item['icon']" class="gh-icon" /> {{ $item['label'] }}</span>
                 </a>
             @endforeach

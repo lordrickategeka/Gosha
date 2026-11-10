@@ -9,8 +9,6 @@ use App\Domains\Inventory\Models\InventoryItem;
 use App\Domains\Operations\Models\WashOrder;
 use App\Domains\Operations\Models\WorkOrder;
 use App\Domains\Organization\Models\Branch;
-use App\Domains\ServiceConfig\Models\ServiceTemplate;
-use App\Domains\ServiceConfig\Models\ServiceType;
 use App\Domains\Vehicles\Models\Vehicle;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,7 +32,7 @@ class ModuleStats
             'stock' => static::inventory(),
             'reports' => static::reports(),
             'hr' => static::hr(),
-            'settings' => static::settings(),
+            'settings', 'master-data' => static::settings(),
             default => ['badge' => null, 'rows' => []],
         };
     }
@@ -205,12 +203,14 @@ class ModuleStats
 
     protected static function settings(): array
     {
+        $items = app(\App\Support\MasterData::class)->items(auth()->user());
+        $missing = count(array_filter($items, fn ($item) => $item['required'] && ! $item['ready']));
+
         return [
-            'badge' => null,
+            'badge' => $missing ? ['label' => $missing.' to set up', 'tone' => 'warning'] : null,
             'rows' => [
-                ['label' => 'Branches', 'value' => Branch::count()],
-                ['label' => 'Service types', 'value' => ServiceType::count()],
-                ['label' => 'Templates', 'value' => ServiceTemplate::count()],
+                ['label' => 'Reference lists', 'value' => count($items)],
+                ['label' => 'Recommended setup missing', 'value' => $missing],
             ],
         ];
     }

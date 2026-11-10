@@ -10,12 +10,17 @@ use Livewire\Component;
 class CreateWashOrdersComponent extends Component
 {
     public $customer_id = '';
+
     public $vehicle_id = '';
 
     public $wash_type = 'basic';
+
     public $wash_package_id = '';
+
     public $priority = 'normal';
+
     public $source = 'walk_in';
+
     public $customer_notes = '';
 
     public $items = [];
@@ -42,14 +47,14 @@ class CreateWashOrdersComponent extends Component
     public function updatedWashPackageId()
     {
         if ($this->wash_package_id) {
-            $package = WashPackage::find($this->wash_package_id);
+            $package = WashPackage::where('vendor_id', auth()->user()->vendor_id)->where('is_active', true)->findOrFail($this->wash_package_id);
             if ($package) {
                 $this->wash_type = $package->wash_type;
-                $this->items = [];
-                foreach ($package->includes ?? [] as $item) {
+                $this->items = [['description' => $package->name, 'price' => (float) $package->price]];
+                foreach ($package->includes_list as $item) {
                     $this->items[] = [
-                        'description' => is_array($item) ? ($item['name'] ?? $item['description'] ?? $item) : $item,
-                        'price' => is_array($item) ? ($item['price'] ?? 0) : 0,
+                        'description' => $item,
+                        'price' => 0,
                     ];
                 }
             }
@@ -79,8 +84,9 @@ class CreateWashOrdersComponent extends Component
 
     public function save()
     {
-        if (!session('current_branch_id')) {
+        if (! session('current_branch_id')) {
             session()->flash('error', 'No active branch selected. Please refresh the page or switch branches.');
+
             return;
         }
 
@@ -111,6 +117,7 @@ class CreateWashOrdersComponent extends Component
         }
 
         session()->flash('success', 'Wash order created and added to queue.');
+
         return redirect()->route('wash-orders.index');
     }
 

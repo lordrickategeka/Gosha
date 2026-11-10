@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QualityCheckTemplate extends Model
 {
-    use HasFactory, BelongsToVendor;
+    use BelongsToVendor, HasFactory;
 
     protected $fillable = [
         'vendor_id',
@@ -73,10 +73,10 @@ class QualityCheckTemplate extends Model
      */
     public static function getForVendor(?int $vendorId = null, ?string $section = null)
     {
-        $query = static::query()
+        $query = static::query()->withoutVendorScope()
             ->where(function ($q) use ($vendorId) {
                 $q->whereNull('vendor_id') // System defaults
-                  ->orWhere('vendor_id', $vendorId); // Vendor specific
+                    ->orWhere('vendor_id', $vendorId); // Vendor specific
             })
             ->active()
             ->orderBy('section')

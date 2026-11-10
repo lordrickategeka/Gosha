@@ -1,10 +1,10 @@
-<div class="gh-stack">
+<div class="{{ $standalone ? 'gh-page' : 'gh-stack' }}">
     <div class="gh-card gh-card--pad">
         <div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:14px;">
             <div>
                 <div class="gh-eyebrow">System taxonomy</div>
-                <div class="gh-card__title" style="margin-top:4px;">Taxonomy Settings</div>
-                <p class="gh-muted" style="font-size:12px; margin-top:4px;">Manage inventory and service classification from one place.</p>
+                <div class="gh-card__title" style="margin-top:4px;">Master data: categories and types</div>
+                <p class="gh-muted" style="font-size:12px; margin-top:4px;">Inventory categories group your stock (for example, Filters); inventory types divide a group further (Oil filters and Air filters). Service categories describe broad work groups; service types describe individual priced services. Service reference lists are currently shared.</p>
             </div>
             @if (session()->has('message'))
                 <div class="gh-badge gh-badge--success" style="font-size:12px; padding:8px 12px;">{{ session('message') }}</div>
@@ -280,7 +280,7 @@
             <div class="gh-card gh-card--pad">
                 <div style="margin-bottom:14px;">
                     <div class="gh-card__title">{{ $serviceCategoryId ? 'Edit Service Category' : 'New Service Category' }}</div>
-                    <p class="gh-muted" style="font-size:12px; margin-top:2px;">Group services into a clean naming structure for scheduling and reporting.</p>
+                    <p class="gh-muted" style="font-size:12px; margin-top:2px;">Add broad shared labels such as Maintenance or Brakes and suspension. Describe the work included. Prices and job lines are set up separately in Service types and Service templates.</p>
                 </div>
 
                 <form wire:submit.prevent="saveServiceCategory" class="gh-stack">

@@ -11,32 +11,44 @@ class PackagesComponent extends Component
     use WithPagination;
 
     public $search = '';
+
     public $filterType = '';
+
     public $filterStatus = '';
 
     // Modal state
     public $showModal = false;
+
     public $editingId = null;
 
     // Form fields
     public $name = '';
+
     public $wash_type = 'basic';
+
     public $description = '';
+
     public $includes = [];
+
     public $newIncludeItem = '';
+
     public $estimated_duration_minutes = 30;
+
     public $price = 0;
+
     public $is_active = true;
+
     public $sort_order = 0;
 
     protected $rules = [
-        'name'                       => 'required|string|max:255',
-        'wash_type'                  => 'required|in:basic,standard,premium,interior,exterior,engine,full_detail,custom',
-        'description'                => 'nullable|string|max:1000',
-        'includes'                   => 'array',
+        'name' => 'required|string|max:255',
+        'wash_type' => 'required|in:basic,standard,premium,interior,exterior,engine,full_detail,custom',
+        'description' => 'nullable|string|max:1000',
+        'includes' => 'array',
+        'includes.*' => 'string|max:255',
         'estimated_duration_minutes' => 'required|integer|min:5',
-        'price'                      => 'required|numeric|min:0',
-        'sort_order'                 => 'nullable|integer|min:0',
+        'price' => 'required|numeric|min:0',
+        'sort_order' => 'nullable|integer|min:0',
     ];
 
     public function updatingSearch()
@@ -49,12 +61,17 @@ class PackagesComponent extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
     // ── Includes list helpers ─────────────────────────────────────────────────
 
     public function addIncludeItem()
     {
         $item = trim($this->newIncludeItem);
-        if ($item && !in_array($item, $this->includes)) {
+        if ($item && ! in_array($item, $this->includes)) {
             $this->includes[] = $item;
         }
         $this->newIncludeItem = '';
@@ -82,7 +99,7 @@ class PackagesComponent extends Component
         $this->name = $package->name;
         $this->wash_type = $package->wash_type;
         $this->description = $package->description ?? '';
-        $this->includes = $package->includes ?? [];
+        $this->includes = $package->includes_list;
         $this->estimated_duration_minutes = $package->estimated_duration_minutes;
         $this->price = $package->price;
         $this->is_active = $package->is_active;
@@ -95,14 +112,14 @@ class PackagesComponent extends Component
         $this->validate();
 
         $data = [
-            'name'                       => $this->name,
-            'wash_type'                  => $this->wash_type,
-            'description'                => $this->description ?: null,
-            'includes'                   => array_values($this->includes),
+            'name' => $this->name,
+            'wash_type' => $this->wash_type,
+            'description' => $this->description ?: null,
+            'includes' => array_values($this->includes),
             'estimated_duration_minutes' => $this->estimated_duration_minutes,
-            'price'                      => $this->price,
-            'is_active'                  => $this->is_active,
-            'sort_order'                 => $this->sort_order ?? 0,
+            'price' => $this->price,
+            'is_active' => $this->is_active,
+            'sort_order' => $this->sort_order ?? 0,
         ];
 
         if ($this->editingId) {
@@ -124,7 +141,7 @@ class PackagesComponent extends Component
     public function toggleStatus($id)
     {
         $package = WashPackage::where('vendor_id', auth()->user()->vendor_id)->findOrFail($id);
-        $package->update(['is_active' => !$package->is_active]);
+        $package->update(['is_active' => ! $package->is_active]);
     }
 
     public function delete($id)
@@ -157,13 +174,14 @@ class PackagesComponent extends Component
     public function getPackagesProperty()
     {
         $vendorId = auth()->user()->vendor_id;
+
         return WashPackage::where('vendor_id', $vendorId)
-            ->when($this->search, fn($q) => $q->where(function ($q) {
+            ->when($this->search, fn ($q) => $q->where(function ($q) {
                 $q->where('name', 'like', "%{$this->search}%")
-                  ->orWhere('description', 'like', "%{$this->search}%");
+                    ->orWhere('description', 'like', "%{$this->search}%");
             }))
-            ->when($this->filterType, fn($q) => $q->where('wash_type', $this->filterType))
-            ->when($this->filterStatus !== '', fn($q) => $q->where('is_active', (bool) $this->filterStatus))
+            ->when($this->filterType, fn ($q) => $q->where('wash_type', $this->filterType))
+            ->when($this->filterStatus !== '', fn ($q) => $q->where('is_active', (bool) $this->filterStatus))
             ->orderBy('sort_order')
             ->orderBy('price')
             ->paginate(10);

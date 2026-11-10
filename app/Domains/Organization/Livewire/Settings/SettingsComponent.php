@@ -2,37 +2,50 @@
 
 namespace App\Domains\Organization\Livewire\Settings;
 
-use App\Domains\Platform\Models\Vendor;
 use Livewire\Component;
 
 class SettingsComponent extends Component
 {
+    #[\Livewire\Attributes\Url]
     public $tab = 'general';
 
     // General settings
     public $businessName = '';
+
     public $phone = '';
+
     public $email = '';
+
     public $address = '';
+
     public $currency = 'UGX';
+
     public $timezone = 'Africa/Kampala';
 
     // Invoice settings
     public $invoicePrefix = 'INV';
+
     public $invoiceFooter = '';
+
     public $defaultDueDays = 7;
+
     public $taxRate = 18;
 
     // Notification settings
     public $emailNotifications = true;
+
     public $smsNotifications = false;
 
     // Closure settings
     public $closureEnabled = false;
+
     public $closureTime = '18:00';
 
     public function mount()
     {
+        if (! in_array($this->tab, ['general', 'invoice', 'notifications', 'taxonomy', 'pricing'], true)) {
+            $this->tab = 'general';
+        }
         $vendor = auth()->user()->vendor;
         if ($vendor) {
             $settings = $vendor->settings ?? [];
@@ -106,6 +119,6 @@ class SettingsComponent extends Component
     public function render()
     {
         return view('livewire.settings.settings-component')
-            ->layout('components.layouts.app', ['title' => 'Settings']);
+            ->layout('components.layouts.app', ['title' => 'Business preferences']);
     }
 }
