@@ -144,6 +144,7 @@
         }
     </script>
 
+    @include('components.assistant-widget')
     @stack('scripts')
 </body>
 

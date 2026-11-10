@@ -10,6 +10,8 @@ export default defineConfig({
                 "resources/js/app.js",
                 "resources/css/documentation.css",
                 "resources/js/api-docs.js",
+                "resources/css/assistant.css",
+                "resources/js/assistant.js",
             ],
 
             refresh: true,

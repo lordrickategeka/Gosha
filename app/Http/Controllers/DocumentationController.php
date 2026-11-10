@@ -31,7 +31,7 @@ class DocumentationController extends Controller
 
     public function api()
     {
-        $specs = collect(['garagehq' => 'GarageHQ application API', 'cream-theme' => 'Cream Theme partner API', 'onepass' => 'OnePass OTP API'])
+        $specs = collect(['garagehq' => 'GarageHQ application API', 'cream-theme' => 'Cream Theme partner API', 'onepass' => 'OnePass OTP API', 'assistant' => 'Shared System Assistant API'])
             ->map(fn ($name, $service) => ['name' => $name, 'url' => route('api-docs.spec', $service, false)])->values()->all();
 
         return view('documentation.api', ['title' => 'API reference | GarageHQ', 'apiSpecs' => $specs]);
@@ -39,7 +39,7 @@ class DocumentationController extends Controller
 
     public function spec(string $service)
     {
-        abort_unless(in_array($service, ['garagehq', 'cream-theme', 'onepass'], true), 404);
+        abort_unless(in_array($service, ['garagehq', 'cream-theme', 'onepass', 'assistant'], true), 404);
         $data = json_decode(File::get(base_path('docs/openapi/'.$service.'.json')), true, 512, JSON_THROW_ON_ERROR);
 
         return response()->json($data)->header('X-Content-Type-Options', 'nosniff');

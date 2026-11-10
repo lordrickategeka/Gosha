@@ -199,5 +199,6 @@
 </script>
 
     @stack('scripts')
+    @include('components.assistant-widget')
 </body>
 </html>

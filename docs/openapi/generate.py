@@ -149,6 +149,32 @@ for path, name, readiness in [("ready", "getOnePassReadiness", True), ("live", "
         {"200": response("Service ready." if readiness else "Process running.", obj({"status": string(example="ready" if readiness else "ok")})), **({"503": response("Redis/service is unavailable.", obj({"status": string()}))} if readiness else {})},
         "Open endpoint; readiness checks Redis, not partner credentials or end-to-end message delivery.", security=[])}
 
-for name, document in [("garagehq", garage), ("cream-theme", cream), ("onepass", otp)]:
+garage["components"]["securitySchemes"].update({
+    "webSession": {"type": "apiKey", "in": "cookie", "name": "laravel_session", "description": "Authenticated browser session. Default cookie name shown; replace with the deployment's SESSION_COOKIE. This endpoint does not accept Sanctum bearer tokens."},
+    "csrfHeader": {"type": "apiKey", "in": "header", "name": "X-CSRF-TOKEN", "description": "CSRF token for the same authenticated browser session. Both session and CSRF are required."},
+})
+chat_result = obj({"answer": string(maxLength=6000), "sources": {"type": "array", "items": obj({"title": string(), "path": string()})}}, ["answer", "sources"])
+garage["paths"]["/assistant/chat"] = {"post": operation("Ask the GarageHQ documentation assistant", "askGarageHqAssistant", ["Documentation assistant"],
+    {"200": response("Plain-text answer and approved guide links.", chat_result),
+     **{str(code): response(description, ref("Error")) for code, description in [(401,"Sign in required."),(403,"Inactive user."),(419,"Session expired or CSRF mismatch."),(422,"Question or consent validation failed."),(503,"Assistant unavailable; use the guide.")]},
+     "429": response("Per-user, global or shared-service limit reached.", ref("Error"), headers={"Retry-After": {"schema": integer()}})},
+    "First-party same-origin browser endpoint. Requires web-session authentication, CSRF and explicit consent to send the question and selected guide excerpts to the shared assistant and Ollama Cloud. Role and pseudonymous actor are derived on the server; client-supplied actor, role, docs and history are ignored. No operational records are accessed and no actions are performed. Limits: six requests per user per minute, 100 per day, 60 globally per minute. Help remains available during subscription expiry. Responses are not cached.",
+    security=[{"webSession": [], "csrfHeader": []}], requestBody=body(obj({"question": string(minLength=1,maxLength=1200), "consent": {"type":"boolean","enum":[True]}}, ["question","consent"]), {"question":"How does the free trial work?","consent":True}))}
+
+assistant = base("Shared System Assistant API", "Backend contract for the shared Salord System Assistant. The calling product authenticates its users and supplies approved documentation for each request. This is document retrieval, not model fine-tuning or access to operational databases. Matching excerpts and the question are sent to Ollama Cloud. Use a dedicated system-specific bearer key on the backend only. A configured tenant mapping selects the active tenant and its model settings.",
+    [{"url":"https://cot.loganate.cc"}], {"systemBearer":{"type":"http","scheme":"bearer","description":"Dedicated key paired with system in SUPPORT_AGENT_API_KEYS_JSON."}}, [{"systemBearer":[]}])
+assistant["components"]["schemas"] = {
+    "Guide": obj({"id":string(),"title":string(),"content":string(),"source":string(),"primaryPath":string(description="Local product path beginning with a single slash, required for API retrieval.")},["title","content","primaryPath"]),
+    "AssistantError":obj({"error":string()},["error"]),
+}
+assistant["paths"]["/health"] = {"get":operation("Check service liveness","getAssistantHealth",["Health"],{"200":response("Service running; does not validate keys or model readiness.",obj({"status":string()}))},security=[])}
+assistant["paths"]["/v1/chat"] = {"post":operation("Explain approved product documentation","askSharedSystemAssistant",["Chat"],
+    {"200":response("Answer and sources. No matching guides also returns 200, without a model call.",chat_result),
+     **{str(code):response(description,ref("AssistantError")) for code,description in [(400,"Invalid question, actor, JSON or docs."),(401,"System/key pair rejected."),(413,"Request body exceeds two MiB."),(429,"Actor rate limit reached."),(500,"Internal error."),(502,"Model unavailable or returned invalid output."),(503,"Mapped tenant or model is not configured/active.")]}},
+    "Question limit: 1,200 characters. Documentation limit: 220,000 UTF-8 bytes of JSON. Retrieves up to five matching guides with valid local paths and returns up to eight links. Actor is a product-local pseudonymous user identifier. No chat history, operational actions, live records or browser tools are supported. Do not retry timeouts automatically: the model may already have processed the request.",
+    requestBody=body(obj({"system":string(pattern="^[a-z0-9][a-z0-9-]{1,63}$",example="garagehq"),"actor":string(pattern="^[a-zA-Z0-9:_-]+$",maxLength=80),"role":string(maxLength=40),"question":string(minLength=1,maxLength=1200),
+        "docs":obj({"overview":obj({"intro":string()}),"supportGuides":{"type":"array","items":ref("Guide")},"moduleGuides":{"type":"array","items":ref("Guide")}})},["system","actor","question","docs"]))) }
+
+for name, document in [("garagehq", garage), ("cream-theme", cream), ("onepass", otp), ("assistant", assistant)]:
     (ROOT / f"{name}.json").write_text(json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Built {name}.json ({len(document['paths'])} paths)")

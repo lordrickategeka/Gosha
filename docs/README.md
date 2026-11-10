@@ -10,7 +10,7 @@ Check instructions against the actual screen, permission checks and service beha
 
 ## OpenAPI and Swagger UI
 
-The checked-in documents in `openapi/` describe GarageHQ application endpoints, Cream Theme partner payments/mail, and OnePass OTP. They are reference contracts, separate from Livewire page actions. Swagger UI is bundled locally and configured without live request submission or persisted authorization.
+The checked-in documents in `openapi/` describe GarageHQ application endpoints, Cream Theme partner payments/mail, OnePass OTP, and the shared AI assistant. They are reference contracts, separate from Livewire page actions. Swagger UI is bundled locally and configured without live request submission or persisted authorization.
 
 Update the contract definitions in `openapi/generate.py`, regenerate the JSON, then validate:
 
@@ -31,5 +31,6 @@ Review endpoints, authentication, request validation, response status codes and 
 - [Self-service billing](SELF_SERVICE_BILLING.md)
 - [Supplier registration](SUPPLIER_REGISTRATION.md)
 - [Supplier plans](SUPPLIER_PLANS.md)
+- [Shared AI assistant integration and knowledge refresh](ASSISTANT.md)
 
 Deploy the Markdown and OpenAPI files with the application and include the generated Vite assets. Certificate trust, queues, scheduled tasks and partner credentials still require environment-specific setup; the documentation does not provision them.

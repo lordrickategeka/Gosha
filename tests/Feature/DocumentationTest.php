@@ -76,7 +76,7 @@ class DocumentationTest extends TestCase
 
     public function test_specs_are_json_with_unique_operations_and_declared_security(): void
     {
-        foreach (['garagehq', 'cream-theme', 'onepass'] as $service) {
+        foreach (['garagehq', 'cream-theme', 'onepass', 'assistant'] as $service) {
             $response = $this->get('/api-docs/spec/'.$service)->assertOk()->assertHeader('Content-Type', 'application/json');
             $spec = $response->json();
             $this->assertSame('3.0.3', $spec['openapi']);

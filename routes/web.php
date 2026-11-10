@@ -24,7 +24,8 @@ Route::get('/', function () {
 Route::get('/user-guide', [\App\Http\Controllers\DocumentationController::class, 'guide'])->name('user-guide.index');
 Route::get('/user-guide/download', [\App\Http\Controllers\DocumentationController::class, 'download'])->name('user-guide.download');
 Route::get('/api-docs', [\App\Http\Controllers\DocumentationController::class, 'api'])->name('api-docs.index');
-Route::get('/api-docs/spec/{service}', [\App\Http\Controllers\DocumentationController::class, 'spec'])->whereIn('service', ['garagehq', 'cream-theme', 'onepass'])->name('api-docs.spec');
+Route::get('/api-docs/spec/{service}', [\App\Http\Controllers\DocumentationController::class, 'spec'])->whereIn('service', ['garagehq', 'cream-theme', 'onepass', 'assistant'])->name('api-docs.spec');
+Route::post('/assistant/chat', \App\Http\Controllers\AssistantController::class)->middleware(['auth', 'throttle:assistant'])->name('assistant.chat');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', \App\Domains\HR\Livewire\Auth\Login::class)->name('login');

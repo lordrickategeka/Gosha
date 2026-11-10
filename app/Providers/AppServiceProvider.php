@@ -31,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\RateLimiter::for('assistant', fn (\Illuminate\Http\Request $request) => [
+            \Illuminate\Cache\RateLimiting\Limit::perMinute(6)->by('assistant:minute:'.$request->user()?->id),
+            \Illuminate\Cache\RateLimiting\Limit::perDay(100)->by('assistant:day:'.$request->user()?->id),
+            \Illuminate\Cache\RateLimiting\Limit::perMinute(60)->by('assistant:global'),
+        ]);
         \App\Domains\Platform\Models\Vendor::observe(\App\Domains\Platform\Observers\SupplierApprovalObserver::class);
         Livewire::componentHook(\App\Livewire\SubscriptionAccessHook::class);
         foreach ([

@@ -20,5 +20,6 @@
     </header>
     @yield('content')
     <footer class="docs-footer">GarageHQ help centre · Screens and actions depend on your role, branch and current plan.</footer>
+    @include('components.assistant-widget')
 </body>
 </html>

@@ -32,6 +32,10 @@ class EnforceSubscriptionAccess
         $user = $request->user();
         abort_if($user && ! $user->is_active, 403, 'Your account has been deactivated.');
 
+        if ($request->routeIs('assistant.*')) {
+            return $next($request); // Authenticated documentation help has no operational data access.
+        }
+
         if (! $user || $user->is_platform_user) {
             return $next($request);
         }

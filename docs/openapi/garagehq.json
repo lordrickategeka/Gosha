@@ -375,6 +375,156 @@
           }
         }
       }
+    },
+    "/assistant/chat": {
+      "post": {
+        "summary": "Ask the GarageHQ documentation assistant",
+        "operationId": "askGarageHqAssistant",
+        "tags": [
+          "Documentation assistant"
+        ],
+        "description": "First-party same-origin browser endpoint. Requires web-session authentication, CSRF and explicit consent to send the question and selected guide excerpts to the shared assistant and Ollama Cloud. Role and pseudonymous actor are derived on the server; client-supplied actor, role, docs and history are ignored. No operational records are accessed and no actions are performed. Limits: six requests per user per minute, 100 per day, 60 globally per minute. Help remains available during subscription expiry. Responses are not cached.",
+        "responses": {
+          "200": {
+            "description": "Plain-text answer and approved guide links.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "answer": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "answer",
+                    "sources"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "419": {
+            "description": "Session expired or CSRF mismatch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Question or consent validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Assistant unavailable; use the guide.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Per-user, global or shared-service limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "webSession": [],
+            "csrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1200
+                  },
+                  "consent": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "required": [
+                  "question",
+                  "consent"
+                ]
+              },
+              "example": {
+                "question": "How does the free trial work?",
+                "consent": true
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -389,6 +539,18 @@
         "in": "header",
         "name": "verif-hash",
         "description": "Configured direct Flutterwave webhook secret; never a client login token."
+      },
+      "webSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "laravel_session",
+        "description": "Authenticated browser session. Default cookie name shown; replace with the deployment's SESSION_COOKIE. This endpoint does not accept Sanctum bearer tokens."
+      },
+      "csrfHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-TOKEN",
+        "description": "CSRF token for the same authenticated browser session. Both session and CSRF are required."
       }
     },
     "schemas": {

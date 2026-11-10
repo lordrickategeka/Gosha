@@ -1,0 +1,274 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Shared System Assistant API",
+    "version": "1.0.0",
+    "description": "Backend contract for the shared Salord System Assistant. The calling product authenticates its users and supplies approved documentation for each request. This is document retrieval, not model fine-tuning or access to operational databases. Matching excerpts and the question are sent to Ollama Cloud. Use a dedicated system-specific bearer key on the backend only. A configured tenant mapping selects the active tenant and its model settings.\n\nBefore connecting, configure trusted HTTPS certificates in both web PHP and CLI workers. cURL error 60 can indicate missing/outdated CA trust or a server certificate-chain problem; Apache and CLI may load different php.ini files. Keep TLS verification enabled. See /user-guide#api-reference-for-integration-partners."
+  },
+  "servers": [
+    {
+      "url": "https://cot.loganate.cc"
+    }
+  ],
+  "security": [
+    {
+      "systemBearer": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Check service liveness",
+        "operationId": "getAssistantHealth",
+        "tags": [
+          "Health"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Service running; does not validate keys or model readiness.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/chat": {
+      "post": {
+        "summary": "Explain approved product documentation",
+        "operationId": "askSharedSystemAssistant",
+        "tags": [
+          "Chat"
+        ],
+        "description": "Question limit: 1,200 characters. Documentation limit: 220,000 UTF-8 bytes of JSON. Retrieves up to five matching guides with valid local paths and returns up to eight links. Actor is a product-local pseudonymous user identifier. No chat history, operational actions, live records or browser tools are supported. Do not retry timeouts automatically: the model may already have processed the request.",
+        "responses": {
+          "200": {
+            "description": "Answer and sources. No matching guides also returns 200, without a model call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "answer": {
+                      "type": "string",
+                      "maxLength": 6000
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "answer",
+                    "sources"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid question, actor, JSON or docs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "System/key pair rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds two MiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actor rate limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Model unavailable or returned invalid output.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Mapped tenant or model is not configured/active.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "system": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+                    "example": "garagehq"
+                  },
+                  "actor": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9:_-]+$",
+                    "maxLength": 80
+                  },
+                  "role": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "question": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1200
+                  },
+                  "docs": {
+                    "type": "object",
+                    "properties": {
+                      "overview": {
+                        "type": "object",
+                        "properties": {
+                          "intro": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "supportGuides": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/Guide"
+                        }
+                      },
+                      "moduleGuides": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/Guide"
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "system",
+                  "actor",
+                  "question",
+                  "docs"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "systemBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Dedicated key paired with system in SUPPORT_AGENT_API_KEYS_JSON."
+      }
+    },
+    "schemas": {
+      "Guide": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "primaryPath": {
+            "type": "string",
+            "description": "Local product path beginning with a single slash, required for API retrieval."
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "primaryPath"
+        ]
+      },
+      "AssistantError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  }
+}
