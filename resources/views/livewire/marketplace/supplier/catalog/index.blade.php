@@ -11,7 +11,7 @@
 
     @unless($isVerifiedSupplier)
         <div class="gh-badge gh-badge--warning" style="display:block; padding:10px 12px; font-size:12px;">
-            Browse the catalog while your approval or plan is pending. An approved business and active supplier plan are required to propose products. <a href="{{ route('billing.subscription') }}" class="link">View plans and billing</a>.
+            Browse the catalog while your approval or plan is pending. @if($isHybrid)Your business needs supplier approval and an available garage subscription before you can propose products. <a href="{{ route('supplier.enable') }}" class="link">Check supplier approval</a>.@else An approved business and active supplier plan are required to propose products.@endif <a href="{{ route('billing.subscription') }}" class="link">View plans and billing</a>.
         </div>
     @endunless
 

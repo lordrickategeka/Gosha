@@ -26,18 +26,23 @@ class Vendor extends Model
 {
     public function scopeSellingAccess($query)
     {
+        $latest = fn ($subscription) => $subscription->where('vendor_subscriptions.id', function ($subquery) {
+            $subquery->selectRaw('MAX(current_sub.id)')->from('vendor_subscriptions as current_sub')->whereColumn('current_sub.vendor_id', 'vendors.id');
+        });
+
         return $query->whereIn('status', ['active', 'trial'])->where('is_verified_supplier', true)
             ->where(fn ($query) => $query->where('vendor_type', 'hybrid')->orWhere('status', 'active'))
             ->whereIn('vendor_type', ['supplier', 'hybrid'])
-            ->where(function ($query) {
-                $query->where('vendor_type', 'hybrid')->orWhereHas('subscriptions', function ($subscription) {
-                    $subscription->where('self_service', true)
-                        ->where('vendor_subscriptions.id', function ($latest) {
-                            $latest->selectRaw('MAX(current_sub.id)')->from('vendor_subscriptions as current_sub')->whereColumn('current_sub.vendor_id', 'vendors.id');
-                        })->where(function ($valid) {
-                            $valid->where(fn ($trial) => $trial->where('status', 'trial')->where('trial_ends_at', '>', now()))
-                                ->orWhere(fn ($paid) => $paid->where('status', 'active')->where('current_period_end', '>', now()));
-                        });
+            ->where(function ($query) use ($latest) {
+                $query->where(function ($hybrid) use ($latest) {
+                    $hybrid->where('vendor_type', 'hybrid')
+                        ->whereDoesntHave('subscriptions', fn ($subscription) => $latest($subscription)->where('self_service', true))
+                        ->whereDoesntHave('subscriptions', fn ($subscription) => $latest($subscription)->where('self_service', false)->where('status', 'past_due')->where('grace_ends_at', '<', now()));
+                })->orWhereHas('subscriptions', function ($subscription) use ($latest) {
+                    $latest($subscription)->where('self_service', true)->where(function ($valid) {
+                        $valid->where(fn ($trial) => $trial->where('status', 'trial')->where('trial_ends_at', '>', now()))
+                            ->orWhere(fn ($paid) => $paid->where('status', 'active')->where('current_period_end', '>', now()));
+                    });
                 });
             });
     }
@@ -58,6 +63,9 @@ class Vendor extends Model
         'grace_days_override',
         'vendor_type',
         'is_verified_supplier',
+        'supplier_requested_at',
+        'supplier_reviewed_at',
+        'supplier_application_notes',
         'supplier_rating_avg',
         'supplier_rating_count',
         'vat_registered',
@@ -68,6 +76,8 @@ class Vendor extends Model
     protected $casts = [
         'trial_ends_at' => 'datetime',
         'is_verified_supplier' => 'boolean',
+        'supplier_requested_at' => 'datetime',
+        'supplier_reviewed_at' => 'datetime',
         'supplier_rating_avg' => 'decimal:2',
         'vat_registered' => 'boolean',
         'default_vat_rate' => 'decimal:2',

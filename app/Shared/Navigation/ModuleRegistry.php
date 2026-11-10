@@ -136,16 +136,18 @@ class ModuleRegistry
                 'name' => 'Marketplace',
                 'icon' => 'shop',
                 'blurb' => 'Supplier quotes, listings, purchase orders and marketplace browsing.',
-                'permission' => ['browse_marketplace', 'view_quotes', 'view_listings', 'view_rfqs', 'view_purchase_orders'],
+                'permission' => fn ($user) => $user && ($user->hasRole('vendor-owner') || $user->canAny(['browse_marketplace', 'view_quotes', 'view_listings', 'view_rfqs', 'view_purchase_orders'])),
                 'patterns' => ['supplier.*', 'marketplace.*'],
                 'items' => [
+                    ['label' => 'Supplier module', 'route' => 'supplier.enable', 'icon' => 'shop', 'permission' => fn ($user) => $user && ! $user->is_platform_user && in_array($user->vendor?->vendor_type, ['garage', 'car_wash', 'hybrid'], true)],
                     ['label' => 'Dashboard', 'route' => 'supplier.dashboard', 'icon' => 'shop', 'permission' => ['view_quotes', 'view_listings']],
                     ['label' => 'Quote inbox', 'route' => 'supplier.quotes.inbox', 'icon' => 'shop', 'permission' => 'view_quotes'],
                     ['label' => 'My listings', 'route' => 'supplier.listings.index', 'icon' => 'shop', 'permission' => 'view_listings'],
                     // Gated on view_listings, not view_catalog: garage buyers also hold view_catalog (for RFQ
                     // product pickers), and this link is supplier-only. Both supplier roles hold view_listings.
                     ['label' => 'My catalog', 'route' => 'supplier.catalog.index', 'icon' => 'shop', 'permission' => 'view_listings'],
-                    ['label' => 'My orders', 'route' => 'supplier.orders.index', 'icon' => 'shop', 'permission' => 'view_purchase_orders'],
+                    ['label' => 'My orders', 'route' => 'supplier.orders.index', 'icon' => 'shop', 'permission' => fn ($user) => $user && $user->hasAnyRole(['supplier_admin', 'supplier_staff']) && $user->can('view_purchase_orders')],
+                    ['label' => 'Supplier team', 'route' => 'supplier.team', 'icon' => 'staff', 'permission' => fn ($user) => $user && $user->hasRole('supplier_admin')],
                     ['label' => 'Browse listings', 'route' => 'marketplace.browse', 'icon' => 'browse', 'permission' => 'browse_marketplace'],
                     ['label' => 'RFQs', 'route' => 'marketplace.rfqs.index', 'icon' => 'browse', 'permission' => 'view_rfqs'],
                     ['label' => 'Purchase orders', 'route' => 'marketplace.purchase-orders.index', 'icon' => 'browse', 'permission' => 'view_purchase_orders'],

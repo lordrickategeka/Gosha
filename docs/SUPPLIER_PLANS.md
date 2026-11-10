@@ -1,5 +1,7 @@
 # Supplier plans
 
+These tiers apply to supplier-only businesses. An existing garage adding the supplier module keeps its garage subscription and expiry; it does not start a supplier trial or buy a second subscription. Hybrid supplier sales use the normal marketplace commission rate and require business approval. See [Existing garages](SUPPLIER_REGISTRATION.md#existing-garages-adding-supplier-sales).
+
 Supplier plans use `pricing_plans.audience = supplier`; existing garage plans default to `garage`. The registration, billing and payment services validate the audience. Platform pricing administration can edit audience, active listing capacity, team size, price and commission. A subscribed plan cannot be moved to a different audience.
 
 | Plan | Monthly subscription | Active listings | Active team members, including administrators | Marketplace commission |

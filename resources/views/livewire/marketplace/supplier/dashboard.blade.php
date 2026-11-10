@@ -1,8 +1,9 @@
 <div class="gh-page">
     <div style="font-size:21px; font-weight:700; letter-spacing:-0.02em;">Supplier Dashboard</div>
     <section class="gh-card gh-card--pad">
-        <h2 class="gh-card__title">{{ $subscription?->plan?->name ?? 'Choose a supplier plan' }}</h2>
-        <p class="gh-muted">@if(!$isVerifiedSupplier)Your trial and paid billing wait for platform approval.@elseif($subscription?->isTrialing())Your free trial ends {{ $subscription->trial_ends_at->format('d M Y H:i T') }}. No card or automatic charge.@elseif(!$canSell)New selling is paused. Your existing orders and data remain accessible.@elseYour supplier selling access is active.@endif</p>
+        <h2 class="gh-card__title">{{ $subscription?->plan?->name ?? ($isHybrid ? 'Supplier module for your garage' : 'Choose a supplier plan') }}</h2>
+        <p class="gh-muted">@if($isHybrid)Your existing garage subscription continues. Supplier selling requires platform approval and an available garage subscription; adding this module does not restart the trial.@elseif(!$isVerifiedSupplier)Your trial and paid billing wait for platform approval.@elseif($subscription?->isTrialing())Your free trial ends {{ $subscription->trial_ends_at->format('d M Y H:i T') }}. No card or automatic charge.@elseif(!$canSell)New selling is paused. Your existing orders and data remain accessible.@elseYour supplier selling access is active.@endif</p>
+        @if($isHybrid)<div style="margin-top:10px;"><a href="{{ route('dashboard') }}" class="link link-primary">Back to garage</a> · <a href="{{ route('supplier.enable') }}" class="link link-primary">Supplier approval status</a></div>@endif
         <div style="display:flex; gap:16px; margin-top:12px;"><a href="{{ route('billing.subscription') }}" class="link link-primary">Plans and billing</a>@role('supplier_admin')<a href="{{ route('supplier.team') }}" class="link link-primary">Manage team</a>@endrole</div>
     </section>
 

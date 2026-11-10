@@ -218,6 +218,20 @@ Open the report relevant to your role: [Sales](/reports/sales), [Operations](/re
 
 A useful end-of-day review is: unfinished jobs and washes, unrecorded customer payments, unpaid invoices, pending expenses, stock exceptions, and tomorrow's appointments. The dashboard period filters provide an operational summary, not a substitute for checking financial records.
 
+## Adding supplier sales to an existing garage
+<!-- audience: garage,supplier,admin -->
+
+Garage owners can add supplier selling to the same business and login. Do not create a duplicate supplier registration or move staff to another business.
+
+1. Open **Modules → Add supplier module**, or **Marketplace → Supplier module** at [/supplier/module](/supplier/module). Opening a supplier workspace link without access also takes you to this page instead of a generic permissions error.
+2. Check the business contact details in Settings. Explain what products the garage supplies, accept the confirmation, and select **Request supplier access**. Only the business owner can apply. Other staff see instructions to contact that owner.
+3. The business becomes a combined garage/supplier account. The requesting owner retains their garage role and receives supplier administrator access. Existing garage records, branches, staff and subscription are retained. Applying again does not restart a trial or create another subscription.
+4. While approval is pending, browse the shared catalog and track the review on Supplier module. Publishing listings, proposing catalog products and submitting quotes require platform approval.
+5. Platform reviewers receive an in-app notification. In **Platform → Vendors**, filter **Pending supplier approval**, open the business, review its application and select **Verify supplier**. Do not replace its existing garage subscription with a supplier-only subscription. The owner receives an in-app approval notification.
+6. After approval, open the supplier workspace. Use **Back to garage** to return to garage operations. Under **Supplier team**, use **Give supplier access** for existing garage staff; **Remove access** removes their supplier staff role while keeping their garage login and other roles.
+
+The existing garage subscription and expiry continue to govern the combined business. There is no new supplier trial or automatic subscription charge when enabling the module. Normal marketplace commission rules still apply to sales. Renew the garage plan in Billing if it expires; adding the supplier module cannot bypass that expiry. If verification is revoked, supplier selling pauses while garage records and roles remain intact. Contact platform support to review a paused application.
+
 ## Registering and approving a supplier business
 <!-- audience: supplier -->
 

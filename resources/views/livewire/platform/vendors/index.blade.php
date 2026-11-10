@@ -42,6 +42,7 @@
                 <option value="supplier">Supplier</option>
                 <option value="hybrid">Hybrid</option>
             </select>
+            <select wire:model.live="supplierReview" class="gh-select" aria-label="Supplier review status"><option value="">All supplier reviews</option><option value="pending">Pending supplier approval</option><option value="verified">Verified suppliers</option></select>
         </div>
     </div>
 

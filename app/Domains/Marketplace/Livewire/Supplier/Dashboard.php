@@ -28,6 +28,7 @@ class Dashboard extends Component
             ->count();
 
         return view('livewire.marketplace.supplier.dashboard', [
+            'isHybrid' => $vendor?->vendor_type === 'hybrid',
             'subscription' => app(\App\Domains\Platform\Services\SelfServiceSubscriptionService::class)->current($vendor),
             'canSell' => app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->canSell($vendor),
             'isVerifiedSupplier' => $vendor?->isVerifiedSupplier() ?? false,

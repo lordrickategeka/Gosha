@@ -17,17 +17,18 @@ class MarketplaceServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/marketplace.php', 'marketplace');
+        $this->mergeConfigFrom(__DIR__.'/../../config/marketplace.php', 'marketplace');
     }
 
     public function boot(): void
     {
+        Livewire::addPersistentMiddleware([\App\Http\Middleware\EnsureSupplierWorkspace::class]);
         // Register observers
         GoodsReceiptItem::observe(GoodsReceiptItemObserver::class);
         PurchaseOrder::observe(PurchaseOrderObserver::class);
 
         // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/../../routes/marketplace.php');
+        $this->loadRoutesFrom(__DIR__.'/../../routes/marketplace.php');
 
         // Register Livewire components for the Marketplace namespace
         Livewire::component('marketplace.buyer.browse', \App\Domains\Marketplace\Livewire\Buyer\Browse::class);
@@ -38,6 +39,7 @@ class MarketplaceServiceProvider extends ServiceProvider
         Livewire::component('marketplace.buyer.rfq.index', \App\Domains\Marketplace\Livewire\Buyer\Rfq\Index::class);
         Livewire::component('marketplace.buyer.rfq.create', \App\Domains\Marketplace\Livewire\Buyer\Rfq\Create::class);
         Livewire::component('marketplace.supplier.dashboard', \App\Domains\Marketplace\Livewire\Supplier\Dashboard::class);
+        Livewire::component('marketplace.supplier.enable-module', \App\Domains\Marketplace\Livewire\Supplier\EnableModule::class);
         Livewire::component('marketplace.supplier.listings.index', \App\Domains\Marketplace\Livewire\Supplier\Listings\Index::class);
         Livewire::component('marketplace.supplier.catalog.index', \App\Domains\Marketplace\Livewire\Supplier\Catalog\Index::class);
         Livewire::component('marketplace.supplier.catalog.create', \App\Domains\Marketplace\Livewire\Supplier\Catalog\Create::class);

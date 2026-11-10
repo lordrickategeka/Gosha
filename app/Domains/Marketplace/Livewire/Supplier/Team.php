@@ -22,7 +22,7 @@ class Team extends Component
 
     private function vendor(): Vendor
     {
-        abort_unless(auth()->user()?->hasRole('supplier_admin') && auth()->user()->vendor?->vendor_type === 'supplier', 403);
+        abort_unless(auth()->user()?->is_active && ! auth()->user()->is_platform_user && auth()->user()->hasRole('supplier_admin') && in_array(auth()->user()->vendor?->vendor_type, ['supplier', 'hybrid'], true), 403);
 
         return auth()->user()->vendor;
     }
@@ -36,6 +36,7 @@ class Team extends Component
     {
         $this->resetValidation();
         $vendor = $this->vendor();
+        abort_unless($vendor->vendor_type === 'supplier', 403, 'Create garage employees through staff management, then grant supplier access here.');
         app(SupplierPlanAccess::class)->assertSelling($vendor);
         $this->name = trim($this->name);
         $this->email = mb_strtolower(trim($this->email));
@@ -59,8 +60,24 @@ class Team extends Component
         $vendor = $this->vendor();
         $user = User::where('vendor_id', $vendor->id)->findOrFail($id);
         abort_unless($user->hasRole('supplier_staff') && ! $user->hasRole('supplier_admin') && $user->id !== auth()->id(), 403);
-        $user->update(['is_active' => false]);
-        session()->flash('success', 'Team member access removed.');
+        if ($vendor->vendor_type === 'hybrid') {
+            $user->removeRole('supplier_staff');
+            session()->flash('success', 'Supplier role removed. The member keeps their garage login and other roles.');
+        } else {
+            $user->update(['is_active' => false]);
+            session()->flash('success', 'Team member access removed.');
+        }
+    }
+
+    public function grantSupplierAccess(int $id): void
+    {
+        $vendor = $this->vendor();
+        abort_unless($vendor->vendor_type === 'hybrid', 403);
+        app(SupplierPlanAccess::class)->assertSelling($vendor);
+        $user = User::where('vendor_id', $vendor->id)->where('is_active', true)->where('is_platform_user', false)->findOrFail($id);
+        abort_if($user->hasRole('supplier_admin'), 403);
+        $user->assignRole('supplier_staff');
+        session()->flash('success', 'Supplier staff access added. Existing garage roles are unchanged.');
     }
 
     public function render()
@@ -69,6 +86,7 @@ class Team extends Component
         $subscription = app(\App\Domains\Platform\Services\SelfServiceSubscriptionService::class)->current($vendor);
 
         return view('livewire.marketplace.supplier.team', [
+            'isHybrid' => $vendor->vendor_type === 'hybrid',
             'members' => User::where('vendor_id', $vendor->id)->where('is_active', true)->orderBy('name')->get(),
             'seatLimit' => $subscription?->plan?->max_users,
             'canAdd' => app(SupplierPlanAccess::class)->canSell($vendor),

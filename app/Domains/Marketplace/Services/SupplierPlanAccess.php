@@ -29,14 +29,15 @@ class SupplierPlanAccess
         if (! $vendor?->isVerifiedSupplier() || $vendor->status === 'suspended') {
             return false;
         }
-        if ($vendor->vendor_type !== 'supplier') {
-            return true; // Existing hybrid garages keep their garage billing rules.
+        $service = app(SelfServiceSubscriptionService::class);
+        $subscription = $service->current($vendor);
+        if ($vendor->vendor_type === 'hybrid') {
+            return in_array($vendor->status, ['active', 'trial'], true)
+                && (! $subscription || ($subscription->self_service ? ! $service->restricted($subscription) : ! $subscription->isLocked()));
         }
         if ($vendor->status !== 'active') {
             return false;
         }
-        $service = app(SelfServiceSubscriptionService::class);
-        $subscription = $service->current($vendor);
 
         return $subscription?->self_service && ! $service->restricted($subscription);
     }

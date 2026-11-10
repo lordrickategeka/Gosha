@@ -1,5 +1,17 @@
 # Supplier registration
 
+## Existing garages adding supplier sales
+
+Use `/supplier/module` from Modules or Marketplace instead of creating another account. `SupplierModuleService` locks the authenticated user's own vendor, checks the active `vendor-owner` role and business status, records the application and changes the type to `hybrid`. It adds `supplier_admin` only to the requesting owner and retains existing roles, branches, users and subscriptions. The client cannot choose another vendor through a property or the platform context session. Requests are idempotent and do not create or renew subscriptions or mark a new garage verified.
+
+Platform reviewers receive a database-only in-app notice and can filter pending supplier verification in Vendors. The existing verification action approves the business; approval/revocation records a review time and notifies the owners in-app. Selling actions still require verification and the existing garage subscription's availability. Public listings pause when that subscription expires. No external email, automatic payment or new supplier trial is introduced by this flow.
+
+`EnsureSupplierWorkspace` runs before supplier permission checks and directs users missing the module or supplier role to the explanation/application page. It does not replace the individual permissions or selling guards. Hybrid owners use Supplier team to grant/remove the supplier staff role for their own existing active employees. Removing that role preserves garage login access. New users remain subject to the garage plan's seat limit.
+
+Apply migration `2026_11_10_000001_add_supplier_module_requests_to_vendors.php` before enabling the updated code. It adds nullable request/review timestamps and application notes; it does not alter existing vendor types, users or subscriptions. Ensure `MarketplaceRolesSeeder` has provisioned supplier roles before applicants use the action. Validate with `SupplierModuleTest`, `SupplierPlansTest` and `SupplierRegistrationTest`.
+
+## New supplier-only businesses
+
 The public supplier form is at `/become-a-supplier`. It uses four steps: business details, verified login, supplier plan, and review. The supplier page has marketplace-specific branding and explains the platform approval process before submission. See [Supplier plans](SUPPLIER_PLANS.md) for prices and billing rules.
 
 The business email can also be the login email, or the owner can provide a different login address. Login email verification uses the existing GarageHQ OnePass partner integration and the same certificate configuration documented in [PHP HTTPS setup](PHP_HTTPS_SETUP.md). Supplier signup requires proof of ownership of the exact login email. Changing that email or allowing its verification proof to expire requires verification again.

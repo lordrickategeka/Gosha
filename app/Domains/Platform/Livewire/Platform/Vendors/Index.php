@@ -11,8 +11,17 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = '';
+
     public $typeFilter = '';
+
+    public string $supplierReview = '';
+
+    public function updatingSupplierReview(): void
+    {
+        $this->resetPage();
+    }
 
     public function updatingSearch()
     {
@@ -35,7 +44,7 @@ class Index extends Component
             'status' => $vendor->status === 'suspended' ? 'active' : 'suspended',
         ]);
 
-        session()->flash('success', "Vendor {$vendor->name} has been " . ($vendor->status === 'suspended' ? 'suspended' : 'activated') . '.');
+        session()->flash('success', "Vendor {$vendor->name} has been ".($vendor->status === 'suspended' ? 'suspended' : 'activated').'.');
     }
 
     public function toggleSupplierVerification(Vendor $vendor)
@@ -44,7 +53,7 @@ class Index extends Component
 
         $vendor->update(['is_verified_supplier' => ! $vendor->is_verified_supplier]);
 
-        session()->flash('success', "Vendor {$vendor->name} has been " . ($vendor->is_verified_supplier ? 'verified' : 'unverified') . ' as a supplier.');
+        session()->flash('success', "Vendor {$vendor->name} has been ".($vendor->is_verified_supplier ? 'verified' : 'unverified').' as a supplier.');
     }
 
     public function render()
@@ -55,7 +64,7 @@ class Index extends Component
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('name', 'like', "%{$this->search}%")
-                  ->orWhere('email', 'like', "%{$this->search}%");
+                    ->orWhere('email', 'like', "%{$this->search}%");
             });
         }
 
@@ -65,6 +74,9 @@ class Index extends Component
 
         if ($this->typeFilter) {
             $query->where('vendor_type', $this->typeFilter);
+        }
+        if (in_array($this->supplierReview, ['pending', 'verified'], true)) {
+            $query->whereIn('vendor_type', ['supplier', 'hybrid'])->where('is_verified_supplier', $this->supplierReview === 'verified');
         }
 
         $vendors = $query->latest()->paginate(10);

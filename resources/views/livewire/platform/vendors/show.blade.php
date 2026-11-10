@@ -248,6 +248,11 @@
                             <span class="gh-badge gh-badge--warning">Pending verification</span>
                         @endif
                     </div>
+                    @if($vendor->supplier_requested_at)
+                        <p style="font-size:12px;margin-bottom:8px;">Garage supplier-module request: {{ $vendor->supplier_requested_at->format('d M Y H:i') }}</p>
+                        <p style="font-size:12px;white-space:pre-wrap;margin-bottom:12px;">{{ $vendor->supplier_application_notes }}</p>
+                        <p class="gh-muted" style="font-size:11px;margin-bottom:12px;">Approval enables selling for this existing garage. Its current subscription continues; do not replace it with a supplier-only subscription.</p>
+                    @endif
                     <div class="gh-stack" style="gap:8px; font-size:12.5px;">
                         <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Rating</span><span style="font-weight:600;">{{ $vendor->supplier_rating_count > 0 ? number_format($vendor->supplier_rating_avg, 1) . ' (' . $vendor->supplier_rating_count . ')' : 'No ratings yet' }}</span></div>
                         <div style="display:flex; justify-content:space-between;"><span class="gh-muted">Listings</span><span style="font-weight:600;">{{ $vendor->marketplaceListings()->count() }}</span></div>

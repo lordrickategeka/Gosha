@@ -64,8 +64,10 @@ Route::middleware('web')->group(function () {
 
 Route::middleware(['web', 'auth'])->group(function () {
 
+    Route::get('/supplier/module', \App\Domains\Marketplace\Livewire\Supplier\EnableModule::class)->name('supplier.enable');
+
     /* ---------------- Supplier side ---------------- */
-    Route::prefix('supplier')->name('supplier.')->group(function () {
+    Route::prefix('supplier')->name('supplier.')->middleware(\App\Http\Middleware\EnsureSupplierWorkspace::class)->group(function () {
         Route::get('/team', \App\Domains\Marketplace\Livewire\Supplier\Team::class)->middleware('role:supplier_admin')->name('team');
         Route::get('/dashboard', SupplierDashboard::class)
             ->middleware('permission:view_quotes|view_listings')
