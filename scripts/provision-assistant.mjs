@@ -31,6 +31,8 @@ for (const [file, name] of [[agentEnvPath, 'assistant.env.before'], [garageEnvPa
     await chmod(join(backupDir, name), 0o600);
 }
 const databasePath = join(agentDir, 'data/assistant.sqlite');
+await copyFile(databasePath + '.credentials.key', join(backupDir, 'assistant.credentials.key.before'));
+await chmod(join(backupDir, 'assistant.credentials.key.before'), 0o600);
 const readDatabase = new DatabaseSync(databasePath, { readOnly: true });
 const administrator = readDatabase.prepare('SELECT id FROM users WHERE active = 1 AND platform_admin = 1 ORDER BY id LIMIT 1').get();
 if (!administrator) throw new Error('An active shared-assistant platform administrator is required.');

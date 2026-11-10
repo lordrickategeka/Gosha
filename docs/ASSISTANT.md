@@ -1,5 +1,15 @@
 # GarageHQ assistant
 
+The embedded assistant is named **GQ Cot**. In Cot Settings, select `garagehq`, edit **Assistant name** and **Assistant greeting**, then save. GarageHQ fetches those values through its authenticated `/assistant/config` endpoint and caches them for 30 seconds. Its backend calls Cot `/v1/config?system=garagehq` with the existing integration key; no key reaches the browser. Reopen the widget after saving. Local defaults keep the widget usable if the branding request fails.
+
+## Web-worker file access
+
+The assistant reads `docs/USER_GUIDE.md` while constructing each request. A CLI check can pass while PHP-FPM fails if this public guide was deployed with owner-only permissions. Production diagnosis confirmed mode `600` blocked `www-data` before any Cot request. Use mode `644` for the public guide and checked-in OpenAPI JSON; keep `.env`, database backups, encryption keys and private exports restricted. Verify readability as the web-worker user, not just as the deploy account. Assistant errors log only the exception class, cURL number and guide readability flag, without prompts or credentials.
+
+```sh
+chmod 644 docs/USER_GUIDE.md docs/openapi/garagehq.json docs/openapi/cream-theme.json docs/openapi/onepass.json docs/openapi/assistant.json
+```
+
 The floating **Ask GarageHQ** widget connects signed-in active users to the shared Salord System Assistant. It appears in both app layouts and the help centre when configured. It is documentation help: it cannot read tenant records, confirm actual payments, query customer data or execute actions.
 
 ## Knowledge and privacy

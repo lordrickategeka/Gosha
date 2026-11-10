@@ -34,7 +34,8 @@ class AssistantKnowledge
 
     public function documents(User $user): array
     {
-        return ['overview' => ['intro' => 'GarageHQ is a garage, car-wash and parts-supplier management system. Explain the documented workflow for the user role. These guides describe features, not the user\'s live account or records. Trial dates, prices, limits and permissions must be confirmed in the app. If help is missing, refer to the business administrator.'],
+        return ['overview' => ['intro' => 'GarageHQ is a garage, car-wash and parts-supplier management system. Explain the documented workflow for the user role. These guides describe features, not the user\'s live account or records. Trial dates, prices, limits and permissions must be confirmed in the app. If help is missing, refer to the business administrator.',
+            'concepts' => [['title' => 'Account creation and access', 'body' => 'Only garage and supplier business owners use the two registration cards. Staff obtain an account from their business administrator and use the standard email/password login form. There is no staff or platform-administrator self-registration card. Platform administrators use their existing authorised account; do not tell them to register a business to access administration. Supplier trials start after business approval; paid plans require verified payment.']]],
             'supportGuides' => $this->guides($user), 'moduleGuides' => []];
     }
 }

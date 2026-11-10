@@ -2,15 +2,15 @@
     @if(\App\Services\AssistantService::available() && auth()->user()->is_active)
         @once
             @vite(['resources/css/assistant.css', 'resources/js/assistant.js'])
-            <div class="gh-help" data-assistant data-endpoint="{{ route('assistant.chat', [], false) }}" data-csrf="{{ csrf_token() }}">
+            <div class="gh-help" data-assistant data-assistant-name="{{ config('assistant.name') }}" data-config-endpoint="{{ route('assistant.config', [], false) }}" data-endpoint="{{ route('assistant.chat', [], false) }}" data-csrf="{{ csrf_token() }}">
                 <button type="button" class="gh-help-launcher" data-help-toggle aria-expanded="false" aria-controls="gh-help-panel">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/><path d="M8 11h8M8 14h5"/></svg>
-                    <span>Ask GarageHQ</span><span class="gh-help-ai">AI</span>
+                    <span data-help-launcher-label>Ask {{ config('assistant.name') }}</span><span class="gh-help-ai">AI</span>
                 </button>
                 <section id="gh-help-panel" class="gh-help-panel" role="dialog" aria-labelledby="gh-help-title" hidden>
-                    <header class="gh-help-header"><div><p class="gh-help-eyebrow">YOUR GUIDE, A CONVERSATION AWAY</p><h2 id="gh-help-title">GarageHQ assistant</h2></div><button type="button" class="gh-help-icon" data-help-close aria-label="Close assistant">&times;</button></header>
+                    <header class="gh-help-header"><div><p class="gh-help-eyebrow">YOUR GUIDE, A CONVERSATION AWAY</p><h2 id="gh-help-title">{{ config('assistant.name') }}</h2></div><button type="button" class="gh-help-icon" data-help-close aria-label="Close assistant">&times;</button></header>
                     <div class="gh-help-scroll" data-help-scroll>
-                        <p class="gh-help-intro">Ask how to use GarageHQ. I can explain the guide and point you to the right chapter.</p>
+                        <p class="gh-help-intro" data-help-greeting>{{ config('assistant.greeting') }}</p>
                         <div class="gh-help-prompts" aria-label="Suggested questions">
                             <button type="button" data-help-question="How do I get started with GarageHQ?">Getting started</button>
                             <button type="button" data-help-question="How does the 14-day free trial work?">Free trial</button>

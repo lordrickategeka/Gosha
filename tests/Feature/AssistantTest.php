@@ -18,6 +18,23 @@ class AssistantTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_branding_requires_an_active_login_and_uses_the_server_key(): void
+    {
+        $this->getJson('/assistant/config')->assertUnauthorized();
+        $this->actingAs(User::factory()->create(['is_active' => false]))->getJson('/assistant/config')->assertForbidden();
+        Http::fake(['https://assistant.test/v1/config*' => Http::response(['assistantName' => 'GQ Cot', 'welcomeMessage' => 'Welcome to GarageHQ.'])]);
+        $this->actingAs(User::factory()->create(['is_active' => true]))->getJson('/assistant/config')
+            ->assertOk()->assertJson(['assistantName' => 'GQ Cot', 'welcomeMessage' => 'Welcome to GarageHQ.']);
+        Http::assertSent(fn (Request $request) => $request->hasHeader('Authorization', 'Bearer server-only-assistant-key') && $request['system'] === 'garagehq');
+    }
+
+    public function test_branding_falls_back_when_cot_is_unreachable(): void
+    {
+        Http::fake(['https://assistant.test/v1/config*' => Http::response(['error' => 'Unavailable'], 503)]);
+        $this->actingAs(User::factory()->create(['is_active' => true]))->getJson('/assistant/config')
+            ->assertOk()->assertJsonPath('assistantName', 'GQ Cot');
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

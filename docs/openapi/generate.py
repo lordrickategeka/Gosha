@@ -205,6 +205,18 @@ assistant["paths"]["/api/admin/provider-credentials"] = {
 assistant["paths"]["/api/admin/provider-credentials/test"] = {"post":operation("Test an entered or saved provider key without saving","testAssistantProviderKey",["Provider credentials"],{"200":response("Provider model catalog reachable. Does not prove inference quota or billing readiness.",obj({"message":string()})),**credential_errors,"502":response("Provider catalog/authentication failed.",ref("AssistantError"))},
     "Uses an entered apiKey transiently; if omitted, uses the saved tenant key or server default. Calls the provider's model catalog without generating a completion or persisting the entered key. For direct self-hosted Ollama the catalog may be public, so success does not establish that a proxy token was checked. Use Test model for inference readiness.",security=[{"adminSession":[]}],parameters=[tenant_header,origin_header],requestBody=body(obj({"provider":provider_enum,"apiKey":string(minLength=8,maxLength=4096,writeOnly=True)},["provider"],additionalProperties=False))) }
 
+branding = obj({"assistantName": string(maxLength=80), "welcomeMessage": string(maxLength=500)}, ["assistantName", "welcomeMessage"])
+garage["paths"]["/assistant/config"] = {"get": operation("Read GQ Cot name and greeting", "getGarageAssistantConfig", ["Documentation assistant"],
+    {"200": response("Tenant branding, cached for 30 seconds, or local defaults if Cot is unavailable.", branding),
+     "401": response("Sign in required.", ref("Error")), "403": response("Inactive user.", ref("Error")), "429": response("Too many requests.", ref("Error"))},
+    "First-party authenticated browser endpoint. Provider and system keys remain on the backend. Configure the mapped tenant's Assistant name and Assistant greeting in Cot Settings.", security=[{"webSession": []}])}
+assistant["paths"]["/v1/config"] = {"get": operation("Read the mapped tenant's widget identity", "getSystemAssistantConfig", ["Integration setup"],
+    {"200": response("Only the assistant name and greeting; no provider configuration or keys.", branding), "401": response("System key rejected.", ref("AssistantError")), "503": response("Mapped tenant missing or inactive.", ref("AssistantError"))},
+    "Load through the product backend using its existing system-specific bearer key. This performs no model inference.", parameters=[parameter("system", required=True, description="System identifier assigned to this integration key.")])}
+assistant["paths"]["/api/admin/integration"] = {"get": operation("Inspect selected tenant integration setup", "getTenantIntegrationReadiness", ["Integration setup"],
+    {"200": response("Configured system identifiers, hosted knowledge count and credential readiness; no secrets or live inference check.", obj({"tenant": string(), "systems": {"type": "array", "items": string()}, "knowledgeCount": integer(), "providerConfigured": {"type": "boolean"}, "assistantName": string(), "limits": obj({"questionCharacters": integer(), "documentationBytes": integer()})})), **admin_errors},
+    "Creating a tenant does not import product knowledge. Hosted tenant knowledge and role-filtered docs supplied to /v1/chat are separate sources. Backend keys and mappings currently require operator setup.", security=[{"adminSession": []}], parameters=[tenant_header])}
+
 for name, document in [("garagehq", garage), ("cream-theme", cream), ("onepass", otp), ("assistant", assistant)]:
     (ROOT / f"{name}.json").write_text(json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Built {name}.json ({len(document['paths'])} paths)")

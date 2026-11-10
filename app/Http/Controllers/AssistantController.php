@@ -7,6 +7,13 @@ use Illuminate\Http\Request;
 
 class AssistantController extends Controller
 {
+    public function config(Request $request, AssistantService $assistant)
+    {
+        abort_unless($request->user()->is_active, 403);
+
+        return response()->json($assistant->branding())->header('Cache-Control', 'no-store');
+    }
+
     public function __invoke(Request $request, AssistantService $assistant)
     {
         abort_unless($request->user()->is_active, 403);

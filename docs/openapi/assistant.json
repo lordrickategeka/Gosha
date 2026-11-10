@@ -1332,6 +1332,162 @@
           }
         }
       }
+    },
+    "/v1/config": {
+      "get": {
+        "summary": "Read the mapped tenant's widget identity",
+        "operationId": "getSystemAssistantConfig",
+        "tags": [
+          "Integration setup"
+        ],
+        "description": "Load through the product backend using its existing system-specific bearer key. This performs no model inference.",
+        "responses": {
+          "200": {
+            "description": "Only the assistant name and greeting; no provider configuration or keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assistantName": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "welcomeMessage": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  },
+                  "required": [
+                    "assistantName",
+                    "welcomeMessage"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "System key rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Mapped tenant missing or inactive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": true,
+            "description": "System identifier assigned to this integration key.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/integration": {
+      "get": {
+        "summary": "Inspect selected tenant integration setup",
+        "operationId": "getTenantIntegrationReadiness",
+        "tags": [
+          "Integration setup"
+        ],
+        "description": "Creating a tenant does not import product knowledge. Hosted tenant knowledge and role-filtered docs supplied to /v1/chat are separate sources. Backend keys and mappings currently require operator setup.",
+        "responses": {
+          "200": {
+            "description": "Configured system identifiers, hosted knowledge count and credential readiness; no secrets or live inference check.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tenant": {
+                      "type": "string"
+                    },
+                    "systems": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "knowledgeCount": {
+                      "type": "integer"
+                    },
+                    "providerConfigured": {
+                      "type": "boolean"
+                    },
+                    "assistantName": {
+                      "type": "string"
+                    },
+                    "limits": {
+                      "type": "object",
+                      "properties": {
+                        "questionCharacters": {
+                          "type": "integer"
+                        },
+                        "documentationBytes": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {

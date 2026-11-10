@@ -525,6 +525,77 @@
           }
         }
       }
+    },
+    "/assistant/config": {
+      "get": {
+        "summary": "Read GQ Cot name and greeting",
+        "operationId": "getGarageAssistantConfig",
+        "tags": [
+          "Documentation assistant"
+        ],
+        "description": "First-party authenticated browser endpoint. Provider and system keys remain on the backend. Configure the mapped tenant's Assistant name and Assistant greeting in Cot Settings.",
+        "responses": {
+          "200": {
+            "description": "Tenant branding, cached for 30 seconds, or local defaults if Cot is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assistantName": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "welcomeMessage": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  },
+                  "required": [
+                    "assistantName",
+                    "welcomeMessage"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "webSession": []
+          }
+        ]
+      }
     }
   },
   "components": {

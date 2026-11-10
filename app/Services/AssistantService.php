@@ -59,11 +59,38 @@ class AssistantService
             }
 
             return ['status' => 200, 'body' => ['answer' => mb_substr(trim($answer), 0, 6000), 'sources' => array_slice(array_values($sources), 0, 8)]];
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
             // Never log prompts, authorization headers, upstream bodies or personal data.
-            Log::warning('GarageHQ assistant could not be reached.');
+            preg_match('/cURL error (\d+)/', $exception->getMessage(), $match);
+            Log::warning('GarageHQ assistant could not be reached.', [
+                'exception_class' => get_class($exception), 'curl_code' => $match[1] ?? null,
+                'guide_readable' => is_readable(base_path('docs/USER_GUIDE.md')),
+            ]);
 
             return $this->unavailable();
+        }
+    }
+
+    public function branding(): array
+    {
+        $fallback = ['assistantName' => config('assistant.name', 'GQ Cot'), 'welcomeMessage' => config('assistant.greeting', '')];
+        if (! self::available()) {
+            return $fallback;
+        }
+        try {
+            $cacheKey = 'assistant.branding.'.hash('sha256', config('assistant.base_url').config('assistant.api_key'));
+
+            return \Illuminate\Support\Facades\Cache::remember($cacheKey, 30, function () use ($fallback) {
+                $response = IntegrationHttpClient::make()->withToken(config('assistant.api_key'))->acceptJson()->connectTimeout(2)->timeout(4)
+                    ->get(rtrim(config('assistant.base_url'), '/').'/v1/config', ['system' => 'garagehq']);
+                $name = $response->json('assistantName');
+                $greeting = $response->json('welcomeMessage');
+
+                return $response->successful() && is_string($name) && trim($name) !== '' && mb_strlen($name) <= 80 && is_string($greeting) && mb_strlen($greeting) <= 500
+                    ? ['assistantName' => $name, 'welcomeMessage' => $greeting] : $fallback;
+            });
+        } catch (\Throwable) {
+            return $fallback;
         }
     }
 

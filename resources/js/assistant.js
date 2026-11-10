@@ -17,11 +17,29 @@ function initializeAssistant() {
     let pending = false;
     let disposed = false;
     let controller;
+    let brandingLoaded = false;
+
+    async function loadBranding() {
+        if (brandingLoaded) return;
+        brandingLoaded = true;
+        try {
+            const response = await fetch(root.dataset.configEndpoint, { credentials: 'same-origin', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) });
+            if (!response.ok || disposed) { brandingLoaded = false; return; }
+            const data = await response.json();
+            if (disposed) return;
+            if (typeof data.assistantName === 'string' && data.assistantName.trim() && data.assistantName.length <= 80) {
+                root.dataset.assistantName = data.assistantName;
+                root.querySelector('#gh-help-title').textContent = data.assistantName;
+                root.querySelector('[data-help-launcher-label]').textContent = `Ask ${data.assistantName}`;
+            }
+            if (typeof data.welcomeMessage === 'string' && data.welcomeMessage.length <= 500) root.querySelector('[data-help-greeting]').textContent = data.welcomeMessage;
+        } catch { brandingLoaded = false; }
+    }
 
     function setOpen(open) {
         panel.hidden = !open;
         toggle.setAttribute('aria-expanded', String(open));
-        if (open) input.focus();
+        if (open) { input.focus(); loadBranding(); }
         else toggle.focus();
     }
     function addMessage(label, text, sources = []) {
@@ -96,7 +114,7 @@ function initializeAssistant() {
                 throw new Error(data.message || 'The assistant is unavailable. Use the user guide or try again later.');
             }
             if (typeof data.answer !== 'string' || !data.answer.trim()) throw new Error('No answer was returned. Please try again.');
-            addMessage('GarageHQ assistant', data.answer, Array.isArray(data.sources) ? data.sources : []);
+            addMessage(root.dataset.assistantName || 'GQ Cot', data.answer, Array.isArray(data.sources) ? data.sources : []);
             input.value = '';
         } catch (failure) {
             if (!disposed) showError(failure.name === 'AbortError' ? 'The assistant took too long. Please try again or open the user guide.' : failure.message);
