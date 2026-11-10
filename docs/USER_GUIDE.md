@@ -364,7 +364,7 @@ Subscription email delivery status and retry controls are available for the conf
 
 When enabled, signed-in users can select **Ask GarageHQ** in the lower-right corner of the app or help centre. It explains the approved user guide and links to relevant chapters. Supplier questions use supplier guidance; garage users receive garage guidance. The assistant cannot inspect records, confirm an actual payment, change a plan or perform work on your behalf.
 
-1. Open **Ask GarageHQ** and review the data-sharing notice. The shared assistant runs on the platform server and sends the question and matching documentation excerpts to Ollama Cloud for an answer.
+1. Open **Ask GarageHQ** and review the data-sharing notice. The shared assistant runs on the platform server and sends the question and matching documentation excerpts to its configured AI provider for an answer. Platform administrators can select Ollama Cloud, Groq or self-hosted Ollama per tenant in the Cot assistant settings. Cloud providers process requests outside GarageHQ; a self-hosted provider uses the configured model host.
 2. Confirm the notice, then enter a complete question such as “How do I receive parts against a purchase order?” Do not include customer details, vehicle identifiers, passwords, verification codes or API keys.
 3. Read the explanation and follow its guide links. Check the app for your actual permissions, plan, prices, records and payment state; AI answers can contain mistakes.
 4. Ask each new question in full. Earlier messages remain visible only on the current page and are not sent as conversation history. **Clear chat** removes them from the widget; leaving the page clears the conversation too.

@@ -3,7 +3,7 @@
   "info": {
     "title": "Shared System Assistant API",
     "version": "1.0.0",
-    "description": "Backend contract for the shared Salord System Assistant. The calling product authenticates its users and supplies approved documentation for each request. This is document retrieval, not model fine-tuning or access to operational databases. Matching excerpts and the question are sent to Ollama Cloud. Use a dedicated system-specific bearer key on the backend only. A configured tenant mapping selects the active tenant and its model settings.\n\nBefore connecting, configure trusted HTTPS certificates in both web PHP and CLI workers. cURL error 60 can indicate missing/outdated CA trust or a server certificate-chain problem; Apache and CLI may load different php.ini files. Keep TLS verification enabled. See /user-guide#api-reference-for-integration-partners."
+    "description": "Backend contract for the shared Salord System Assistant. The calling product authenticates its users and supplies approved documentation for each request. This is document retrieval, not model fine-tuning or access to operational databases. Matching excerpts and the question are sent to the configured AI provider. Use a dedicated system-specific bearer key on the backend only. A configured tenant mapping selects the active tenant and its model settings.\n\nBefore connecting, configure trusted HTTPS certificates in both web PHP and CLI workers. cURL error 60 can indicate missing/outdated CA trust or a server certificate-chain problem; Apache and CLI may load different php.ini files. Keep TLS verification enabled. See /user-guide#api-reference-for-integration-partners."
   },
   "servers": [
     {

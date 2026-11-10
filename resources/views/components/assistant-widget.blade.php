@@ -23,7 +23,7 @@
                     <div class="gh-help-composer">
                         <p class="gh-help-error" data-help-error role="alert" hidden></p>
                         <form data-help-form>
-                            <label class="gh-help-consent"><input type="checkbox" name="consent" required><span>I agree to send my question and relevant guide excerpts to the shared assistant and Ollama Cloud. Do not include customer details, passwords or keys.</span></label>
+                            <label class="gh-help-consent"><input type="checkbox" name="consent" required><span>I agree to send my question and relevant guide excerpts to the shared assistant's configured AI provider. Do not include customer details, passwords or keys.</span></label>
                             <label for="gh-help-question" class="gh-help-question-label">Your question</label>
                             <textarea id="gh-help-question" name="question" rows="2" maxlength="1200" required placeholder="How do I…?"></textarea>
                             <div class="gh-help-form-actions"><button type="button" class="gh-help-clear" data-help-clear>Clear chat</button><button type="submit" class="gh-help-send">Ask assistant <span aria-hidden="true">↑</span></button></div>

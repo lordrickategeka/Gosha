@@ -8,7 +8,7 @@ The floating **Ask GarageHQ** widget connects signed-in active users to the shar
 
 The backend sends only `system=garagehq`, a stable pseudonymous user identifier, a server-derived role, the question and static documentation. Client-supplied identities, documentation and previous messages are ignored. There is no access to business records or operational tools. Questions are not stored by GarageHQ. The widget keeps messages only in page memory and does not use local/session storage. Logging excludes question text, answers, credentials and upstream response bodies.
 
-The shared service runs on the platform host; inference uses Ollama Cloud. Users must acknowledge this before submitting. Questions and matching guide excerpts are sent there. Do not include personal/customer data, vehicle identifiers, secrets or codes. The integration does not enable public-web search or code analysis. AI output is displayed as plain text, and users should check permissions and current billing details in the application.
+The shared service runs on the platform host; its Cot tenant settings choose Ollama Cloud, Groq or self-hosted Ollama for inference. Users must acknowledge this before submitting. Questions and matching guide excerpts are sent to that provider. Do not include personal/customer data, vehicle identifiers, secrets or codes. The integration does not enable public-web search or code analysis. AI output is displayed as plain text, and users should check permissions and current billing details in the application.
 
 ## Configuration
 
@@ -44,5 +44,7 @@ Use a new backup directory for each run. A partial import can be safely rerun wi
 The shared API selects at most five relevant guide chapters. An unmatched-question fallback is relabelled for GarageHQ because the existing service still names Fotex in that response. A model change or framework migration requires checking that service's current contract.
 
 A healthy shared service and valid system key do not prove model readiness. If Ollama Cloud returns HTTP 402, the account needs usage credits or a subscription; a service restart or new GarageHQ key will not fix billing. The shared API deliberately hides provider details behind a 502 response, and GarageHQ returns a safe 503 with guide fallback. An operator should check the authenticated provider response without exposing keys or prompts, restore account availability, and then test a harmless documentation question. Do not purchase credits or change billing automatically. Use an available model from the authenticated model catalog; cloud-hosted model identifiers can differ from older local `-cloud` aliases.
+
+The Cot administrator can switch the `garagehq` tenant?s provider/model in Settings without changing GarageHQ?s integration key. Provider credentials and any private connection to a PC-hosted Ollama instance belong to the shared service.
 
 Swagger UI at `/api-docs` documents both the GarageHQ browser endpoint and the shared service contract. Validate with `npm run docs:validate`; test with `php vendor/bin/phpunit tests/Feature/AssistantTest.php tests/Feature/DocumentationTest.php`; build with `npm run build`.

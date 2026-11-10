@@ -383,7 +383,7 @@
         "tags": [
           "Documentation assistant"
         ],
-        "description": "First-party same-origin browser endpoint. Requires web-session authentication, CSRF and explicit consent to send the question and selected guide excerpts to the shared assistant and Ollama Cloud. Role and pseudonymous actor are derived on the server; client-supplied actor, role, docs and history are ignored. No operational records are accessed and no actions are performed. Limits: six requests per user per minute, 100 per day, 60 globally per minute. Help remains available during subscription expiry. Responses are not cached.",
+        "description": "First-party same-origin browser endpoint. Requires web-session authentication, CSRF and explicit consent to send the question and selected guide excerpts to the shared assistant and the configured AI provider. Role and pseudonymous actor are derived on the server; client-supplied actor, role, docs and history are ignored. No operational records are accessed and no actions are performed. Limits: six requests per user per minute, 100 per day, 60 globally per minute. Help remains available during subscription expiry. Responses are not cached.",
         "responses": {
           "200": {
             "description": "Plain-text answer and approved guide links.",

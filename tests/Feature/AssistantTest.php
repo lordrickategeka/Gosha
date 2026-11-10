@@ -134,7 +134,7 @@ class AssistantTest extends TestCase
     {
         $this->get('/user-guide')->assertOk()->assertDontSee('data-assistant', false);
         $this->actingAs(User::factory()->create())->get('/user-guide')->assertOk()->assertSee('data-assistant', false)
-            ->assertSee('Ollama Cloud')->assertDontSee('server-only-assistant-key');
+            ->assertSee('configured AI provider')->assertDontSee('server-only-assistant-key');
         config(['assistant.enabled' => false]);
         $this->get('/user-guide')->assertOk()->assertDontSee('data-assistant', false);
     }
