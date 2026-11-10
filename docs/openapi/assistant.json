@@ -229,7 +229,7 @@
         "tags": [
           "Provider administration"
         ],
-        "description": "A configured flag does not prove inference readiness or account balance. Self-hosted localhost refers to the machine running Cot. Credentials and model-server URLs are operator-managed environment settings, not browser-supplied values.",
+        "description": "A configured flag does not prove inference readiness or account balance. Self-hosted localhost refers to the machine running Cot. Model keys may be saved using the separate credential endpoints. Server environment keys remain defaults; model-server URLs are operator-managed. No keys or ciphertext are returned.",
         "responses": {
           "200": {
             "description": "Provider labels, descriptions, default model suggestions and configuration flags. Contains no keys or server addresses.",
@@ -743,6 +743,590 @@
               "example": {
                 "provider": "groq",
                 "model": "openai/gpt-oss-120b"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/provider-credentials": {
+      "get": {
+        "summary": "Read masked key status for a tenant/provider",
+        "operationId": "getAssistantCredentialStatus",
+        "tags": [
+          "Provider credentials"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Status only; no plaintext key or ciphertext.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "credential": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "enum": [
+                            "ollama_cloud",
+                            "groq",
+                            "ollama_local"
+                          ]
+                        },
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "hasSavedKey": {
+                          "type": "boolean"
+                        },
+                        "hasApiKey": {
+                          "type": "boolean"
+                        },
+                        "credentialSource": {
+                          "type": "string",
+                          "enum": [
+                            "saved",
+                            "environment",
+                            "none"
+                          ]
+                        },
+                        "locked": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider, key or unsupported field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ollama_cloud",
+                "groq",
+                "ollama_local"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Save or replace an encrypted tenant provider key",
+        "operationId": "saveAssistantProviderKey",
+        "tags": [
+          "Provider credentials"
+        ],
+        "description": "Dedicated model-provider credential endpoint, separate from branding/model settings and system integration bearer keys. AES-256-GCM encrypts the key at rest and binds it to the tenant/provider. The encryption key is kept in a private file beside the database. Saved UI keys take precedence over environment defaults for this tenant only and apply immediately to requests using that provider. Responses never echo the key. Back up the database and its .credentials.key file together.",
+        "responses": {
+          "200": {
+            "description": "Key saved. Response contains only status and a safe message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "credential": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "enum": [
+                            "ollama_cloud",
+                            "groq",
+                            "ollama_local"
+                          ]
+                        },
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "hasSavedKey": {
+                          "type": "boolean"
+                        },
+                        "hasApiKey": {
+                          "type": "boolean"
+                        },
+                        "credentialSource": {
+                          "type": "string",
+                          "enum": [
+                            "saved",
+                            "environment",
+                            "none"
+                          ]
+                        },
+                        "locked": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider, key or unsupported field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Credential operation rate limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Encrypted credential cannot be unlocked; restore the matching encryption key/database backup.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "description": "Same origin as Cot, required for writes, e.g. https://cot.loganate.cc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ollama_cloud",
+                      "groq",
+                      "ollama_local"
+                    ]
+                  },
+                  "apiKey": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 4096,
+                    "writeOnly": true,
+                    "description": "New key; printable ASCII, without spaces or line breaks. Stored keys are never returned. Omit/blank is rejected, not a request to clear the key."
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "apiKey"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove a tenant key override and use server defaults",
+        "operationId": "deleteAssistantProviderKey",
+        "tags": [
+          "Provider credentials"
+        ],
+        "description": "Removes only this tenant/provider's encrypted override. It does not delete environment keys or affect other tenants. Do not send an API key with deletion.",
+        "responses": {
+          "200": {
+            "description": "Override removed; any existing environment default is active again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "credential": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "enum": [
+                            "ollama_cloud",
+                            "groq",
+                            "ollama_local"
+                          ]
+                        },
+                        "configured": {
+                          "type": "boolean"
+                        },
+                        "hasSavedKey": {
+                          "type": "boolean"
+                        },
+                        "hasApiKey": {
+                          "type": "boolean"
+                        },
+                        "credentialSource": {
+                          "type": "string",
+                          "enum": [
+                            "saved",
+                            "environment",
+                            "none"
+                          ]
+                        },
+                        "locked": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider, key or unsupported field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Credential operation rate limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Encrypted credential cannot be unlocked; restore the matching encryption key/database backup.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "description": "Same origin as Cot, required for writes, e.g. https://cot.loganate.cc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ollama_cloud",
+                      "groq",
+                      "ollama_local"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "provider"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/provider-credentials/test": {
+      "post": {
+        "summary": "Test an entered or saved provider key without saving",
+        "operationId": "testAssistantProviderKey",
+        "tags": [
+          "Provider credentials"
+        ],
+        "description": "Uses an entered apiKey transiently; if omitted, uses the saved tenant key or server default. Calls the provider's model catalog without generating a completion or persisting the entered key. For direct self-hosted Ollama the catalog may be public, so success does not establish that a proxy token was checked. Use Test model for inference readiness.",
+        "responses": {
+          "200": {
+            "description": "Provider model catalog reachable. Does not prove inference quota or billing readiness.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Platform administrator required, or write origin rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider, key or unsupported field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Credential operation rate limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Encrypted credential cannot be unlocked; restore the matching encryption key/database backup.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Provider catalog/authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Tenant-Slug",
+            "in": "header",
+            "required": false,
+            "description": "Active tenant slug; defaults to default. The same administrator session can configure authorized tenants.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "description": "Same origin as Cot, required for writes, e.g. https://cot.loganate.cc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "ollama_cloud",
+                      "groq",
+                      "ollama_local"
+                    ]
+                  },
+                  "apiKey": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 4096,
+                    "writeOnly": true
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "provider"
+                ]
               }
             }
           }
