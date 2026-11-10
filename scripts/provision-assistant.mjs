@@ -41,8 +41,16 @@ await chmod(join(backupDir, 'assistant-before.sqlite'), 0o600);
 const { createStore } = await import(pathToFileURL(join(agentDir, 'store.js')).href);
 const store = createStore(databasePath, Date.now, { defaultModel: env.OLLAMA_MODEL });
 try {
-    const tenant = store.getTenantBySlug('garagehq') || store.createTenant({ slug: 'garagehq', name: 'GarageHQ' });
+    const existingTenant = store.getTenantBySlug('garagehq');
+    const tenant = existingTenant || store.createTenant({ slug: 'garagehq', name: 'GarageHQ' });
     if (!tenant.active) throw new Error('The GarageHQ tenant is inactive; review before enabling it.');
+    if (!existingTenant) {
+        // The live default may have been changed in the admin UI since .env was set.
+        const defaultTenant = store.getTenantBySlug('default');
+        if (defaultTenant) {
+            store.updateTenantSettings(tenant.id, { ...store.getTenantSettings(tenant.id), model: store.getTenantSettings(defaultTenant.id).model });
+        }
+    }
     const source = 'GarageHQ user guide (managed import)';
     const previous = store.listKnowledge(tenant.id).filter(doc => doc.tenant_id === tenant.id && doc.source === source && !doc.is_global);
     for (const guide of guides) {
