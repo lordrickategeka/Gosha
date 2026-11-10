@@ -16,6 +16,33 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class MarketplaceListing extends Model
 {
+    public function save(array $options = [])
+    {
+        // Serialize capacity checks with other listing, team and plan changes for this supplier.
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($options) {
+            if ($this->supplier_vendor_id) {
+                Vendor::whereKey($this->supplier_vendor_id)->lockForUpdate()->firstOrFail();
+            }
+
+            return parent::save($options);
+        });
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function ($listing) {
+            if (! $listing->is_active || (! $listing->isDirty('is_active') && ! $listing->isDirty('supplier_vendor_id') && $listing->exists)) {
+                return;
+            }
+            $vendor = Vendor::find($listing->supplier_vendor_id);
+            if ($vendor?->vendor_type === 'supplier') {
+                $access = app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class);
+                $access->assertSelling($vendor);
+                $access->assertListingCapacity($vendor, $listing->id);
+            }
+        });
+    }
+
     protected $fillable = [
         'supplier_vendor_id', 'catalog_product_id', 'supplier_sku', 'price', 'currency',
         'stock_qty', 'min_order_qty', 'lead_time_days', 'condition', 'is_active',
@@ -53,6 +80,7 @@ class MarketplaceListing extends Model
     public function scopeBrowsable(Builder $q): Builder
     {
         return $q->where('is_active', true)
+            ->whereHas('supplier', fn ($supplier) => $supplier->sellingAccess())
             ->where('stock_qty', '>', 0)
             ->whereHas('product', fn (Builder $p) => $p->where('is_verified', true)->where('is_active', true));
     }

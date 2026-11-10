@@ -14,20 +14,31 @@ class SubscriptionPaymentController extends Controller
     public function pay(Request $request, VendorPlatformInvoice $invoice)
     {
         abort_unless($invoice->vendor_id === $request->user()->vendor_id, 403);
+        abort_unless(app(\App\Domains\Platform\Services\SelfServiceSubscriptionService::class)->isOwner($request->user()), 403);
+
+        if ($invoice->subscription?->self_service || app(ApiIntegrationService::class)->getIntegration('cream_theme')?->isActive()) {
+            try {
+                return redirect()->away(app(\App\Domains\Platform\Services\CreamThemePaymentService::class)->checkout($invoice, $request->user()));
+            } catch (\RuntimeException $exception) {
+                return redirect()->route('billing.subscription')->with('error', $exception->getMessage());
+            } catch (\Throwable) {
+                return redirect()->route('billing.subscription')->with('error', 'Checkout is temporarily unavailable. Please try again shortly.');
+            }
+        }
 
         if ($invoice->isPaid()) {
             return redirect()->route('billing.subscription')->with('error', 'This invoice is already paid.');
         }
 
         $integration = app(ApiIntegrationService::class)->getIntegration('flutterwave');
-        if (!$integration || !$integration->isActive()) {
+        if (! $integration || ! $integration->isActive()) {
             return back()->with('error', 'Online payments are not currently available. Please contact support.');
         }
 
-        $txRef = 'ghq_inv_' . $invoice->id . '_' . now()->format('YmdHis');
+        $txRef = 'ghq_inv_'.$invoice->id.'_'.now()->format('YmdHis');
         $invoice->update(['metadata' => array_merge($invoice->metadata ?? [], ['tx_ref' => $txRef])]);
 
-        $result = (new FlutterwaveConnector())->initiateCheckout($integration->credentials, [
+        $result = (new FlutterwaveConnector)->initiateCheckout($integration->credentials, [
             'tx_ref' => $txRef,
             'amount' => $invoice->balance_due,
             'currency' => $invoice->currency,
@@ -39,7 +50,7 @@ class SubscriptionPaymentController extends Controller
             'meta' => ['invoice_id' => $invoice->id, 'vendor_id' => $invoice->vendor_id],
         ]);
 
-        if (!($result['success'] ?? false)) {
+        if (! ($result['success'] ?? false)) {
             return back()->with('error', $result['message'] ?? 'Failed to start payment.');
         }
 
@@ -49,6 +60,19 @@ class SubscriptionPaymentController extends Controller
     public function callback(Request $request)
     {
         $txRef = (string) $request->query('tx_ref');
+        $attempt = \App\Domains\Platform\Models\SubscriptionPaymentAttempt::where('tx_ref', $txRef)->first();
+        if ($attempt) {
+            abort_unless($attempt->invoice->vendor_id === $request->user()->vendor_id && app(\App\Domains\Platform\Services\SelfServiceSubscriptionService::class)->isOwner($request->user()), 403);
+            try {
+                $confirmed = app(\App\Domains\Platform\Services\CreamThemePaymentService::class)->reconcile($attempt);
+            } catch (\Throwable) {
+                $confirmed = false;
+            }
+
+            return redirect()->route('billing.subscription')->with($confirmed ? 'success' : 'error', $confirmed
+                ? 'Payment confirmed. Your subscription is active.'
+                : 'Payment is not confirmed yet. You can retry checkout if cancelled; pending payments are checked automatically.');
+        }
         $transactionId = (string) $request->query('transaction_id');
         $status = (string) $request->query('status');
 
@@ -78,7 +102,7 @@ class SubscriptionPaymentController extends Controller
         $vendor = $request->user()->vendor;
         abort_unless($vendor, 403);
 
-        $filename = 'customers-export-' . now()->format('Ymd-His') . '.csv';
+        $filename = 'customers-export-'.now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(function () use ($vendor) {
             $handle = fopen('php://output', 'w');

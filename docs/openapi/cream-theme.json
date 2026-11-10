@@ -1,0 +1,1066 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cream Theme partner API",
+    "version": "1.0.0",
+    "description": "Backend-to-backend hosted payments and transactional mail used by GarageHQ. Both partner headers are required together. Partners use one centrally managed Flutterwave account and do not receive Flutterwave keys. Configure test/live mode in the Cream Theme partner account; every payment retains its original environment. This reference describes the partner payment/mail contracts, not all Cream Theme products. Never trust browser redirect claims as payment proof.\n\nBefore connecting, configure trusted HTTPS certificates in both web PHP and CLI workers. cURL error 60 can indicate missing/outdated CA trust or a server certificate-chain problem; Apache and CLI may load different php.ini files. Keep TLS verification enabled. See /user-guide#api-reference-for-integration-partners."
+  },
+  "servers": [
+    {
+      "url": "https://comhub.loganate.cc",
+      "description": "Cream Theme service; use the operator-confirmed root URL for your environment"
+    }
+  ],
+  "security": [
+    {
+      "partnerKey": [],
+      "partnerSecret": []
+    }
+  ],
+  "paths": {
+    "/api/partner-keys/payments/initiate": {
+      "post": {
+        "summary": "Start hosted checkout",
+        "operationId": "initiatePartnerPayment",
+        "tags": [
+          "Hosted payments"
+        ],
+        "description": "Use a stable reference for idempotency. A retry while pending reuses the transaction with its original amount/fields. A resolved reference returns the final record. Redirect the user to checkoutUrl; verify the returned txRef before granting access. Amount must be positive; a zero-cost trial does not need this endpoint.",
+        "responses": {
+          "201": {
+            "description": "Payment record and checkout URL when pending.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "exclusiveMinimum": true,
+                    "minimum": 0
+                  },
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z]{3}$"
+                  },
+                  "customerEmail": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "customerName": {
+                    "type": "string"
+                  },
+                  "redirectUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "narration": {
+                    "type": "string"
+                  },
+                  "reference": {
+                    "type": "string"
+                  },
+                  "meta": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency",
+                  "customerEmail",
+                  "redirectUrl"
+                ]
+              },
+              "example": {
+                "amount": 30000,
+                "currency": "UGX",
+                "customerEmail": "buyer@example.com",
+                "customerName": "Example buyer",
+                "redirectUrl": "https://partner.example.com/payments/return",
+                "reference": "invoice-example-001",
+                "meta": {
+                  "invoiceId": "example-001"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/partner-keys/payments/{txRef}/verify": {
+      "get": {
+        "summary": "Verify a payment with Flutterwave",
+        "operationId": "verifyPartnerPayment",
+        "tags": [
+          "Hosted payments"
+        ],
+        "description": "Use /verify for authoritative confirmation. Stored status alone and browser callback query parameters are insufficient.",
+        "responses": {
+          "200": {
+            "description": "Partner-scoped payment record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "upstream_verify_failed: Flutterwave verification failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "txRef",
+            "in": "path",
+            "required": true,
+            "description": "The txRef returned by initiation, not the optional partner reference.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/partner-keys/payments/{txRef}": {
+      "get": {
+        "summary": "Read a stored payment",
+        "operationId": "getPartnerPayment",
+        "tags": [
+          "Hosted payments"
+        ],
+        "description": "Use /verify for authoritative confirmation. Stored status alone and browser callback query parameters are insufficient.",
+        "responses": {
+          "200": {
+            "description": "Partner-scoped payment record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "upstream_verify_failed: Flutterwave verification failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "txRef",
+            "in": "path",
+            "required": true,
+            "description": "The txRef returned by initiation, not the optional partner reference.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/partner-keys/payments": {
+      "get": {
+        "summary": "List this partner's payments",
+        "operationId": "listPartnerPayments",
+        "tags": [
+          "Hosted payments"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mail/send": {
+      "post": {
+        "summary": "Send a transactional email",
+        "operationId": "sendPartnerMail",
+        "tags": [
+          "Transactional mail"
+        ],
+        "description": "Every send attempt is logged and counts toward quota. No mail idempotency key is documented; an ambiguous timeout may require operator checking before resending. Template placeholders use {{variableName}}; omitted values render empty.",
+        "responses": {
+          "201": {
+            "description": "Provider accepted the email; this is not an inbox-delivery guarantee.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "from": {
+                    "type": "string",
+                    "description": "Optional verified sender; defaults to configured sender."
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "replyTo": {
+                    "type": "string"
+                  },
+                  "subject": {
+                    "type": "string"
+                  },
+                  "html": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "to",
+                  "subject",
+                  "html"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mail/send-template": {
+      "post": {
+        "summary": "Send a template email",
+        "operationId": "sendPartnerTemplateMail",
+        "tags": [
+          "Transactional mail"
+        ],
+        "description": "Every send attempt is logged and counts toward quota. No mail idempotency key is documented; an ambiguous timeout may require operator checking before resending. Template placeholders use {{variableName}}; omitted values render empty.",
+        "responses": {
+          "201": {
+            "description": "Provider accepted the email; this is not an inbox-delivery guarantee.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "from": {
+                    "type": "string",
+                    "description": "Optional verified sender; defaults to configured sender."
+                  },
+                  "cc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "bcc": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "replyTo": {
+                    "type": "string"
+                  },
+                  "templateKey": {
+                    "type": "string"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "to",
+                  "templateKey"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mail/messages/{id}": {
+      "get": {
+        "summary": "Read a sent/failed mail record",
+        "operationId": "getPartnerMailMessage",
+        "tags": [
+          "Transactional mail"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Record scoped to the calling partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "from": {
+                      "type": "string",
+                      "description": "Optional verified sender; defaults to configured sender."
+                    },
+                    "cc": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "bcc": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "replyTo": {
+                      "type": "string"
+                    },
+                    "messageId": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "sent",
+                        "failed"
+                      ]
+                    },
+                    "providerMessageId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "templateKey": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "subject": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request; inspect the stable error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid partner credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive or expired partner.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested partner record/template was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Partner quota reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal or mail-provider error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Payment or mail provider is not configured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "partnerKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      },
+      "partnerSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Secret"
+      }
+    },
+    "schemas": {
+      "PartnerError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Stable error code, e.g. invalid_api_credentials, partnership_expired, payment_quota_exceeded, daily_send_quota_exceeded, mail_not_configured."
+          },
+          "messageId": {
+            "type": "integer",
+            "description": "May be returned for a logged failed mail send."
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "integer"
+          },
+          "txRef": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "successful",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "test",
+              "live"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "checkoutUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Returned on checkout initiation when applicable."
+          }
+        }
+      },
+      "MailResult": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "failed"
+            ]
+          },
+          "providerMessageId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "messageId",
+          "status"
+        ]
+      }
+    }
+  }
+}

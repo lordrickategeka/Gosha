@@ -8,7 +8,7 @@
 
     @unless($isVerifiedSupplier)
         <div class="gh-badge gh-badge--warning" style="display:block; padding:10px 12px; font-size:12px;">
-            Your supplier account is pending verification — you'll be able to create and activate listings once a platform admin verifies your account.
+            An approved supplier business and active supplier plan are required to create or activate listings. <a href="{{ route('billing.subscription') }}" class="link">View approval and billing status</a>.
         </div>
     @endunless
 
@@ -91,9 +91,9 @@
                                 </span>
                             </td>
                             <td style="text-align:right; white-space:nowrap;">
-                                <button class="gh-btn gh-btn--sm" wire:click="edit({{ $listing->id }})">Edit</button>
-                                @if($isVerifiedSupplier)
-                                    <button class="gh-btn gh-btn--sm" wire:click="toggle({{ $listing->id }})">Toggle</button>
+                                @if($isVerifiedSupplier)<button class="gh-btn gh-btn--sm" wire:click="edit({{ $listing->id }})">Edit</button>@endif
+                                @if($isVerifiedSupplier || $listing->is_active)
+                                    <button class="gh-btn gh-btn--sm" wire:click="toggle({{ $listing->id }})">{{ $listing->is_active ? 'Deactivate' : 'Activate' }}</button>
                                 @endif
                             </td>
                         </tr>

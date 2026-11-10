@@ -19,7 +19,7 @@
 <body class="min-h-screen bg-base-200">
     <div class="min-h-screen flex">
         <!-- Left side - Branding -->
-        <div class="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-12">
+        <div class="hidden lg:flex {{ ($wide ?? false) ? 'lg:w-1/3' : 'lg:w-1/2' }} bg-primary items-center justify-center p-12">
             <div class="max-w-md text-primary-content">
                 <div class="flex items-center gap-4 mb-8">
                     <div class="w-16 h-16 bg-primary-content/20 rounded-2xl flex items-center justify-center">
@@ -29,7 +29,7 @@
                     </div>
                     <div>
                         <h1 class="text-3xl font-bold">GarageHQ</h1>
-                        <p class="text-primary-content/70">Garage Management Platform</p>
+                        <p class="text-primary-content/70">{{ ($supplier ?? false) ? 'Parts Supplier Marketplace' : 'Garage Management Platform' }}</p>
                     </div>
                 </div>
 
@@ -41,8 +41,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold">Work Order Management</h3>
-                            <p class="text-sm text-primary-content/70">Track repairs from check-in to delivery with full history</p>
+                            <h3 class="font-semibold">{{ ($supplier ?? false) ? 'Shared Parts Catalog' : 'Work Order Management' }}</h3>
+                            <p class="text-sm text-primary-content/70">{{ ($supplier ?? false) ? 'Browse products and prepare listings for garages looking for parts' : 'Track repairs from check-in to delivery with full history' }}</p>
                         </div>
                     </div>
 
@@ -53,8 +53,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold">Integrated Wash Bay</h3>
-                            <p class="text-sm text-primary-content/70">Seamless combo flows from service to wash</p>
+                            <h3 class="font-semibold">{{ ($supplier ?? false) ? 'Quotes and Orders' : 'Integrated Wash Bay' }}</h3>
+                            <p class="text-sm text-primary-content/70">{{ ($supplier ?? false) ? 'Manage enquiries, quotes, and incoming purchase orders in one place' : 'Seamless combo flows from service to wash' }}</p>
                         </div>
                     </div>
 
@@ -65,8 +65,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold">Real-time Reports</h3>
-                            <p class="text-sm text-primary-content/70">Track revenue, expenses, and staff performance</p>
+                            <h3 class="font-semibold">{{ ($supplier ?? false) ? 'Listings and Stock' : 'Real-time Reports' }}</h3>
+                            <p class="text-sm text-primary-content/70">{{ ($supplier ?? false) ? 'Publish prices and availability once your supplier business is approved' : 'Track revenue, expenses, and staff performance' }}</p>
                         </div>
                     </div>
                 </div>
@@ -74,8 +74,8 @@
         </div>
 
         <!-- Right side - Auth Form -->
-        <div class="flex-1 flex items-center justify-center p-8">
-            <div class="w-full max-w-md">
+        <div class="flex-1 flex items-center justify-center p-4 sm:p-8 min-w-0">
+            <div class="w-full {{ ($wide ?? false) ? 'max-w-3xl' : 'max-w-md' }}">
                 <!-- Mobile Logo -->
                 <div class="lg:hidden flex items-center justify-center gap-3 mb-8">
                     <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">

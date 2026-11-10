@@ -20,17 +20,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('platform_invoice_items', function (Blueprint $table) {
-            $table->dropForeign('platform_invoice_items_platform_invoice_id_foreign');
+            $table->dropForeign(['platform_invoice_id']);
             $table->foreign('platform_invoice_id')->references('id')->on('vendor_platform_invoices')->cascadeOnDelete();
         });
 
         Schema::table('platform_payments', function (Blueprint $table) {
-            $table->dropForeign('platform_payments_platform_invoice_id_foreign');
+            $table->dropForeign(['platform_invoice_id']);
             $table->foreign('platform_invoice_id')->references('id')->on('vendor_platform_invoices')->nullOnDelete();
         });
 
         Schema::table('vendor_usage_logs', function (Blueprint $table) {
-            $table->dropForeign('vendor_usage_logs_platform_invoice_id_foreign');
+            $table->dropForeign(['platform_invoice_id']);
             $table->foreign('platform_invoice_id')->references('id')->on('vendor_platform_invoices')->nullOnDelete();
         });
     }

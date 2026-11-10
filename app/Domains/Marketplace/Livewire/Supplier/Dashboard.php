@@ -23,11 +23,13 @@ class Dashboard extends Component
             ->where('status', RfqStatus::Published)
             ->where(function ($q) use ($vendorId) {
                 $q->where('visibility', 'open')
-                  ->orWhereHas('invitations', fn ($i) => $i->where('supplier_vendor_id', $vendorId));
+                    ->orWhereHas('invitations', fn ($i) => $i->where('supplier_vendor_id', $vendorId));
             })
             ->count();
 
         return view('livewire.marketplace.supplier.dashboard', [
+            'subscription' => app(\App\Domains\Platform\Services\SelfServiceSubscriptionService::class)->current($vendor),
+            'canSell' => app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->canSell($vendor),
             'isVerifiedSupplier' => $vendor?->isVerifiedSupplier() ?? false,
             'activeListings' => MarketplaceListing::ownedBySupplier($vendorId)->where('is_active', true)->count(),
             'openRfqs' => $openRfqs,

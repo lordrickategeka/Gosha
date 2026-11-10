@@ -2,54 +2,81 @@
 
 namespace App\Domains\Platform\Livewire\Platform;
 
-use Livewire\Component;
 use App\Domains\Platform\Models\PricingPlan;
-
+use Livewire\Component;
 
 class PlansComponent extends Component
 {
     public $showCreateModal = false;
+
+    public $audience = 'garage';
+
+    public $max_active_listings = null;
+
     public $editingPlan = null;
 
     // Plan form data
     public $name = '';
+
     public $slug = '';
+
     public $description = '';
+
     public $billing_model = 'subscription';
+
     public $base_price = 0;
+
     public $currency = 'UGX';
+
     public $billing_cycle = 'monthly';
+
     public $billing_cycle_days = null;
 
     // Commission
     public $commission_rate = 0;
+
     public $commission_base = 'payment_received';
+
     public $commission_min = null;
+
     public $commission_max = null;
 
     // Pay-per-use
     public $price_per_work_order = 0;
+
     public $price_per_wash_order = 0;
+
     public $price_per_invoice = 0;
+
     public $price_per_user = 0;
+
     public $price_per_branch = 0;
+
     public $price_per_sms = 0;
 
     // Limits
     public $max_branches = null;
+
     public $max_users = null;
+
     public $max_customers = null;
+
     public $max_work_orders_per_month = null;
+
     public $max_wash_orders_per_month = null;
+
     public $max_inventory_items = null;
 
     // Trial & Setup
     public $has_trial = true;
+
     public $trial_days = 14;
+
     public $setup_fee = 0;
 
     // Flags
     public $is_active = true;
+
     public $is_featured = false;
 
     protected $rules = [
@@ -57,6 +84,10 @@ class PlansComponent extends Component
         'billing_model' => 'required|in:free,one_time,subscription,commission,hybrid,pay_per_use,custom',
         'base_price' => 'required|numeric|min:0',
         'billing_cycle' => 'required',
+        'audience' => 'required|in:garage,supplier',
+        'max_active_listings' => 'nullable|integer|min:1',
+        'max_users' => 'nullable|integer|min:1',
+        'commission_rate' => 'required|numeric|min:0|max:100',
     ];
 
     public function updatedName($value)
@@ -81,13 +112,14 @@ class PlansComponent extends Component
     {
         $this->editingPlan = null;
         $this->reset([
+            'audience', 'max_active_listings',
             'name', 'slug', 'description', 'billing_model', 'base_price', 'currency',
             'billing_cycle', 'billing_cycle_days', 'commission_rate', 'commission_base',
             'commission_min', 'commission_max', 'price_per_work_order', 'price_per_wash_order',
             'price_per_invoice', 'price_per_user', 'price_per_branch', 'price_per_sms',
             'max_branches', 'max_users', 'max_customers', 'max_work_orders_per_month',
             'max_wash_orders_per_month', 'max_inventory_items', 'has_trial', 'trial_days',
-            'setup_fee', 'is_active', 'is_featured'
+            'setup_fee', 'is_active', 'is_featured',
         ]);
         $this->billing_model = 'subscription';
         $this->currency = 'UGX';
@@ -100,8 +132,14 @@ class PlansComponent extends Component
     public function save()
     {
         $this->validate();
+        if ($this->editingPlan && $this->editingPlan->audience !== $this->audience && $this->editingPlan->subscriptions()->exists()) {
+            $this->addError('audience', 'A plan with existing subscriptions cannot be moved to another audience. Create a separate plan.');
+
+            return;
+        }
 
         $data = [
+            'audience' => $this->audience, 'max_active_listings' => $this->max_active_listings,
             'name' => $this->name,
             'slug' => $this->slug ?: \Str::slug($this->name),
             'description' => $this->description,
@@ -147,17 +185,17 @@ class PlansComponent extends Component
 
     public function toggleStatus(PricingPlan $plan)
     {
-        $plan->update(['is_active' => !$plan->is_active]);
+        $plan->update(['is_active' => ! $plan->is_active]);
     }
 
     public function toggleFeatured(PricingPlan $plan)
     {
-        $plan->update(['is_featured' => !$plan->is_featured]);
+        $plan->update(['is_featured' => ! $plan->is_featured]);
     }
 
     public function setDefault(PricingPlan $plan)
     {
-        PricingPlan::where('is_default', true)->update(['is_default' => false]);
+        PricingPlan::where('audience', $plan->audience)->where('is_default', true)->update(['is_default' => false]);
         $plan->update(['is_default' => true]);
         session()->flash('success', "{$plan->name} is now the default plan.");
     }
@@ -166,6 +204,7 @@ class PlansComponent extends Component
     {
         if ($plan->subscriptions()->exists()) {
             session()->flash('error', 'Cannot delete plan with active subscriptions.');
+
             return;
         }
         $plan->delete();

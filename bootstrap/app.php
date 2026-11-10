@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
         $middleware->web(append: [
             \App\Http\Middleware\EnsureBranchSession::class,
             \App\Http\Middleware\EnsurePasswordChanged::class,

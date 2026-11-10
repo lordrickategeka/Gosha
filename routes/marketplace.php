@@ -66,6 +66,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     /* ---------------- Supplier side ---------------- */
     Route::prefix('supplier')->name('supplier.')->group(function () {
+        Route::get('/team', \App\Domains\Marketplace\Livewire\Supplier\Team::class)->middleware('role:supplier_admin')->name('team');
         Route::get('/dashboard', SupplierDashboard::class)
             ->middleware('permission:view_quotes|view_listings')
             ->name('dashboard');

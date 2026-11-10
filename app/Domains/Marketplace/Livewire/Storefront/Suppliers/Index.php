@@ -24,7 +24,7 @@ class Index extends Component
     {
         $suppliers = Vendor::query()
             ->whereIn('vendor_type', ['supplier', 'hybrid'])
-            ->where('is_verified_supplier', true)
+            ->sellingAccess()
             ->withCount(['marketplaceListings' => fn ($q) => $q->browsable()])
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderByDesc('supplier_rating_avg')

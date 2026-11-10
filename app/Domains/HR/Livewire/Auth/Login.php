@@ -10,7 +10,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
-#[Layout('components.layouts.guest')]
+#[Layout('components.layouts.guest', ['wide' => true, 'title' => 'Sign in | GarageHQ'])]
 class Login extends Component
 {
     #[Rule('required|email')]
@@ -25,35 +25,43 @@ class Login extends Component
     {
         $this->validate();
 
-        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             $this->addError('email', 'These credentials do not match our records.');
+
             return;
         }
 
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             Auth::logout();
             $this->addError('email', 'Your account has been deactivated. Please contact support.');
+
             return;
         }
 
-        if (!$user->is_platform_user && $user->vendor) {
+        if (! $user->is_platform_user && $user->vendor) {
             if ($user->vendor->status === 'suspended') {
                 Auth::logout();
                 $this->addError('email', 'Your organization account has been suspended. Please contact support.');
+
                 return;
             }
 
             if (method_exists($user->vendor, 'isTrialExpired') && $user->vendor->isTrialExpired()) {
                 Auth::logout();
                 $this->addError('email', 'Your trial period has expired. Please upgrade your subscription.');
+
                 return;
             }
         }
 
         $primaryBranch = $user->primaryBranch();
+        $isSupplier = $user->vendor?->vendor_type === 'supplier';
+        if ($isSupplier) {
+            session()->forget(['current_branch_id', 'current_branch_name', 'current_vendor_id', 'garage_setup']);
+        }
         if ($primaryBranch) {
             session(['current_branch_id' => $primaryBranch->id, 'current_branch_name' => $primaryBranch->name]);
         } elseif ($user->branches->count() > 0) {
@@ -67,7 +75,8 @@ class Login extends Component
             Log::warning('AuditLog failed on login', ['error' => $e->getMessage()]);
         }
 
-        $this->redirectIntended(route('dashboard'));
+        session()->regenerate();
+        $this->redirectIntended(route($isSupplier ? 'supplier.dashboard' : 'dashboard'));
     }
 
     public function render()

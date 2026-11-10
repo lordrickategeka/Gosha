@@ -1,4 +1,5 @@
 <div class="gh-page">
+    <x-garage-setup />
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap;">
         <div>
             <div class="gh-eyebrow">Operations overview</div>

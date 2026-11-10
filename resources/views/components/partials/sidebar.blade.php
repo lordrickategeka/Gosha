@@ -17,6 +17,7 @@
     @endphp
 
     <nav class="gh-sidebar__nav">
+        <a href="{{ route('user-guide.index') }}" class="gh-nav-item"><span class="gh-nav-item__label"><x-icon name="reports" class="gh-icon" /> User guide</span></a>
         @can('view_dashboard')
             <a href="{{ route('dashboard') }}" class="gh-nav-item {{ request()->routeIs('dashboard') ? 'is-active' : '' }}">
                 <span class="gh-nav-item__label"><x-icon name="dashboard" class="gh-icon" /> Dashboard</span>

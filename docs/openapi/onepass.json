@@ -1,0 +1,374 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OnePass OTP partner API",
+    "version": "1.0.0",
+    "description": "Backend-to-backend email/phone ownership verification. Use a dedicated GarageHQ partner bearer key. Returned OnePass JWTs and otp_session cookies are not GarageHQ application sessions. Email is available when configured; phone delivery requires a configured SMS provider. Defaults: code lifetime five minutes, three code attempts, resend cooldown one minute; administrator settings can differ. Do not blindly retry OTP sends. Honor Retry-After and keep codes/keys/tokens out of logs.\n\nBefore connecting, configure trusted HTTPS certificates in both web PHP and CLI workers. cURL error 60 can indicate missing/outdated CA trust or a server certificate-chain problem; Apache and CLI may load different php.ini files. Keep TLS verification enabled. See /user-guide#api-reference-for-integration-partners."
+  },
+  "servers": [
+    {
+      "url": "https://onepass.loganate.cc",
+      "description": "Current integration host; confirm the service root with the OnePass operator"
+    }
+  ],
+  "security": [
+    {
+      "onepassPartnerKey": []
+    }
+  ],
+  "paths": {
+    "/auth/otp/request": {
+      "post": {
+        "summary": "Send an email or phone OTP",
+        "operationId": "requestOnePassOtp",
+        "tags": [
+          "OTP"
+        ],
+        "description": "Resending replaces the pending challenge for that identifier. Default request limits include one per identifier per minute, five per identifier per 15 minutes, and 20 per client IP per 15 minutes. Trusted proxy configuration matters for backend callers.",
+        "responses": {
+          "200": {
+            "description": "Code dispatched through the configured provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "OTP dispatched"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid identifier/code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key, expired code, wrong code or exhausted code attempts; inspect code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "OTP delivery failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service or selected delivery channel is unavailable/unconfigured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request or verification rate limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying when supplied.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "$ref": "#/components/schemas/Identifier"
+                  }
+                },
+                "required": [
+                  "identifier"
+                ]
+              },
+              "example": {
+                "identifier": "person@example.com"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/otp/verify": {
+      "post": {
+        "summary": "Verify and consume an OTP",
+        "operationId": "verifyOnePassOtp",
+        "tags": [
+          "OTP"
+        ],
+        "description": "Use the same identifier as the request. Verification is rate-limited separately. An empty request with a valid partner key returns 400 invalid_request before OTP/rate-limit processing; GarageHQ uses that non-delivery probe alongside health readiness for its connection test.",
+        "responses": {
+          "200": {
+            "description": "Code accepted and consumed. Establish the calling application's own session separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Authentication successful"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "Short-lived OnePass JWT, 15-minute default."
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "token"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid identifier/code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key, expired code, wrong code or exhausted code attempts; inspect code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "OTP delivery failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service or selected delivery channel is unavailable/unconfigured.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request or verification rate limit reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpError"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying when supplied.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "$ref": "#/components/schemas/Identifier"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$",
+                    "minLength": 6,
+                    "maxLength": 6
+                  }
+                },
+                "required": [
+                  "identifier",
+                  "code"
+                ]
+              },
+              "example": {
+                "identifier": "person@example.com",
+                "code": "123456"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Check readiness",
+        "operationId": "getOnePassReadiness",
+        "tags": [
+          "Health"
+        ],
+        "description": "Open endpoint; readiness checks Redis, not partner credentials or end-to-end message delivery.",
+        "responses": {
+          "200": {
+            "description": "Service ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ready"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Redis/service is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/health/live": {
+      "get": {
+        "summary": "Check liveness",
+        "operationId": "getOnePassLiveness",
+        "tags": [
+          "Health"
+        ],
+        "description": "Open endpoint; readiness checks Redis, not partner credentials or end-to-end message delivery.",
+        "responses": {
+          "200": {
+            "description": "Process running.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "onepassPartnerKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Partner API key, not an OTP response JWT or GarageHQ access token."
+      }
+    },
+    "schemas": {
+      "Identifier": {
+        "oneOf": [
+          {
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{7,14}$"
+          }
+        ],
+        "description": "Email is normalized to lowercase; phones must be E.164."
+      },
+      "OtpError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "invalid_request",
+              "unauthorized",
+              "otp_expired",
+              "invalid_code",
+              "too_many_attempts",
+              "rate_limited",
+              "delivery_failed",
+              "delivery_unconfigured",
+              "unavailable"
+            ]
+          }
+        },
+        "required": [
+          "error",
+          "code"
+        ]
+      }
+    }
+  }
+}

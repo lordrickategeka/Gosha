@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
+use App\Domains\Inventory\Models\InventoryItem;
+use App\Domains\Inventory\Observers\InventoryItemObserver;
 use App\Domains\Operations\Models\WashBay;
 use App\Domains\Operations\Models\WashOrder;
+use App\Domains\Operations\Models\WorkOrder;
 use App\Domains\Operations\Observers\WashOrderObserver;
+use App\Domains\Operations\Observers\WorkOrderObserver;
 use App\Domains\Operations\Policies\WashBayPolicy;
 use App\Domains\Organization\Models\AuditLog;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
-use App\Domains\Inventory\Models\InventoryItem;
-use App\Domains\Operations\Models\WorkOrder;
-use App\Domains\Inventory\Observers\InventoryItemObserver;
-use App\Domains\Operations\Observers\WorkOrderObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +31,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \App\Domains\Platform\Models\Vendor::observe(\App\Domains\Platform\Observers\SupplierApprovalObserver::class);
+        Livewire::componentHook(\App\Livewire\SubscriptionAccessHook::class);
+        foreach ([
+            \App\Domains\Organization\Models\Branch::class => ['max_branches', false],
+            \App\Models\User::class => ['max_users', false],
+            \App\Domains\CRM\Models\Customer::class => ['max_customers', false],
+            \App\Domains\Inventory\Models\InventoryItem::class => ['max_inventory_items', false],
+            \App\Domains\Operations\Models\WorkOrder::class => ['max_work_orders_per_month', true],
+            \App\Domains\Operations\Models\WashOrder::class => ['max_wash_orders_per_month', true],
+        ] as $model => [$limit, $monthly]) {
+            $model::creating(fn ($record) => app(\App\Domains\Platform\Services\SubscriptionCapacityGuard::class)->creating($record, $limit, $monthly));
+        }
         // Local dev safety net: a stale `php artisan config:cache` run silently freezes
         // config values (e.g. DB_CONNECTION) even after .env is edited, causing confusing
         // "wrong driver/database" errors. Auto-clear it so the next request picks up .env.
@@ -74,13 +86,16 @@ class AppServiceProvider extends ServiceProvider
         // Post-login hook: set branch session + audit log (fires for both Livewire and Fortify logins)
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
             $user = $event->user;
-            if (!session('current_branch_id')) {
+            if (! session('current_branch_id')) {
                 $branch = $user->primaryBranch() ?? ($user->branches->first() ?? null);
                 if ($branch) {
                     session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
                 }
             }
-            try { AuditLog::logLogin($user); } catch (\Throwable) {}
+            try {
+                AuditLog::logLogin($user);
+            } catch (\Throwable) {
+            }
         });
     }
 }

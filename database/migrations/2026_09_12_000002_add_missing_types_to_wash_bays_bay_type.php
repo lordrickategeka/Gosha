@@ -15,11 +15,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // SQLite stores these values as text and has no MODIFY COLUMN syntax.
+        if (! in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            return;
+        }
         DB::statement("ALTER TABLE wash_bays MODIFY COLUMN bay_type ENUM('basic', 'standard', 'premium', 'full_service', 'detailing', 'automated') NOT NULL DEFAULT 'full_service'");
     }
 
     public function down(): void
     {
+        if (! in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            return;
+        }
         DB::statement("UPDATE wash_bays SET bay_type = 'full_service' WHERE bay_type IN ('standard', 'premium')");
         DB::statement("ALTER TABLE wash_bays MODIFY COLUMN bay_type ENUM('basic', 'full_service', 'detailing', 'automated') NOT NULL DEFAULT 'full_service'");
     }

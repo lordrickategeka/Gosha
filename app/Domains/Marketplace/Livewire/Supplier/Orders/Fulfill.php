@@ -15,7 +15,7 @@ class Fulfill extends Component
 
     public function mount(PurchaseOrder $purchaseOrder): void
     {
-        $this->purchaseOrder = $purchaseOrder->load('items.product', 'buyer');
+        $this->purchaseOrder = PurchaseOrder::asSupplier()->whereKey($purchaseOrder->id)->with('items.product', 'buyer')->firstOrFail();
     }
 
     public function render()

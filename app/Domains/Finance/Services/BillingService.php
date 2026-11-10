@@ -3,9 +3,9 @@
 namespace App\Domains\Finance\Services;
 
 use App\Domains\Platform\Models\PlatformSetting;
-use App\Domains\Platform\Models\VendorPlatformInvoice;
 use App\Domains\Platform\Models\PricingPlan;
 use App\Domains\Platform\Models\Vendor;
+use App\Domains\Platform\Models\VendorPlatformInvoice;
 use App\Domains\Platform\Models\VendorSubscription;
 use App\Domains\Platform\Models\VendorUsageLog;
 use App\Domains\Platform\Notifications\SubscriptionGraceStartedAlert;
@@ -45,14 +45,14 @@ class BillingService
             $vendor->update(['pricing_plan_id' => $plan->id]);
 
             // Generate setup fee invoice if applicable
-            if ($plan->setup_fee > 0 && !($options['waive_setup_fee'] ?? false)) {
+            if ($plan->setup_fee > 0 && ! ($options['waive_setup_fee'] ?? false)) {
                 $this->generateSetupFeeInvoice($subscription);
             }
 
             // No trial: payment for the first period is due now. Trial
             // subscriptions get their first invoice when the trial converts
             // (see handleTrialExpirations).
-            if (!$plan->has_trial) {
+            if (! $plan->has_trial) {
                 $this->generateSubscriptionInvoice($subscription);
             }
 
@@ -65,7 +65,7 @@ class BillingService
      */
     public function generateSubscriptionInvoice(VendorSubscription $subscription): ?VendorPlatformInvoice
     {
-        if (!$subscription->plan->hasSubscriptionComponent()) {
+        if (! $subscription->plan->hasSubscriptionComponent()) {
             return null;
         }
 
@@ -111,9 +111,9 @@ class BillingService
     /**
      * Generate commission invoice based on usage
      */
-    public function generateCommissionInvoice(VendorSubscription $subscription, string $period = null): ?VendorPlatformInvoice
+    public function generateCommissionInvoice(VendorSubscription $subscription, ?string $period = null): ?VendorPlatformInvoice
     {
-        if (!$subscription->plan->hasCommissionComponent()) {
+        if (! $subscription->plan->hasCommissionComponent()) {
             return null;
         }
 
@@ -243,9 +243,9 @@ class BillingService
     /**
      * Generate usage-based invoice
      */
-    public function generateUsageInvoice(VendorSubscription $subscription, string $period = null): ?VendorPlatformInvoice
+    public function generateUsageInvoice(VendorSubscription $subscription, ?string $period = null): ?VendorPlatformInvoice
     {
-        if (!$subscription->plan->hasPayPerUseComponent()) {
+        if (! $subscription->plan->hasPayPerUseComponent()) {
             return null;
         }
 
@@ -294,7 +294,7 @@ class BillingService
 
             if ($unitPrice > 0) {
                 $amount = $log->total_quantity * $unitPrice;
-                $metricLabel = ucwords(str_replace('_', ' ', $log->metric)) . 's';
+                $metricLabel = ucwords(str_replace('_', ' ', $log->metric)).'s';
 
                 $invoice->items()->create([
                     'description' => "{$log->total_quantity} {$metricLabel}",
@@ -393,6 +393,7 @@ class BillingService
         $newlyLocked = 0;
 
         VendorSubscription::where('status', VendorSubscription::STATUS_ACTIVE)
+            ->where('self_service', false)
             ->whereHas('invoices', fn ($query) => $query->where('status', VendorPlatformInvoice::STATUS_OVERDUE))
             ->with('vendor')
             ->get()
@@ -435,6 +436,7 @@ class BillingService
         $count = 0;
 
         VendorSubscription::where('status', VendorSubscription::STATUS_TRIAL)
+            ->where('self_service', false)
             ->where('trial_ends_at', '<', now())
             ->with('plan')
             ->get()
@@ -459,7 +461,7 @@ class BillingService
      */
     public function attemptAutoRenewal(VendorSubscription $subscription): bool
     {
-        if (!$subscription->flutterwave_card_token) {
+        if (! $subscription->flutterwave_card_token) {
             return false;
         }
 
@@ -469,13 +471,13 @@ class BillingService
         }
 
         $integration = app(ApiIntegrationService::class)->getIntegration('flutterwave');
-        if (!$integration || !$integration->isActive()) {
+        if (! $integration || ! $integration->isActive()) {
             return false;
         }
 
-        $txRef = 'ghq_renew_' . $subscription->id . '_' . now()->format('YmdHis');
+        $txRef = 'ghq_renew_'.$subscription->id.'_'.now()->format('YmdHis');
 
-        $result = (new FlutterwaveConnector())->chargeToken(
+        $result = (new FlutterwaveConnector)->chargeToken(
             $integration->credentials,
             $subscription->flutterwave_card_token,
             $subscription->flutterwave_customer_email ?: $subscription->vendor->email,
@@ -484,12 +486,12 @@ class BillingService
             $txRef
         );
 
-        if (!($result['success'] ?? false)) {
+        if (! ($result['success'] ?? false)) {
             return false;
         }
 
         $invoice = $this->generateSubscriptionInvoice($subscription);
-        if (!$invoice) {
+        if (! $invoice) {
             return false;
         }
 
@@ -512,12 +514,12 @@ class BillingService
     public function reconcileFlutterwaveTransaction(string $txRef, string $transactionId): array
     {
         $integration = app(ApiIntegrationService::class)->getIntegration('flutterwave');
-        if (!$integration || !$integration->isActive()) {
+        if (! $integration || ! $integration->isActive()) {
             return ['success' => false, 'message' => 'Flutterwave is not configured.'];
         }
 
-        $verification = (new FlutterwaveConnector())->verifyTransaction($integration->credentials, $transactionId);
-        if (!($verification['success'] ?? false)) {
+        $verification = (new FlutterwaveConnector)->verifyTransaction($integration->credentials, $transactionId);
+        if (! ($verification['success'] ?? false)) {
             return $verification;
         }
 
@@ -526,7 +528,7 @@ class BillingService
         }
 
         $invoice = VendorPlatformInvoice::where('metadata->tx_ref', $txRef)->first();
-        if (!$invoice) {
+        if (! $invoice) {
             return ['success' => false, 'message' => 'No matching invoice for this transaction.'];
         }
 
@@ -553,7 +555,7 @@ class BillingService
         if ($subscription = $invoice->subscription) {
             $subscription->reactivate();
 
-            if (!empty($verification['card_token'])) {
+            if (! empty($verification['card_token'])) {
                 $subscription->update([
                     'flutterwave_card_token' => $verification['card_token'],
                     'flutterwave_customer_email' => $verification['customer_email'] ?: $subscription->flutterwave_customer_email,
@@ -584,12 +586,14 @@ class BillingService
         $summary['trials_converted'] = $this->handleTrialExpirations();
 
         VendorSubscription::where('status', VendorSubscription::STATUS_ACTIVE)
+            ->where('self_service', false)
             ->where('current_period_end', '<=', now())
             ->with('plan', 'vendor')
             ->get()
             ->each(function (VendorSubscription $subscription) use (&$summary) {
                 if ($subscription->auto_renew && $this->attemptAutoRenewal($subscription)) {
                     $summary['auto_renewed']++;
+
                     return;
                 }
 

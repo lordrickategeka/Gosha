@@ -9,23 +9,34 @@ use Livewire\Component;
 class ApiIntegrationsComponent extends Component
 {
     public string $selectedProvider = 'whatsapp';
+
     public array $credentials = [];
+
     public bool $isActive = false;
+
     public ?string $webhookUrl = null;
+
     public ?string $webhookSecret = null;
+
     public string $testRecipientPhone = '';
+
     public string $testMessageBody = 'Hello from GarageHQ WhatsApp integration test.';
+
     public string $flutterwaveTestCustomerEmail = '';
+
     public string $flutterwaveTestCustomerName = 'GarageHQ Test Customer';
+
     public float $flutterwaveTestAmount = 1000;
+
     public string $flutterwaveTestCurrency = 'UGX';
+
     public ?string $flutterwaveCheckoutLink = null;
 
     public function mount(): void
     {
         $providers = array_keys($this->providers());
 
-        if (!empty($providers)) {
+        if (! empty($providers)) {
             $this->selectedProvider = $providers[0];
             $this->hydrateFormForProvider($this->selectedProvider);
         }
@@ -33,7 +44,7 @@ class ApiIntegrationsComponent extends Component
 
     public function selectProvider(string $provider): void
     {
-        if (!array_key_exists($provider, $this->providers())) {
+        if (! array_key_exists($provider, $this->providers())) {
             return;
         }
 
@@ -55,7 +66,7 @@ class ApiIntegrationsComponent extends Component
             webhookSecret: $this->webhookSecret
         );
 
-        session()->flash('success', ucfirst($this->selectedProvider) . ' integration saved successfully.');
+        session()->flash('success', ucfirst($this->selectedProvider).' integration saved successfully.');
     }
 
     public function toggleStatus(int $integrationId): void
@@ -67,7 +78,7 @@ class ApiIntegrationsComponent extends Component
             $this->hydrateFormForProvider($integration->provider);
         }
 
-        session()->flash('success', $integration->providerLabel() . ' status updated.');
+        session()->flash('success', $integration->providerLabel().' status updated.');
     }
 
     public function testConnection(int $integrationId): void
@@ -81,6 +92,7 @@ class ApiIntegrationsComponent extends Component
 
         if ($result['success']) {
             session()->flash('success', $result['message']);
+
             return;
         }
 
@@ -93,6 +105,7 @@ class ApiIntegrationsComponent extends Component
 
         if ($integration->provider !== 'whatsapp') {
             session()->flash('error', 'Test message is only available for WhatsApp integrations.');
+
             return;
         }
 
@@ -111,6 +124,7 @@ class ApiIntegrationsComponent extends Component
 
         if ($result['success']) {
             session()->flash('success', $result['message']);
+
             return;
         }
 
@@ -123,6 +137,7 @@ class ApiIntegrationsComponent extends Component
 
         if ($integration->provider !== 'flutterwave') {
             session()->flash('error', 'Test payment is only available for Flutterwave integrations.');
+
             return;
         }
 
@@ -148,6 +163,7 @@ class ApiIntegrationsComponent extends Component
         if ($result['success']) {
             $this->flutterwaveCheckoutLink = $result['checkout_link'] ?? null;
             session()->flash('success', $result['message']);
+
             return;
         }
 
@@ -170,7 +186,7 @@ class ApiIntegrationsComponent extends Component
             $this->webhookSecret = null;
         }
 
-        session()->flash('success', $label . ' integration removed.');
+        session()->flash('success', $label.' integration removed.');
     }
 
     public function render()
@@ -187,7 +203,19 @@ class ApiIntegrationsComponent extends Component
             'integrations' => $integrations,
             'selectedIntegration' => $selectedIntegration,
             'recentLogs' => $recentLogs,
+            'deliveryNotices' => $this->selectedProvider === 'cream_theme'
+                ? \App\Domains\Platform\Models\SubscriptionNotice::latest('id')->limit(20)->get()
+                : collect(),
         ]);
+    }
+
+    public function retrySubscriptionEmail(int $noticeId): void
+    {
+        $notice = \App\Domains\Platform\Models\SubscriptionNotice::findOrFail($noticeId);
+        if (! $notice->sent_at) {
+            $notice->update(['attempts' => 0, 'available_at' => now(), 'last_error' => null]);
+            session()->flash('success', 'Email queued for retry on the next billing scheduler run.');
+        }
     }
 
     private function hydrateFormForProvider(string $provider): void
@@ -195,24 +223,25 @@ class ApiIntegrationsComponent extends Component
         $integration = ApiIntegration::query()->where('provider', $provider)->first();
         $this->flutterwaveCheckoutLink = null;
 
-        if (!$integration) {
+        if (! $integration) {
             $this->credentials = [];
             $this->isActive = false;
-            $this->webhookUrl = url('/api/webhooks/' . $provider);
+            $this->webhookUrl = url('/api/webhooks/'.$provider);
             $this->webhookSecret = null;
+
             return;
         }
 
         $this->credentials = $integration->credentials;
         $this->isActive = (bool) $integration->is_active;
-        $this->webhookUrl = $integration->webhook_url ?: url('/api/webhooks/' . $provider);
+        $this->webhookUrl = $integration->webhook_url ?: url('/api/webhooks/'.$provider);
         $this->webhookSecret = $integration->webhook_secret;
     }
 
     protected function rules(): array
     {
         $rules = [
-            'selectedProvider' => 'required|string',
+            'selectedProvider' => 'required|in:'.implode(',', array_keys($this->providers())),
             'isActive' => 'boolean',
             'webhookUrl' => 'nullable|url|max:255',
             'webhookSecret' => 'nullable|string|max:255',
@@ -220,7 +249,7 @@ class ApiIntegrationsComponent extends Component
 
         foreach ($this->providerFields($this->selectedProvider) as $field) {
             $key = $field['key'];
-            $required = !empty($field['required']);
+            $required = ! empty($field['required']);
             $type = $field['type'] ?? 'text';
 
             $fieldRules = $required ? ['required'] : ['nullable'];
@@ -232,7 +261,14 @@ class ApiIntegrationsComponent extends Component
                 $fieldRules[] = 'max:255';
             }
 
-            $rules['credentials.' . $key] = implode('|', $fieldRules);
+            $rules['credentials.'.$key] = implode('|', $fieldRules);
+        }
+
+        if ($this->selectedProvider === 'cream_theme') {
+            $rules['credentials.environment'] = 'required|in:test,live';
+        }
+        if (in_array($this->selectedProvider, ['cream_theme', 'onepass'])) {
+            $rules['credentials.base_url'] = 'required|url:http,https|max:255';
         }
 
         return $rules;
@@ -243,7 +279,7 @@ class ApiIntegrationsComponent extends Component
         $attributes = [];
 
         foreach ($this->providerFields($this->selectedProvider) as $field) {
-            $attributes['credentials.' . $field['key']] = strtolower($field['label'] ?? $field['key']);
+            $attributes['credentials.'.$field['key']] = strtolower($field['label'] ?? $field['key']);
         }
 
         return $attributes;

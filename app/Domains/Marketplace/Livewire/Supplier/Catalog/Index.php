@@ -60,7 +60,7 @@ class Index extends Component
 
         return view('livewire.marketplace.supplier.catalog.index', [
             'products' => $products,
-            'isVerifiedSupplier' => $vendor?->isVerifiedSupplier() ?? false,
+            'isVerifiedSupplier' => app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->canSell($vendor),
         ]);
     }
 }

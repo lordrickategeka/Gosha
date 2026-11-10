@@ -1,7 +1,27 @@
 <?php
 
 return [
+    'ca_bundle' => env('INTEGRATIONS_CA_BUNDLE'),
     'providers' => [
+        'cream_theme' => [
+            'label' => 'Cream Theme',
+            'description' => 'Partner API for Flutterwave hosted checkout and transactional email. Environment must match the partner setting in Cream Theme.',
+            'fields' => [
+                ['key' => 'base_url', 'label' => 'API base URL (without /api)', 'type' => 'text', 'required' => true],
+                ['key' => 'api_key', 'label' => 'Partner API key', 'type' => 'password', 'required' => true],
+                ['key' => 'api_secret', 'label' => 'Partner API secret', 'type' => 'password', 'required' => true],
+                ['key' => 'environment', 'label' => 'Payment environment (test or live)', 'type' => 'text', 'required' => true],
+            ],
+        ],
+        'onepass' => [
+            'label' => 'OnePass verification',
+            'description' => 'Email verification through the OTP service. SMS can be enabled after provider setup.',
+            'fields' => [
+                ['key' => 'base_url', 'label' => 'OnePass base URL', 'type' => 'text', 'required' => true],
+                ['key' => 'api_key', 'label' => 'GarageHQ partner key', 'type' => 'password', 'required' => true],
+                ['key' => 'sms_enabled', 'label' => 'Enable phone verification (true only after SMS is configured)', 'type' => 'text', 'required' => false],
+            ],
+        ],
         'whatsapp' => [
             'label' => 'WhatsApp',
             'description' => 'WhatsApp Business API integration for messaging and alerts.',

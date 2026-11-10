@@ -13,6 +13,7 @@ class MarketplaceTransaction extends Model
     public array $participantColumns = ['buyer_vendor_id', 'supplier_vendor_id'];
 
     protected $fillable = [
+        'platform_invoice_id',
         'purchase_order_id', 'buyer_vendor_id', 'supplier_vendor_id', 'gross_amount',
         'commission_rate', 'commission_amount', 'currency', 'status',
     ];

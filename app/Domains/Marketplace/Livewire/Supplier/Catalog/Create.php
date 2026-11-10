@@ -39,6 +39,7 @@ class Create extends Component
     public function mount(): void
     {
         $vendor = $this->vendor();
+        app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->assertSelling($vendor);
 
         abort_unless($vendor?->isVerifiedSupplier(), 403, 'Your supplier account must be verified before you can add catalog products.');
         abort_unless(config('marketplace.allow_supplier_catalog_submissions', true), 403, 'Supplier catalog submissions are currently disabled.');
@@ -62,6 +63,7 @@ class Create extends Component
 
         $vendor = $this->vendor();
         abort_unless($vendor?->isVerifiedSupplier(), 403, 'Your supplier account must be verified before you can add catalog products.');
+        app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->assertSelling($vendor);
         abort_unless(config('marketplace.allow_supplier_catalog_submissions', true), 403, 'Supplier catalog submissions are currently disabled.');
 
         $this->validate();
@@ -70,13 +72,14 @@ class Create extends Component
             $exists = CatalogProduct::where('brand', $this->brand)->where('part_number', $this->part_number)->exists();
             if ($exists) {
                 $this->addError('part_number', 'A catalog product with this brand and part number already exists.');
+
                 return;
             }
         }
 
-        $slug = Str::slug($this->brand . ' ' . $this->name . ' ' . $this->part_number);
+        $slug = Str::slug($this->brand.' '.$this->name.' '.$this->part_number);
         if (CatalogProduct::where('slug', $slug)->exists()) {
-            $slug .= '-' . Str::random(6);
+            $slug .= '-'.Str::random(6);
         }
 
         $product = CatalogProduct::create([

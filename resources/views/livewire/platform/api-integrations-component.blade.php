@@ -47,8 +47,19 @@
                 @include('livewire.platform.integrations.forms.email')
             @elseif ($selectedProvider === 'flutterwave')
                 @include('livewire.platform.integrations.forms.flutterwave')
+            @else
+                <div class="gh-grid-2">
+                    @foreach($providers[$selectedProvider]['fields'] ?? [] as $field)
+                        <div class="gh-field">
+                            <label for="integration-{{ $field['key'] }}" class="gh-label">{{ $field['label'] }}</label>
+                            <input id="integration-{{ $field['key'] }}" type="{{ $field['type'] }}" wire:model="credentials.{{ $field['key'] }}" class="gh-input" style="width:100%;" autocomplete="off" />
+                            @error('credentials.'.$field['key'])<span class="gh-hint" role="alert" style="color:var(--gh-error);">{{ $message }}</span>@enderror
+                        </div>
+                    @endforeach
+                </div>
             @endif
 
+            @if(!in_array($selectedProvider, ['cream_theme', 'onepass']))
             <div style="border-top:1px solid var(--gh-hairline); margin:20px 0;"></div>
 
             <div class="gh-grid-2">
@@ -63,6 +74,9 @@
                     @error('webhookSecret') <span class="gh-hint" style="color:var(--gh-error);">{{ $message }}</span> @enderror
                 </div>
             </div>
+            @else
+                <p class="gh-hint" style="margin-top:16px;">{{ $selectedProvider === 'cream_theme' ? 'Cream Theme receives Flutterwave webhooks. GarageHQ confirms checkout results through its partner API and reconciles pending payments automatically.' : 'The connection test checks service health and partner authentication without sending a code. Use signup verification to check delivery. Enable SMS only when its provider is ready.' }}</p>
+            @endif
 
             @if ($selectedProvider === 'whatsapp' && $selectedIntegration)
                 <p class="gh-eyebrow" style="margin:20px 0 10px;">Send test message</p>
@@ -139,6 +153,19 @@
             @endif
         </div>
     </div>
+
+    @if($selectedProvider === 'cream_theme')
+        <section class="gh-card gh-card--pad">
+            <h2 class="gh-card__title">Subscription email delivery</h2>
+            <p class="gh-muted">Welcome messages, trial reminders and receipts are sent by the billing scheduler. The test/live payment setting must match the partner environment in Cream Theme.</p>
+            <div class="gh-table-scroll"><table class="gh-table">
+                <thead><tr><th>Event</th><th>Status</th><th>Attempts</th><th>Details</th><th></th></tr></thead>
+                <tbody>@forelse($deliveryNotices as $notice)
+                    <tr><td>{{ $notice->subject }}</td><td>{{ $notice->sent_at ? 'Sent' : ($notice->last_error ? 'Failed / retry pending' : 'Queued') }}</td><td>{{ $notice->attempts }}</td><td>{{ $notice->last_error }}</td><td>@if(!$notice->sent_at)<button type="button" wire:click="retrySubscriptionEmail({{ $notice->id }})" class="gh-btn">Retry</button>@endif</td></tr>
+                @empty<tr><td colspan="5">No subscription emails queued yet.</td></tr>@endforelse</tbody>
+            </table></div>
+        </section>
+    @endif
 
     <div class="gh-card gh-card--pad">
         <div class="gh-card__title" style="margin-bottom:14px;">Recent Logs</div>

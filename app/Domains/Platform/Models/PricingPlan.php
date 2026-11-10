@@ -3,14 +3,18 @@
 namespace App\Domains\Platform\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PricingPlan extends Model
 {
+    protected $attributes = ['audience' => 'garage'];
+
     use SoftDeletes;
 
     protected $fillable = [
+        'audience', 'max_active_listings',
+        'is_trial',
         'name',
         'slug',
         'description',
@@ -50,6 +54,7 @@ class PricingPlan extends Model
     ];
 
     protected $casts = [
+        'is_trial' => 'boolean',
         'is_active' => 'boolean',
         'is_default' => 'boolean',
         'is_featured' => 'boolean',
@@ -72,20 +77,32 @@ class PricingPlan extends Model
 
     // Billing model constants
     const MODEL_FREE = 'free';
+
     const MODEL_ONE_TIME = 'one_time';
+
     const MODEL_SUBSCRIPTION = 'subscription';
+
     const MODEL_COMMISSION = 'commission';
+
     const MODEL_HYBRID = 'hybrid';
+
     const MODEL_PAY_PER_USE = 'pay_per_use';
+
     const MODEL_CUSTOM = 'custom';
 
     // Billing cycles
     const CYCLE_DAILY = 'daily';
+
     const CYCLE_WEEKLY = 'weekly';
+
     const CYCLE_MONTHLY = 'monthly';
+
     const CYCLE_QUARTERLY = 'quarterly';
+
     const CYCLE_SEMI_ANNUAL = 'semi_annual';
+
     const CYCLE_YEARLY = 'yearly';
+
     const CYCLE_CUSTOM = 'custom';
 
     public function subscriptions(): HasMany
@@ -124,7 +141,7 @@ class PricingPlan extends Model
 
     public function getBillingCycleLabel(): string
     {
-        return match($this->billing_cycle) {
+        return match ($this->billing_cycle) {
             self::CYCLE_DAILY => 'day',
             self::CYCLE_WEEKLY => 'week',
             self::CYCLE_MONTHLY => 'month',
@@ -138,7 +155,7 @@ class PricingPlan extends Model
 
     public function getBillingCycleDays(): int
     {
-        return match($this->billing_cycle) {
+        return match ($this->billing_cycle) {
             self::CYCLE_DAILY => 1,
             self::CYCLE_WEEKLY => 7,
             self::CYCLE_MONTHLY => 30,
@@ -173,16 +190,21 @@ class PricingPlan extends Model
 
     public function hasFeature(string $featureCode): bool
     {
-        if (!$this->features) return false;
+        if (! $this->features) {
+            return false;
+        }
+
         return in_array($featureCode, $this->features);
     }
 
     public function isLimitReached(Vendor $vendor, string $limitType): bool
     {
         $limit = $this->{"max_{$limitType}"};
-        if ($limit === null) return false; // Unlimited
+        if ($limit === null) {
+            return false;
+        } // Unlimited
 
-        $current = match($limitType) {
+        $current = match ($limitType) {
             'branches' => $vendor->branches()->count(),
             'users' => $vendor->users()->count(),
             'customers' => $vendor->customers()->count(),
@@ -195,7 +217,7 @@ class PricingPlan extends Model
 
     public function getMonthlyLimitUsage(Vendor $vendor, string $metric): array
     {
-        $limit = match($metric) {
+        $limit = match ($metric) {
             'work_orders' => $this->max_work_orders_per_month,
             'wash_orders' => $this->max_wash_orders_per_month,
             'sms' => $this->max_sms_per_month,

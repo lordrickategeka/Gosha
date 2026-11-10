@@ -15,6 +15,8 @@ class PurchaseOrderService
     /** Build a PO from an awarded RFQ quote. */
     public function createFromQuote(Quote $quote): PurchaseOrder
     {
+        app(SupplierPlanAccess::class)->assertSelling(\App\Domains\Platform\Models\Vendor::find($quote->supplier_vendor_id));
+
         return DB::transaction(function () use ($quote) {
             $rfq = $quote->rfq;
 
@@ -49,6 +51,9 @@ class PurchaseOrderService
     /** Build a PO from a direct listing purchase. */
     public function createFromListing(MarketplaceListing $listing, int $qty, int $buyerVendorId, ?int $branchId = null): PurchaseOrder
     {
+        app(SupplierPlanAccess::class)->assertSelling($listing->supplier);
+        abort_unless(MarketplaceListing::browsable()->whereKey($listing->id)->exists(), 422, 'This listing is unavailable.');
+
         return DB::transaction(function () use ($listing, $qty, $buyerVendorId, $branchId) {
             $po = PurchaseOrder::create([
                 'po_number' => $this->nextPoNumber(),
@@ -108,6 +113,6 @@ class PurchaseOrderService
 
     public function nextPoNumber(): string
     {
-        return 'PO-' . now()->format('Y') . '-' . Str::padLeft((string) (PurchaseOrder::max('id') + 1), 6, '0');
+        return 'PO-'.now()->format('Y').'-'.Str::padLeft((string) (PurchaseOrder::max('id') + 1), 6, '0');
     }
 }

@@ -14,6 +14,7 @@ class EnforceSubscriptionAccess
      */
     private const ALWAYS_ALLOWED_ROUTES = [
         'billing.locked',
+        'billing.subscription',
         'billing.pay',
         'billing.pay.callback',
         'logout',
@@ -25,9 +26,13 @@ class EnforceSubscriptionAccess
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->routeIs('user-guide.*', 'api-docs.*')) {
+            return $next($request); // Public documentation contains no account data.
+        }
         $user = $request->user();
+        abort_if($user && ! $user->is_active, 403, 'Your account has been deactivated.');
 
-        if (!$user || $user->is_platform_user) {
+        if (! $user || $user->is_platform_user) {
             return $next($request);
         }
 
@@ -38,9 +43,26 @@ class EnforceSubscriptionAccess
         }
 
         $vendor = $user->vendor;
+        if ($vendor?->vendor_type === 'supplier' && ($request->route()?->getName() === 'dashboard' || str_starts_with($request->route()?->getName() ?? '', 'supplier.'))) {
+            // Supplier writes have plan guards; dashboard, catalog and existing orders remain available.
+            return $next($request);
+        }
+        $managed = app(\App\Domains\Platform\Services\SelfServiceSubscriptionService::class);
+        $current = $managed->current($vendor);
+        if ($current?->self_service && $managed->restricted($current)) {
+            $allowed = array_merge(self::ALWAYS_ALLOWED_ROUTES, ['billing.support', 'billing.export']);
+            if (in_array($request->route()?->getName(), $allowed, true)) {
+                return $next($request);
+            }
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Your trial or subscription has ended. Open Billing to continue.', 'billing_url' => route('billing.subscription')], 403);
+            }
+
+            return redirect()->route('billing.subscription')->with('error', 'Your trial or subscription has ended. Choose a paid plan to continue.');
+        }
         $subscription = $vendor?->activeSubscription;
 
-        if (!$subscription) {
+        if (! $subscription) {
             return $next($request);
         }
 
@@ -49,7 +71,7 @@ class EnforceSubscriptionAccess
             view()->share('subscriptionGraceBanner', $subscription);
         }
 
-        if (!$subscription->isLocked()) {
+        if (! $subscription->isLocked()) {
             return $next($request);
         }
 

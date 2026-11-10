@@ -4,9 +4,6 @@ namespace App\Domains\Platform\Services;
 
 use App\Domains\Platform\Models\ApiIntegration;
 use App\Domains\Platform\Services\Contracts\IntegrationConnectorInterface;
-use App\Domains\Platform\Services\EmailConnector;
-use App\Domains\Platform\Services\FlutterwaveConnector;
-use App\Domains\Platform\Services\WhatsAppConnector;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -43,7 +40,7 @@ class ApiIntegrationService
 
     public function toggleStatus(ApiIntegration $integration): ApiIntegration
     {
-        $integration->update(['is_active' => !$integration->is_active]);
+        $integration->update(['is_active' => ! $integration->is_active]);
 
         $integration->logs()->create([
             'action' => 'toggle',
@@ -85,7 +82,7 @@ class ApiIntegrationService
 
         $connector = $this->makeConnector($integration->provider);
 
-        if (!method_exists($connector, 'sendTestMessage')) {
+        if (! method_exists($connector, 'sendTestMessage')) {
             return [
                 'success' => false,
                 'message' => 'This provider does not support sending test messages.',
@@ -125,14 +122,14 @@ class ApiIntegrationService
 
         $connector = $this->makeConnector($integration->provider);
 
-        if (!method_exists($connector, 'initiateTestPayment')) {
+        if (! method_exists($connector, 'initiateTestPayment')) {
             return [
                 'success' => false,
                 'message' => 'This provider does not support test payment initiation.',
             ];
         }
 
-        $txRef = 'ghq_test_' . now()->format('YmdHis') . '_' . Str::lower(Str::random(8));
+        $txRef = 'ghq_test_'.now()->format('YmdHis').'_'.Str::lower(Str::random(8));
 
         /** @var FlutterwaveConnector $connector */
         $result = $connector->initiateTestPayment(
@@ -165,10 +162,12 @@ class ApiIntegrationService
     private function makeConnector(string $provider): IntegrationConnectorInterface
     {
         return match ($provider) {
-            'whatsapp' => new WhatsAppConnector(),
-            'email' => new EmailConnector(),
-            'flutterwave' => new FlutterwaveConnector(),
-            default => throw new InvalidArgumentException('Unsupported provider: ' . $provider),
+            'cream_theme' => new CreamThemeConnector,
+            'onepass' => new OnePassConnector,
+            'whatsapp' => new WhatsAppConnector,
+            'email' => new EmailConnector,
+            'flutterwave' => new FlutterwaveConnector,
+            default => throw new InvalidArgumentException('Unsupported provider: '.$provider),
         };
     }
 }

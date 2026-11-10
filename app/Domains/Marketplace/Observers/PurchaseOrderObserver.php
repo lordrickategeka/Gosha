@@ -17,12 +17,23 @@ class PurchaseOrderObserver
 {
     public function updated(PurchaseOrder $po): void
     {
+        // Delivery and payment may arrive in either order. Both finish the sale.
+        if ($po->status === PurchaseOrderStatus::Received && $po->payment_status === \App\Domains\Marketplace\Enums\PaymentStatus::Paid) {
+            $po->updateQuietly(['status' => PurchaseOrderStatus::Completed]);
+            app(MarketplaceCommissionService::class)->complete($po);
+
+            return;
+        }
         if (! $po->wasChanged('status')) {
             return;
         }
 
         if ($po->status === PurchaseOrderStatus::Accepted) {
             app(MarketplaceCommissionService::class)->meter($po);
+        } elseif ($po->status === PurchaseOrderStatus::Completed) {
+            app(MarketplaceCommissionService::class)->complete($po);
+        } elseif ($po->status === PurchaseOrderStatus::Cancelled) {
+            app(MarketplaceCommissionService::class)->cancel($po);
         }
     }
 }

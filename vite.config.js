@@ -8,6 +8,8 @@ export default defineConfig({
                 "resources/css/app.css",
                 "resources/css/garagehq.css",
                 "resources/js/app.js",
+                "resources/css/documentation.css",
+                "resources/js/api-docs.js",
             ],
 
             refresh: true,

@@ -24,6 +24,24 @@ use Illuminate\Support\Str;
 
 class Vendor extends Model
 {
+    public function scopeSellingAccess($query)
+    {
+        return $query->whereIn('status', ['active', 'trial'])->where('is_verified_supplier', true)
+            ->where(fn ($query) => $query->where('vendor_type', 'hybrid')->orWhere('status', 'active'))
+            ->whereIn('vendor_type', ['supplier', 'hybrid'])
+            ->where(function ($query) {
+                $query->where('vendor_type', 'hybrid')->orWhereHas('subscriptions', function ($subscription) {
+                    $subscription->where('self_service', true)
+                        ->where('vendor_subscriptions.id', function ($latest) {
+                            $latest->selectRaw('MAX(current_sub.id)')->from('vendor_subscriptions as current_sub')->whereColumn('current_sub.vendor_id', 'vendors.id');
+                        })->where(function ($valid) {
+                            $valid->where(fn ($trial) => $trial->where('status', 'trial')->where('trial_ends_at', '>', now()))
+                                ->orWhere(fn ($paid) => $paid->where('status', 'active')->where('current_period_end', '>', now()));
+                        });
+                });
+            });
+    }
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -184,6 +202,7 @@ class Vendor extends Model
     public function getSetting(string $key, $default = null)
     {
         $setting = $this->settings()->where('key', $key)->first();
+
         return $setting ? $setting->value : $default;
     }
 

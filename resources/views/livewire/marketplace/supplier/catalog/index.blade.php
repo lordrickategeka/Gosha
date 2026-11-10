@@ -11,7 +11,7 @@
 
     @unless($isVerifiedSupplier)
         <div class="gh-badge gh-badge--warning" style="display:block; padding:10px 12px; font-size:12px;">
-            Your supplier account is pending verification — you can browse the catalog, but proposing new products is unlocked once a platform admin verifies your account.
+            Browse the catalog while your approval or plan is pending. An approved business and active supplier plan are required to propose products. <a href="{{ route('billing.subscription') }}" class="link">View plans and billing</a>.
         </div>
     @endunless
 

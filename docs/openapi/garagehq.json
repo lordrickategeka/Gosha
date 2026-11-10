@@ -1,0 +1,621 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GarageHQ application API",
+    "version": "1.0.0",
+    "description": "Implemented application endpoints. These are separate from the Livewire web workflows. No general REST endpoints for garage/supplier registration, marketplace selling, plan selection or subscription checkout are exposed by this reference. Send Accept: application/json. Obtain a Sanctum token through an authorised administrator/workflow; this API does not expose a token-issuing endpoint. First-party browser sessions also depend on Sanctum stateful configuration and CSRF protection for writes.\n\nBefore connecting, configure trusted HTTPS certificates in both web PHP and CLI workers. cURL error 60 can indicate missing/outdated CA trust or a server certificate-chain problem; Apache and CLI may load different php.ini files. Keep TLS verification enabled. See /user-guide#api-reference-for-integration-partners."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current GarageHQ instance"
+    },
+    {
+      "url": "https://garagehq.loganate.cc",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "sanctumBearer": []
+    }
+  ],
+  "paths": {
+    "/api/user": {
+      "get": {
+        "summary": "Read the authenticated user",
+        "operationId": "getCurrentUser",
+        "tags": [
+          "Account"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "User record; hidden credentials are excluded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/job-cards/search-customers": {
+      "get": {
+        "summary": "Search legacy intake customers",
+        "operationId": "searchIntakeCustomers",
+        "tags": [
+          "Legacy intake"
+        ],
+        "description": "Legacy intake field names may differ from current customer/vehicle screens. Validate schema compatibility in development.",
+        "responses": {
+          "200": {
+            "description": "Matching records, or an empty list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerSearchResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive account or subscription access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Legacy schema/query failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Search text. Fewer than two bytes returns an empty list. Results are limited to ten.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/job-cards/search-vehicles": {
+      "get": {
+        "summary": "Search legacy intake vehicles",
+        "operationId": "searchIntakeVehicles",
+        "tags": [
+          "Legacy intake"
+        ],
+        "description": "Legacy intake field names may differ from current customer/vehicle screens. Validate schema compatibility in development.",
+        "responses": {
+          "200": {
+            "description": "Matching records, or an empty list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VehicleSearchResult"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive account or subscription access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Legacy schema/query failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Search text. Fewer than two bytes returns an empty list. Results are limited to ten.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": false,
+            "description": "Legacy query broadens results using OR customer_id; it is not a strict ownership filter.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/job-cards": {
+      "post": {
+        "summary": "Create a legacy intake job card",
+        "operationId": "createLegacyJobCard",
+        "tags": [
+          "Legacy intake"
+        ],
+        "description": "Legacy interface, not the current work-order wizard. The legacy service's customer_name, number_plate and related fields require schema compatibility. Existing-record IDs must be appropriate for the caller's business. Use the operational web screens for normal repair intake.",
+        "responses": {
+          "201": {
+            "description": "Job card created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Inactive account or subscription access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Creation failed; current database may not support the legacy fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyIntakeRequest"
+              },
+              "example": {
+                "staff_id": 1,
+                "phone": "+256700000000",
+                "customer_name": "Example customer",
+                "vehicle_type_id": 1,
+                "vehicle_name": "Example vehicle",
+                "number_plate": "TEST001"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks/flutterwave": {
+      "post": {
+        "summary": "Receive a legacy direct Flutterwave event",
+        "operationId": "receiveLegacyFlutterwaveWebhook",
+        "tags": [
+          "Legacy payment webhook"
+        ],
+        "description": "Provider-only receiver for the direct Flutterwave integration. New self-service payments use Cream Theme's own webhook receiver and partner verification API instead. The receiver verifies successful charge.completed transactions server-to-server before recording payment.",
+        "responses": {
+          "200": {
+            "description": "OK, or Webhook not configured when the legacy integration is disabled.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "OK",
+                    "Webhook not configured"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or incorrect verif-hash.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Invalid signature"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "legacyWebhookHash": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "event": {
+                    "type": "string",
+                    "example": "charge.completed"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "tx_ref": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "example": "successful"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sanctumBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "GarageHQ Sanctum personal access token, not a OnePass JWT or Cream Theme key."
+      },
+      "legacyWebhookHash": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "verif-hash",
+        "description": "Configured direct Flutterwave webhook secret; never a client login token."
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "vendor_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "billing_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "CustomerSearchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "label": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "company_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "contact_person": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "VehicleSearchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "label": {
+            "type": "string"
+          },
+          "vehicle_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "number_plate": {
+            "type": "string",
+            "nullable": true
+          },
+          "chasis_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicle_type_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "customer_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "customer_name": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "LegacyIntakeRequest": {
+        "type": "object",
+        "properties": {
+          "staff_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "service_type_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "service_types": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "customer_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "company_name": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "contact_person": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicle_type_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "vehicle_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "number_plate": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "chasis_number": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true,
+            "description": "Legacy spelling required by this controller."
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "image_attachment": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "collected"
+            ],
+            "default": "pending"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "intake_datetime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "staff_id",
+          "phone",
+          "customer_name",
+          "vehicle_type_id",
+          "vehicle_name",
+          "number_plate"
+        ]
+      }
+    }
+  }
+}

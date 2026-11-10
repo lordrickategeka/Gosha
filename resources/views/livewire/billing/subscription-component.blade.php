@@ -1,5 +1,14 @@
 <div class="max-w-4xl mx-auto p-6 space-y-6">
+    <x-garage-setup />
     <h1 class="text-2xl font-bold">My Subscription</h1>
+    @if($awaitingApproval)
+        <div class="alert alert-info">Your supplier business is awaiting approval. Your trial clock and paid billing have not started.</div>
+    @elseif($restricted)
+        <div class="alert alert-warning" role="alert"><span>Your trial or subscription has ended, or payment is still required. Your garage data is safe. Choose a paid plan and complete payment to restore access.</span></div>
+    @endif
+    @error('plan')<div class="alert alert-error" role="alert">{{ $message }}</div>@enderror
+    @if(!$isBillingOwner)<p class="text-sm text-base-content/60">Ask your business administrator to choose a plan or complete payment.</p>@endif
+    @if($isSupplier)<p class="text-sm"><a href="{{ route('supplier.dashboard') }}" class="link link-primary">Supplier dashboard</a> · Existing orders remain accessible after expiry.</p>@endif
 
     @if($subscription)
         <div class="card bg-base-100 shadow">
@@ -7,7 +16,7 @@
                 <div class="flex items-start justify-between flex-wrap gap-2">
                     <div>
                         <h2 class="card-title">{{ $subscription->plan->name }}</h2>
-                        <p class="text-base-content/60">{{ $subscription->plan->getFormattedPriceAttribute() }}</p>
+                        <p class="text-base-content/60">{{ $subscription->plan->is_trial ? 'UGX 0 for 14 days · No card required' : $subscription->plan->getFormattedPriceAttribute() }}</p>
                     </div>
                     <span class="badge {{ match($subscription->status) {
                         'active' => 'badge-success',
@@ -34,12 +43,16 @@
                     <p class="text-sm mt-2">Current period ends {{ $subscription->current_period_end->format('d M Y') }}.</p>
                 @endif
 
+                @if(!$subscription->self_service)
                 <div class="form-control mt-4">
                     <label class="label cursor-pointer justify-start gap-3 w-fit">
                         <input type="checkbox" class="toggle toggle-primary" wire:click="toggleAutoRenew" @checked($subscription->auto_renew) />
                         <span class="label-text">Auto-renew subscription</span>
                     </label>
                 </div>
+                @else
+                    <p class="text-sm mt-3 text-base-content/60">No automatic charge. Renew manually using secure Flutterwave checkout.</p>
+                @endif
 
                 <div class="mt-4">
                     <button wire:click="togglePlans" class="btn btn-ghost btn-sm">
@@ -47,18 +60,19 @@
                     </button>
                 </div>
 
-                @if($showPlans)
+                @if($showPlans || $restricted)
                     <div class="grid gap-3 sm:grid-cols-2 mt-3">
                         @foreach($plans as $plan)
                             <div class="card border-2 {{ $subscription->pricing_plan_id === $plan->id ? 'border-primary' : 'border-base-300' }}">
                                 <div class="card-body p-4">
                                     <h3 class="font-semibold">{{ $plan->name }}</h3>
-                                    <p class="font-bold">{{ $plan->getFormattedPriceAttribute() }}</p>
-                                    @if($subscription->pricing_plan_id === $plan->id)
+                                    @include('livewire.auth.partials.plan-costs', ['plan' => $plan])
+                                    @if($subscription->pricing_plan_id === $plan->id && !$restricted)
                                         <span class="badge badge-primary badge-sm w-fit">Current plan</span>
-                                    @else
+                                    @endif
+                                    @if($isBillingOwner && !$awaitingApproval)
                                         <button wire:click="changePlan({{ $plan->id }})" wire:loading.attr="disabled" class="btn btn-sm btn-outline btn-primary mt-1">
-                                            Switch
+                                            {{ $subscription->pricing_plan_id === $plan->id ? 'Renew this plan' : 'Choose this plan' }}
                                         </button>
                                     @endif
                                 </div>
@@ -76,7 +90,8 @@
                     <div class="card-body p-4">
                         <h3 class="font-semibold">{{ $plan->name }}</h3>
                         <p class="font-bold">{{ $plan->getFormattedPriceAttribute() }}</p>
-                        <button wire:click="changePlan({{ $plan->id }})" wire:loading.attr="disabled" class="btn btn-sm btn-primary mt-1">Choose</button>
+                        @include('livewire.auth.partials.plan-costs', ['plan' => $plan])
+                        @if($isBillingOwner)<button wire:click="changePlan({{ $plan->id }})" wire:loading.attr="disabled" class="btn btn-sm btn-primary mt-1">Choose</button>@endif
                     </div>
                 </div>
             @endforeach
@@ -117,7 +132,7 @@
                                         } }}">{{ ucfirst(str_replace('_', ' ', $invoice->status)) }}</span>
                                     </td>
                                     <td>
-                                        @if(!$invoice->isPaid())
+                                        @if(in_array($invoice->status, ['pending', 'partially_paid', 'overdue']) && $isBillingOwner && !$awaitingApproval)
                                             <form method="POST" action="{{ route('billing.pay', $invoice) }}">
                                                 @csrf
                                                 <button type="submit" class="btn btn-xs btn-primary">Pay Now</button>

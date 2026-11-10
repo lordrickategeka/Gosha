@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -22,16 +22,13 @@ return new class extends Migration
 
             // A failed or manually-run migration may already have added this FK even
             // though Laravel has not recorded the migration as complete.
-            $existingForeignKey = DB::table('information_schema.KEY_COLUMN_USAGE')
-                ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-                ->where('TABLE_NAME', $table)
-                ->where('COLUMN_NAME', 'currency_id')
-                ->where('REFERENCED_TABLE_NAME', 'currencies')
-                ->exists();
+            $existingForeignKey = collect(Schema::getForeignKeys($table))
+                ->contains(fn ($foreign) => $foreign['columns'] === ['currency_id'] && $foreign['foreign_table'] === 'currencies');
 
             if (! $existingForeignKey) {
-                DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$constraint}`
-                    FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`id`) ON DELETE SET NULL");
+                Schema::table($table, function (Blueprint $blueprint) use ($constraint) {
+                    $blueprint->foreign('currency_id', $constraint)->references('id')->on('currencies')->nullOnDelete();
+                });
             }
         }
     }
@@ -46,15 +43,11 @@ return new class extends Migration
                 continue;
             }
 
-            $exists = DB::table('information_schema.TABLE_CONSTRAINTS')
-                ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-                ->where('TABLE_NAME', $table)
-                ->where('CONSTRAINT_NAME', $constraint)
-                ->where('CONSTRAINT_TYPE', 'FOREIGN KEY')
-                ->exists();
+            $exists = collect(Schema::getForeignKeys($table))
+                ->contains(fn ($foreign) => $foreign['columns'] === ['currency_id'] && $foreign['foreign_table'] === 'currencies');
 
             if ($exists) {
-                DB::statement("ALTER TABLE `{$table}` DROP FOREIGN KEY `{$constraint}`");
+                Schema::table($table, fn (Blueprint $blueprint) => $blueprint->dropForeign(['currency_id']));
             }
         }
     }

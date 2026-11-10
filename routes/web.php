@@ -1,16 +1,14 @@
 <?php
 
+use App\Domains\Operations\Livewire\WorkOrders\WorkOrdersComponent;
 use App\Domains\Organization\Livewire\Dashboard\DashboardComponent;
 use App\Domains\Organization\Livewire\Dashboard\Index as Dashboard;
-use App\Domains\Operations\Livewire\WorkOrders\WorkOrdersComponent;
-use Illuminate\Support\Facades\Route;
-
-use App\Domains\ServiceConfig\Livewire\Templates\TemplateList;
-use App\Domains\ServiceConfig\Livewire\Templates\CreateTemplate;
-use App\Domains\ServiceConfig\Livewire\Templates\EditTemplate;
-
 use App\Domains\ServiceConfig\Livewire\QualityCheck\QualityCheckFormComponent;
 use App\Domains\ServiceConfig\Livewire\QualityCheck\QualityCheckViewComponent;
+use App\Domains\ServiceConfig\Livewire\Templates\CreateTemplate;
+use App\Domains\ServiceConfig\Livewire\Templates\EditTemplate;
+use App\Domains\ServiceConfig\Livewire\Templates\TemplateList;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,13 +21,18 @@ Route::get('/', function () {
 });
 
 // Auth routes (Laravel Breeze or custom)
+Route::get('/user-guide', [\App\Http\Controllers\DocumentationController::class, 'guide'])->name('user-guide.index');
+Route::get('/user-guide/download', [\App\Http\Controllers\DocumentationController::class, 'download'])->name('user-guide.download');
+Route::get('/api-docs', [\App\Http\Controllers\DocumentationController::class, 'api'])->name('api-docs.index');
+Route::get('/api-docs/spec/{service}', [\App\Http\Controllers\DocumentationController::class, 'spec'])->whereIn('service', ['garagehq', 'cream-theme', 'onepass'])->name('api-docs.spec');
+
 Route::middleware('guest')->group(function () {
     Route::get('login', \App\Domains\HR\Livewire\Auth\Login::class)->name('login');
     Route::get('register', \App\Domains\HR\Livewire\Auth\VendorRegistration::class)->name('register');
 });
 
-    // Include expense module routes
-require __DIR__.'/expenses.php'; 
+// Include expense module routes
+require __DIR__.'/expenses.php';
 
 Route::middleware(['auth'])->group(function () {
     // Logout
@@ -37,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
         auth()->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect('/');
     })->name('logout');
 
@@ -44,17 +48,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/password/change', \App\Domains\HR\Livewire\Auth\ForcePasswordChange::class)->name('password.change');
 
     // Dashboard
-    Route::get('/dashboard', DashboardComponent::class)->name('dashboard');
+    Route::get('/dashboard', DashboardComponent::class)->name('dashboard')
+        ->middleware(\App\Http\Middleware\RedirectSupplierDashboard::class);
 
     // Modules launcher
     Route::get('/modules', \App\Domains\Organization\Livewire\Navigation\ModulesLauncherComponent::class)->name('modules.index');
 
     // Branch switching
     Route::get('/branch/{branch}/switch', function (\App\Domains\Organization\Models\Branch $branch) {
-        if (!auth()->user()->canAccessBranch($branch)) {
+        if (! auth()->user()->canAccessBranch($branch)) {
             abort(403);
         }
         session(['current_branch_id' => $branch->id, 'current_branch_name' => $branch->name]);
+
         return back();
     })->name('branch.switch');
 
@@ -139,7 +145,7 @@ Route::middleware(['auth'])->group(function () {
     //         ->middleware('can:create_expenses');
     // });
 
-// // Commissions
+    // // Commissions
     Route::prefix('commissions')->name('commissions.')->group(function () {
         Route::get('/', \App\Domains\Commissions\Livewire\Commissions\CommissionsComponent::class)->name('index');
         Route::get('/my', \App\Domains\Commissions\Livewire\Commissions\MyCommissionsComponent::class)->name('my')
@@ -312,4 +318,3 @@ Route::get('/dn/{token}', [\App\Http\Controllers\PublicDebitNoteController::clas
     ->name('debit-notes.public');
 Route::post('/dn/{token}/submit', [\App\Http\Controllers\PublicDebitNoteController::class, 'submit'])
     ->name('debit-notes.public.submit');
-

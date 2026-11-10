@@ -47,6 +47,7 @@ class Compose extends Component
 
         $vendorId = $this->vendorId();
         abort_if($vendorId === null, 403);
+        app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->assertSelling(\App\Domains\Platform\Models\Vendor::find($vendorId));
 
         $this->rfq = $rfq->load(['items.product', 'buyer']);
 
@@ -127,6 +128,7 @@ class Compose extends Component
         abort_if($vendorId === null, 403);
 
         $rfq = Rfq::findOrFail($this->rfq->id);
+        app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->assertSelling(\App\Domains\Platform\Models\Vendor::find($vendorId));
         abort_unless($rfq->status === RfqStatus::Published, 422, 'This RFQ is no longer accepting quotes.');
 
         $quote = Quote::asSupplier($vendorId)->where('rfq_id', $rfq->id)->first();
@@ -134,7 +136,7 @@ class Compose extends Component
 
         if (! $quote) {
             $quote = Quote::create([
-                'reference' => 'QT-' . now()->format('Y') . '-' . Str::padLeft((string) (Quote::max('id') + 1), 6, '0'),
+                'reference' => 'QT-'.now()->format('Y').'-'.Str::padLeft((string) (Quote::max('id') + 1), 6, '0'),
                 'rfq_id' => $rfq->id,
                 'supplier_vendor_id' => $vendorId,
                 'currency' => config('marketplace.default_currency'),

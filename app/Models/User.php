@@ -2,28 +2,27 @@
 
 namespace App\Models;
 
+use App\Domains\Commissions\Models\Commission;
+use App\Domains\Expenses\Models\Expense;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Operations\Models\WashOrder;
+use App\Domains\Operations\Models\WorkOrder;
+use App\Domains\Organization\Models\Branch;
+use App\Domains\Platform\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use App\Domains\Platform\Models\Vendor;
-use App\Domains\Organization\Models\Branch;
-use App\Domains\Operations\Models\WorkOrder;
-use App\Domains\Operations\Models\WashOrder;
-use App\Domains\Finance\Models\Payment;
-use App\Domains\Expenses\Models\Expense;
-use App\Domains\Commissions\Models\Commission;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, TwoFactorAuthenticatable, HasProfilePhoto, HasApiTokens;
+    use HasApiTokens, HasFactory, HasProfilePhoto, HasRoles, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'vendor_id',
@@ -45,6 +44,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'phone_verified_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_user' => 'boolean',

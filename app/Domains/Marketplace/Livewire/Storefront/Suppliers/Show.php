@@ -19,6 +19,7 @@ class Show extends Component
 
     public function mount(Vendor $vendor): void
     {
+        abort_unless(app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->canSell($vendor), 404);
         // Only verified suppliers have a public profile — anything else 404s, same trust
         // boundary as the storefront's browsable() listings.
         abort_unless(

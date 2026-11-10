@@ -15,6 +15,7 @@
                     <div>
                         <div style="font-weight:700; font-size:15px;">{{ $plan->name }}</div>
                         <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">
+                            <span class="gh-badge">{{ ucfirst($plan->audience) }}</span>
                             <span class="gh-badge">{{ ucfirst(str_replace('_', ' ', $plan->billing_model)) }}</span>
                             @if($plan->is_default)
                                 <span class="gh-badge gh-badge--primary">Default</span>
@@ -92,6 +93,10 @@
                 <div class="gh-card__title" style="margin-bottom:16px;">{{ $editingPlan ? 'Edit Plan' : 'Create Pricing Plan' }}</div>
 
                 <form wire:submit="save">
+                    <div class="gh-grid-2" style="margin-bottom:20px;">
+                        <div class="gh-field"><label class="gh-label" for="plan-audience">Plan audience</label><select id="plan-audience" wire:model="audience" class="gh-input"><option value="garage">Garage</option><option value="supplier">Supplier</option></select>@error('audience')<span class="text-error">{{ $message }}</span>@enderror</div>
+                        <div class="gh-field"><label class="gh-label" for="listing-limit">Maximum active supplier listings</label><input id="listing-limit" type="number" min="1" wire:model="max_active_listings" class="gh-input" placeholder="Unlimited" />@error('max_active_listings')<span class="text-error">{{ $message }}</span>@enderror</div>
+                    </div>
                     <div class="gh-grid-2" style="margin-bottom:20px;">
                         <div class="gh-field">
                             <span class="gh-label">Plan name *</span>

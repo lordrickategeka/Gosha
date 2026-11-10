@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command(ProcessBilling::class)->dailyAt('01:30');
+Schedule::command(\App\Console\Commands\ProcessSelfServiceBilling::class)->everyMinute()->withoutOverlapping();

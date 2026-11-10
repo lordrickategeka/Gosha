@@ -8,13 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VendorSubscription extends Model
 {
-    const STATUS_TRIAL    = 'trial';
-    const STATUS_ACTIVE   = 'active';
+    const STATUS_TRIAL = 'trial';
+
+    const STATUS_ACTIVE = 'active';
+
     const STATUS_PAST_DUE = 'past_due';
+
     const STATUS_CANCELLED = 'cancelled';
-    const STATUS_PAUSED   = 'paused';
+
+    const STATUS_PAUSED = 'paused';
 
     protected $fillable = [
+        'self_service',
         'vendor_id',
         'pricing_plan_id',
         'status',
@@ -41,22 +46,23 @@ class VendorSubscription extends Model
     ];
 
     protected $casts = [
-        'current_period_start'  => 'datetime',
-        'current_period_end'    => 'datetime',
-        'trial_ends_at'         => 'datetime',
-        'last_payment_at'       => 'datetime',
-        'next_billing_date'     => 'date',
-        'cancelled_at'          => 'datetime',
-        'cancel_at_period_end'  => 'datetime',
-        'custom_base_price'     => 'decimal:2',
+        'self_service' => 'boolean',
+        'current_period_start' => 'datetime',
+        'current_period_end' => 'datetime',
+        'trial_ends_at' => 'datetime',
+        'last_payment_at' => 'datetime',
+        'next_billing_date' => 'date',
+        'cancelled_at' => 'datetime',
+        'cancel_at_period_end' => 'datetime',
+        'custom_base_price' => 'decimal:2',
         'custom_commission_rate' => 'decimal:2',
-        'discount_percent'      => 'decimal:2',
-        'balance'               => 'decimal:2',
-        'custom_limits'         => 'array',
-        'custom_features'       => 'array',
-        'auto_renew'            => 'boolean',
-        'grace_ends_at'         => 'datetime',
-        'locked_at'             => 'datetime',
+        'discount_percent' => 'decimal:2',
+        'balance' => 'decimal:2',
+        'custom_limits' => 'array',
+        'custom_features' => 'array',
+        'auto_renew' => 'boolean',
+        'grace_ends_at' => 'datetime',
+        'locked_at' => 'datetime',
     ];
 
     // ─── Relationships ─────────────────────────────────────────────────────────
@@ -112,7 +118,7 @@ class VendorSubscription extends Model
         return $this->isPastDue()
             && $this->grace_ends_at
             && $this->grace_ends_at->isFuture()
-            && !$this->locked_at;
+            && ! $this->locked_at;
     }
 
     public function isLocked(): bool
@@ -124,7 +130,7 @@ class VendorSubscription extends Model
 
     public function graceDaysRemaining(): int
     {
-        if (!$this->isInGracePeriod()) {
+        if (! $this->isInGracePeriod()) {
             return 0;
         }
 
@@ -139,6 +145,7 @@ class VendorSubscription extends Model
         if ($this->discount_percent > 0) {
             $base = $base * (1 - ($this->discount_percent / 100));
         }
+
         return (float) $base;
     }
 
@@ -153,14 +160,14 @@ class VendorSubscription extends Model
     {
         if ($immediately) {
             $this->update([
-                'status'              => self::STATUS_CANCELLED,
-                'cancelled_at'        => now(),
+                'status' => self::STATUS_CANCELLED,
+                'cancelled_at' => now(),
                 'cancellation_reason' => $reason,
             ]);
         } else {
             $this->update([
                 'cancel_at_period_end' => $this->current_period_end,
-                'cancellation_reason'  => $reason,
+                'cancellation_reason' => $reason,
             ]);
         }
     }
@@ -169,11 +176,11 @@ class VendorSubscription extends Model
     {
         $days = $this->plan->getBillingCycleDays();
         $this->update([
-            'status'               => self::STATUS_ACTIVE,
+            'status' => self::STATUS_ACTIVE,
             'current_period_start' => now(),
-            'current_period_end'   => now()->addDays($days),
-            'next_billing_date'    => now()->addDays($days),
-            'last_payment_at'      => now(),
+            'current_period_end' => now()->addDays($days),
+            'next_billing_date' => now()->addDays($days),
+            'last_payment_at' => now(),
         ]);
     }
 
@@ -185,17 +192,17 @@ class VendorSubscription extends Model
     {
         $days = $this->plan->getBillingCycleDays();
         $this->update([
-            'status'               => self::STATUS_ACTIVE,
+            'status' => self::STATUS_ACTIVE,
             'current_period_start' => now(),
-            'current_period_end'   => now()->addDays($days),
-            'next_billing_date'    => now(),
+            'current_period_end' => now()->addDays($days),
+            'next_billing_date' => now(),
         ]);
     }
 
     public function markPastDue(Carbon $graceEndsAt): void
     {
         $this->update([
-            'status'        => self::STATUS_PAST_DUE,
+            'status' => self::STATUS_PAST_DUE,
             'grace_ends_at' => $graceEndsAt,
         ]);
     }
@@ -211,9 +218,9 @@ class VendorSubscription extends Model
     public function reactivate(): void
     {
         $this->update([
-            'status'         => self::STATUS_ACTIVE,
-            'grace_ends_at'  => null,
-            'locked_at'      => null,
+            'status' => self::STATUS_ACTIVE,
+            'grace_ends_at' => null,
+            'locked_at' => null,
             'last_payment_at' => now(),
         ]);
     }

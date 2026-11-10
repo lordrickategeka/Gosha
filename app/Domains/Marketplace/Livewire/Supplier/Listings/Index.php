@@ -17,14 +17,23 @@ class Index extends Component
 
     // Inline create/edit form state.
     public bool $showForm = false;
+
     public ?int $editingId = null;
+
     public ?int $catalog_product_id = null;
+
     public string $supplier_sku = '';
+
     public $price = null;
+
     public int $stock_qty = 0;
+
     public int $min_order_qty = 1;
+
     public int $lead_time_days = 0;
+
     public string $condition = 'new';
+
     public bool $is_active = true;
 
     protected function rules(): array
@@ -61,13 +70,14 @@ class Index extends Component
     public function mount()
     {
         // Redirect to vendor registration if no vendor found and not a platform user
-        if (!$this->hasVendor()) {
+        if (! $this->hasVendor()) {
             return $this->redirect(route('register'), navigate: true);
         }
     }
 
     public function openCreate(): void
     {
+        app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->assertSelling(Vendor::find($this->getVendorId()));
         $this->reset(['editingId', 'catalog_product_id', 'supplier_sku', 'price', 'stock_qty', 'min_order_qty', 'lead_time_days', 'condition', 'is_active']);
         $this->is_active = true;
         $this->min_order_qty = 1;
@@ -96,6 +106,7 @@ class Index extends Component
 
         $vendor = Vendor::find($this->getVendorId());
         abort_unless($vendor?->isVerifiedSupplier(), 403, 'Your supplier account must be verified before you can create or edit listings.');
+        app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->assertSelling($vendor);
 
         $data = $this->validate();
         $data['supplier_vendor_id'] = $this->getVendorId();
@@ -136,13 +147,12 @@ class Index extends Component
 
         $listings = MarketplaceListing::ownedBySupplier($vendorId)
             ->with('product')
-            ->when($this->search, fn ($q) => $q->whereHas('product', fn ($p) =>
-                $p->where('name', 'like', "%{$this->search}%")
-                  ->orWhere('part_number', 'like', "%{$this->search}%")))
+            ->when($this->search, fn ($q) => $q->whereHas('product', fn ($p) => $p->where('name', 'like', "%{$this->search}%")
+                ->orWhere('part_number', 'like', "%{$this->search}%")))
             ->latest()
             ->paginate(15);
 
-        $isVerifiedSupplier = Vendor::find($vendorId)?->isVerifiedSupplier() ?? false;
+        $isVerifiedSupplier = app(\App\Domains\Marketplace\Services\SupplierPlanAccess::class)->canSell(Vendor::find($vendorId));
 
         return view('livewire.marketplace.supplier.listings.index', compact('listings', 'isVerifiedSupplier'));
     }
