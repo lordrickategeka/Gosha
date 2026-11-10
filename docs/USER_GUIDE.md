@@ -18,7 +18,7 @@ GarageHQ supports garage and car-wash businesses, parts suppliers, their staff, 
 
 **Supplier quick start:** register and verify your email, select a supplier plan, wait for business approval, and then prepare listings and respond to enquiries. A trial starts after approval; a paid plan requires verified payment.
 
-**Staff quick start:** obtain an account from your business administrator, sign in, change any initial password when prompted, confirm the current branch, and open your assigned module.
+**Staff quick start:** obtain an account from your business administrator, sign in using the standard email/password form, change any initial password when prompted, confirm the current branch, and open your assigned module. The garage and supplier registration cards create business accounts; staff use their administrator-provided login on the normal sign-in form.
 
 ## Signing in, passwords and account access
 <!-- audience: all -->
